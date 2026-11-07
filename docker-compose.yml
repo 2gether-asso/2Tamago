@@ -1,0 +1,60 @@
+# Local stack, built from source: PostgreSQL + API + web (Caddy).
+#   make up      → http://localhost:8080 (from the host)
+#   make db-up   → only PostgreSQL, for developing against it from the devcontainer
+#
+# Same project name as .devcontainer/docker-compose.yml: these services share the
+# devcontainer's network, so the devcontainer reaches them as db:5432, api:3000, web:80.
+name: 2tamago
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: tamago
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tamago}
+      POSTGRES_DB: tamago
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U tamago']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    image: 2tamago-api:local
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      DATABASE_URL: postgres://tamago:${POSTGRES_PASSWORD:-tamago}@db:5432/tamago
+      AUTH_SECRET: ${AUTH_SECRET:-local-only-secret-not-for-production-use}
+      AUTH_DEV_LOGIN: ${AUTH_DEV_LOGIN:-true}
+      WEB_ORIGIN: ${WEB_ORIGIN:-http://localhost:8080}
+      DISCORD_CLIENT_ID: ${DISCORD_CLIENT_ID:-}
+      DISCORD_CLIENT_SECRET: ${DISCORD_CLIENT_SECRET:-}
+      DISCORD_GUILD_ID: ${DISCORD_GUILD_ID:-}
+      DISCORD_REDIRECT_URI: ${DISCORD_REDIRECT_URI:-http://localhost:8080/api/auth/discord/callback}
+      ADMIN_DISCORD_IDS: ${ADMIN_DISCORD_IDS:-}
+      GAME_TIME_SCALE: ${GAME_TIME_SCALE:-1}
+      GAME_DEPARTURE: ${GAME_DEPARTURE:-true}
+      GAME_TIMEZONE: ${GAME_TIMEZONE:-Europe/Paris}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+    image: 2tamago-web:local
+    environment:
+      SITE_ADDRESS: ':80'
+    ports:
+      - '${WEB_PORT:-8080}:80'
+    depends_on:
+      - api
+
+volumes:
+  db-data:

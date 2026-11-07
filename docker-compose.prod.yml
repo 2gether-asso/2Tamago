@@ -1,0 +1,61 @@
+# Production (or staging) stack, from the published images. Self-contained: the
+# server only needs this file and a .env (see .env.example).
+#   docker compose -f docker-compose.prod.yml pull
+#   docker compose -f docker-compose.prod.yml up -d
+# For a staging instance, use another directory or project name (-p) and .env.
+name: 2tamago-prod
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: tamago
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      POSTGRES_DB: tamago
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U tamago']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    image: ${REGISTRY:-ghcr.io/2gether-asso}/2tamago-api:${TAG:-latest}
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://tamago:${POSTGRES_PASSWORD}@db:5432/tamago
+      AUTH_SECRET: ${AUTH_SECRET:?AUTH_SECRET is required (32+ characters)}
+      COOKIE_SECURE: 'true'
+      WEB_ORIGIN: https://${SITE_ADDRESS:?SITE_ADDRESS is required}
+      DISCORD_CLIENT_ID: ${DISCORD_CLIENT_ID:?}
+      DISCORD_CLIENT_SECRET: ${DISCORD_CLIENT_SECRET:?}
+      DISCORD_GUILD_ID: ${DISCORD_GUILD_ID:?}
+      DISCORD_REDIRECT_URI: https://${SITE_ADDRESS}/api/auth/discord/callback
+      ADMIN_DISCORD_IDS: ${ADMIN_DISCORD_IDS:-}
+      GAME_TIME_SCALE: ${GAME_TIME_SCALE:-1}
+      GAME_DEPARTURE: ${GAME_DEPARTURE:-true}
+      GAME_TIMEZONE: ${GAME_TIMEZONE:-Europe/Paris}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    image: ${REGISTRY:-ghcr.io/2gether-asso}/2tamago-web:${TAG:-latest}
+    restart: unless-stopped
+    environment:
+      # A domain name: Caddy gets the HTTPS certificate automatically.
+      SITE_ADDRESS: ${SITE_ADDRESS}
+    ports:
+      - '${HTTP_PORT:-80}:80'
+      - '${HTTPS_PORT:-443}:443'
+    volumes:
+      - caddy-data:/data
+    depends_on:
+      - api
+
+volumes:
+  db-data:
+  caddy-data:
