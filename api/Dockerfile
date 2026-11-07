@@ -1,13 +1,13 @@
-# Build from the repository root: docker build -f apps/api/Dockerfile .
+# Build from the repository root: docker build -f api/Dockerfile .
 FROM node:24-alpine AS build
 RUN corepack enable
 WORKDIR /repo
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
-COPY packages/core/package.json packages/core/
-COPY apps/api/package.json apps/api/
+COPY shared/core/package.json shared/core/
+COPY api/package.json api/
 RUN pnpm install --frozen-lockfile --filter @2tamago/api...
-COPY packages/core packages/core
-COPY apps/api apps/api
+COPY shared/core shared/core
+COPY api api
 RUN pnpm --filter @2tamago/core build \
  && pnpm --filter @2tamago/api build \
  && pnpm --filter @2tamago/api deploy --prod /out

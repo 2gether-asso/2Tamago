@@ -3,5 +3,5 @@ dist
 build
 .svelte-kit
 pnpm-lock.yaml
-apps/api/drizzle
+api/drizzle
 .devcontainer/docker-compose.yml

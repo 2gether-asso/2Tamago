@@ -173,11 +173,11 @@ importers:
         specifier: ^3.4.0
         version: 3.5.2(prettier@3.9.10)(svelte@5.57.3)
 
-  apps/api:
+  api:
     dependencies:
       '@2tamago/core':
         specifier: workspace:*
-        version: link:../../packages/core
+        version: link:../shared/core
       '@electric-sql/pglite':
         specifier: ^0.5.15
         version: 0.5.15
@@ -250,13 +250,29 @@ importers:
         version: 8.3.6(@types/node@24.19.2)(esbuild@0.28.2)(tsx@4.23.15)
       vitest:
         specifier: ^4.1.2
-        version: 4.1.12(@types/node@24.19.2)(vite@8.3.6(@types/node@24.19.2))
+        version: 4.1.12(@types/node@24.19.2)(vite@8.3.6(@types/node@24.19.2)(esbuild@0.28.2)(tsx@4.23.15))
 
-  apps/web:
+  shared/core:
+    dependencies:
+      zod:
+        specifier: ^4.1.0
+        version: 4.6.7
+    devDependencies:
+      '@types/node':
+        specifier: ^24.0.0
+        version: 24.19.2
+      typescript:
+        specifier: ~6.0.2
+        version: 6.0.3
+      vitest:
+        specifier: ^4.1.2
+        version: 4.1.12(@types/node@24.19.2)(vite@8.3.6(@types/node@24.19.2)(esbuild@0.28.2)(tsx@4.23.15))
+
+  web:
     dependencies:
       '@2tamago/core':
         specifier: workspace:*
-        version: link:../../packages/core
+        version: link:../shared/core
     devDependencies:
       '@sveltejs/adapter-static':
         specifier: ^4.0.1
@@ -281,23 +297,7 @@ importers:
         version: 8.3.6(@types/node@24.19.2)(esbuild@0.28.2)(tsx@4.23.15)
       vitest:
         specifier: ^4.1.2
-        version: 4.1.12(@types/node@24.19.2)(vite@8.3.6(@types/node@24.19.2))
-
-  packages/core:
-    dependencies:
-      zod:
-        specifier: ^4.1.0
-        version: 4.6.7
-    devDependencies:
-      '@types/node':
-        specifier: ^24.0.0
-        version: 24.19.2
-      typescript:
-        specifier: ~6.0.2
-        version: 6.0.3
-      vitest:
-        specifier: ^4.1.2
-        version: 4.1.12(@types/node@24.19.2)(vite@8.3.6(@types/node@24.19.2))
+        version: 4.1.12(@types/node@24.19.2)(vite@8.3.6(@types/node@24.19.2)(esbuild@0.28.2)(tsx@4.23.15))
 
 packages:
 
@@ -3273,7 +3273,7 @@ snapshots:
       chai: 6.3.0
       tinyrainbow: 3.2.0
 
-  '@vitest/mocker@4.1.12(vite@8.3.6(@types/node@24.19.2))':
+  '@vitest/mocker@4.1.12(vite@8.3.6(@types/node@24.19.2)(esbuild@0.28.2)(tsx@4.23.15))':
     dependencies:
       '@vitest/spy': 4.1.12
       estree-walker: 3.0.3
@@ -4378,10 +4378,10 @@ snapshots:
     optionalDependencies:
       vite: 8.3.6(@types/node@24.19.2)(esbuild@0.28.2)(tsx@4.23.15)
 
-  vitest@4.1.12(@types/node@24.19.2)(vite@8.3.6(@types/node@24.19.2)):
+  vitest@4.1.12(@types/node@24.19.2)(vite@8.3.6(@types/node@24.19.2)(esbuild@0.28.2)(tsx@4.23.15)):
     dependencies:
       '@vitest/expect': 4.1.12
-      '@vitest/mocker': 4.1.12(vite@8.3.6(@types/node@24.19.2))
+      '@vitest/mocker': 4.1.12(vite@8.3.6(@types/node@24.19.2)(esbuild@0.28.2)(tsx@4.23.15))
       '@vitest/pretty-format': 4.1.12
       '@vitest/runner': 4.1.12
       '@vitest/snapshot': 4.1.12
