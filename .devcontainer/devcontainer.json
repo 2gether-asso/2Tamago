@@ -1,0 +1,19 @@
+{
+  "name": "2tamago",
+  "dockerComposeFile": ["docker-compose.yml"],
+  "service": "devcontainer",
+  "workspaceFolder": "/workdir",
+  "postCreateCommand": "git config --global --add safe.directory /workdir",
+  "shutdownAction": "stopCompose",
+  "forwardPorts": [4321],
+  "portsAttributes": {
+    "4321": { "label": "app" }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "astro-build.astro-vscode"
+      ]
+    }
+  }
+}
