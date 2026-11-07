@@ -16,38 +16,41 @@ Le jeu reprend la boucle de soins de Tamagotchi, le lien affectif de Nintendogs 
 
 ## Démarrer
 
-Prérequis : Node 24 et pnpm (le devcontainer les fournit).
+Prérequis : le devcontainer (Node 24, pnpm, Docker CLI). `make` affiche toutes les commandes.
 
 ```bash
-pnpm install
-pnpm dev
+make dev
 ```
 
-Ouvrir <http://localhost:4321> et se connecter avec un pseudo (mode dev). Pas de Docker ni de base à installer : en dev, l'API utilise PGlite et stocke ses données dans `apps/api/.data/`. Au premier lancement, `apps/api/.env` est créé à partir de `.env.example`.
+Ouvrir <http://localhost:4321> et se connecter avec un pseudo (mode dev). Il n'y a pas de base à installer : en dev, l'API utilise PGlite et stocke ses données dans `api/.data/`. Au premier lancement, `api/.env` est créé à partir de `api/.env.example`.
 
-Pour voir le jeu avancer vite, mettre `GAME_TIME_SCALE=60` dans `apps/api/.env` : une journée de jeu dure alors 24 minutes.
-
-Pour se connecter avec Discord en local, créer une application sur le [portail développeur Discord](https://discord.com/developers/applications), ajouter `http://localhost:4321/api/auth/discord/callback` aux redirections, puis renseigner `DISCORD_*` dans `apps/api/.env`.
+- Pour voir le jeu avancer vite, mettre `GAME_TIME_SCALE=60` dans `api/.env` : une journée de jeu dure alors 24 minutes.
+- Pour développer contre un vrai PostgreSQL : `make db-up`, puis `DATABASE_URL=postgres://tamago:tamago@db:5432/tamago` dans `api/.env`.
+- Pour se connecter avec Discord en local, créer une application sur le [portail développeur Discord](https://discord.com/developers/applications), ajouter `http://localhost:4321/api/auth/discord/callback` aux redirections, puis renseigner `DISCORD_*` dans `api/.env`.
 
 ## Commandes
 
-| Commande                                 | Effet                                                                |
-| ---------------------------------------- | -------------------------------------------------------------------- |
-| `pnpm dev`                               | Moteur (watch), API sur :3000 et front sur :4321 (qui relaie `/api`) |
-| `pnpm build`                             | Build des trois paquets                                              |
-| `pnpm test`                              | Tests du moteur, de l'API (dont les e2e) et du front                 |
-| `pnpm check`                             | Vérification des types                                               |
-| `pnpm format`                            | Prettier                                                             |
-| `pnpm --filter @2tamago/api db:generate` | Génère une migration SQL après une modification de `schema.ts`       |
+| Commande                                                  | Effet                                                                           |
+| --------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `make dev`                                                | Moteur (watch), API sur :3000 et front sur :4321 (qui relaie `/api`)            |
+| `make build` / `make test` / `make check` / `make format` | Build, tests (moteur, API avec e2e, front), types, Prettier                     |
+| `make ci`                                                 | Ce que lance la CI                                                              |
+| `make db-generate`                                        | Génère une migration SQL après une modification de `api/src/database/schema.ts` |
+| `make db-up` / `make db-down`                             | PostgreSQL seul, joignable depuis le devcontainer à l'adresse `db:5432`         |
+| `make up` / `make down` / `make logs`                     | Stack complète construite depuis les sources, sur <http://localhost:8080>       |
 
 ## Structure
 
+Chaque service est à la racine avec son `Dockerfile`, et le code partagé est dans `shared/`. Un futur service écrit dans un autre langage se rangera à côté, sans faire partie de l'espace de travail pnpm.
+
 ```
-packages/core/     Moteur de jeu (règles, simulation) et contrats d'API partagés
-apps/api/          API NestJS : auth, joueurs, compagnons, village, boutique, journal
-apps/web/          Front SvelteKit
-deploy/            compose.yml de production, Caddyfile, .env.example
-docs/              Fonctionnalités, architecture, règles du jeu
+api/                    API NestJS : auth, joueurs, compagnons, village, boutique, journal
+web/                    Front SvelteKit, et le Caddyfile de son image
+shared/core/            Moteur de jeu (règles, simulation) et contrats d'API partagés
+docs/                   Fonctionnalités, architecture, règles du jeu
+docker-compose.yml      Stack locale construite depuis les sources (PostgreSQL + API + web)
+docker-compose.prod.yml Production ou préproduction, à partir des images publiées
+Makefile                Commandes courantes
 ```
 
 ## Documentation
@@ -58,12 +61,11 @@ docs/              Fonctionnalités, architecture, règles du jeu
 
 ## Mettre en production
 
-Sur le serveur, avec Docker :
+La CI publie les images `ghcr.io/2gether-asso/2tamago-api` et `2tamago-web` à chaque push sur `main`. Sur le serveur, seuls `docker-compose.prod.yml`, le `Makefile` (facultatif) et un `.env` sont nécessaires :
 
 ```bash
-cd deploy
-cp .env.example .env   # renseigner le domaine, les secrets et Discord
-docker compose up -d
+cp .env.example .env   # renseigner SITE_ADDRESS, les secrets et Discord
+make prod-pull prod-up
 ```
 
-Caddy obtient le certificat HTTPS tout seul pour `SITE_ADDRESS`. Pour mettre à jour : `docker compose pull && docker compose up -d`.
+Caddy obtient le certificat HTTPS tout seul pour `SITE_ADDRESS`. Pour mettre à jour, relancer `make prod-pull prod-up`. Pour une préproduction, utiliser un autre dossier avec son propre `.env` et un autre `TAG`.

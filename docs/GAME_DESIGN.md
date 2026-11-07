@@ -1,6 +1,6 @@
 # 2Tamago : règles du jeu
 
-Toutes les valeurs sont dans [`packages/core/src/engine/rules.ts`](../packages/core/src/engine/rules.ts) (`DEFAULT_RULES`). Ce document en explique le sens. Les durées sont en **heures de jeu**. Avec `GAME_TIME_SCALE=1`, une heure de jeu dure une heure réelle ; avec `60`, une journée de jeu dure 24 minutes.
+Toutes les valeurs sont dans [`shared/core/src/engine/rules.ts`](../shared/core/src/engine/rules.ts) (`DEFAULT_RULES`). Ce document en explique le sens. Les durées sont en **heures de jeu**. Avec `GAME_TIME_SCALE=1`, une heure de jeu dure une heure réelle ; avec `60`, une journée de jeu dure 24 minutes.
 
 ## Simulation
 
