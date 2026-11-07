@@ -1,0 +1,128 @@
+:root {
+  --bg: #fdf8f1;
+  --surface: #ffffff;
+  --surface-2: #f1e9de;
+  --text: #3b2f2a;
+  --muted: #8a7b71;
+  --accent: #e8798f;
+  --accent-text: #ffffff;
+  --good: #7cc68d;
+  --warn: #f2c14e;
+  --bad: #e5675b;
+  --radius: 14px;
+  --shadow: 0 6px 20px rgb(60 40 30 / 0.12);
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1f1a1d;
+    --surface: #2a2327;
+    --surface-2: #3a3136;
+    --text: #f3e9e3;
+    --muted: #b3a39c;
+    --accent: #f08aa0;
+    --accent-text: #1f1a1d;
+    --shadow: 0 6px 20px rgb(0 0 0 / 0.4);
+    color-scheme: dark;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family:
+    'Nunito',
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
+  line-height: 1.5;
+}
+
+a {
+  color: var(--accent);
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.2;
+  margin: 0 0 0.6rem;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+  border: 1px solid var(--surface-2);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 0.5rem 1rem;
+  transition: transform 0.1s ease;
+}
+button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+button.primary {
+  background: var(--accent);
+  color: var(--accent-text);
+  border-color: transparent;
+  font-weight: bold;
+}
+button.link {
+  border: none;
+  background: none;
+  color: var(--muted);
+  text-decoration: underline;
+}
+
+input,
+select {
+  font: inherit;
+  padding: 0.5rem 0.8rem;
+  border-radius: 10px;
+  border: 1px solid var(--surface-2);
+  background: var(--surface);
+  color: var(--text);
+}
+
+.card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.2rem;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 1rem;
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgb(0 0 0 / 0.35);
+  display: grid;
+  place-items: center;
+  z-index: 5;
+  padding: 1rem;
+}
+.dialog {
+  width: min(28rem, 100%);
+  text-align: center;
+}
