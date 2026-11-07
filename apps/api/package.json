@@ -1,0 +1,47 @@
+{
+  "name": "@2tamago/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nest build",
+    "predev": "node -e \"const fs=require('node:fs');fs.existsSync('.env')||fs.copyFileSync('.env.example','.env')\"",
+    "dev": "nest start --watch --env-file .env",
+    "start": "node dist/main.js",
+    "test": "vitest run && vitest run --config ./vitest.config.e2e.ts",
+    "test:unit": "vitest run",
+    "test:e2e": "vitest run --config ./vitest.config.e2e.ts",
+    "check": "tsc -p tsconfig.json --noEmit",
+    "db:generate": "drizzle-kit generate",
+    "db:studio": "drizzle-kit studio"
+  },
+  "dependencies": {
+    "@2tamago/core": "workspace:*",
+    "@electric-sql/pglite": "^0.5.15",
+    "@nestjs/common": "^12.4.0",
+    "@nestjs/core": "^12.4.0",
+    "@nestjs/drizzle": "^0.0.2",
+    "@nestjs/jwt": "^12.0.4",
+    "@nestjs/platform-express": "^12.4.0",
+    "@nestjs/throttler": "^6.7.1",
+    "drizzle-orm": "^0.45.4",
+    "pg": "^8.23.1",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1",
+    "zod": "^4.1.0"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^12.0.12",
+    "@nestjs/schematics": "^12.0.0",
+    "@nestjs/testing": "^12.4.0",
+    "@types/express": "^5.0.0",
+    "@types/node": "^24.0.0",
+    "@types/pg": "^8.23.1",
+    "@types/supertest": "^7.0.0",
+    "drizzle-kit": "^0.31.11",
+    "supertest": "^7.0.0",
+    "typescript": "~6.0.2",
+    "vite": "^8.0.0",
+    "vitest": "^4.1.2"
+  }
+}

@@ -1,0 +1,51 @@
+import { Body, Controller, Get, HttpCode, Param, Post } from '@nestjs/common';
+import { giftBody, uuidParam, type GiftBody } from '@2tamago/core/contracts';
+import { CurrentSession, type Session } from '../auth/session.js';
+import { VillageService } from './village.service.js';
+import { WalksService } from './walks.service.js';
+
+@Controller()
+export class SocialController {
+  constructor(
+    private readonly village: VillageService,
+    private readonly walks: WalksService,
+  ) {}
+
+  @Post('pet/walk')
+  @HttpCode(200)
+  startWalk(@CurrentSession() session: Session) {
+    return this.walks.start(session.playerId);
+  }
+
+  @Post('pet/walk/return')
+  @HttpCode(200)
+  returnFromWalk(@CurrentSession() session: Session) {
+    return this.walks.return(session.playerId);
+  }
+
+  @Get('village')
+  list(@CurrentSession() session: Session) {
+    return this.village.list(session.playerId);
+  }
+
+  @Get('village/:petId')
+  visit(@CurrentSession() session: Session, @Param('petId', { schema: uuidParam }) petId: string) {
+    return this.village.visit(session.playerId, petId);
+  }
+
+  @Post('village/:petId/caress')
+  @HttpCode(200)
+  caress(@CurrentSession() session: Session, @Param('petId', { schema: uuidParam }) petId: string) {
+    return this.village.caress(session.playerId, petId);
+  }
+
+  @Post('village/:petId/gift')
+  @HttpCode(200)
+  gift(
+    @CurrentSession() session: Session,
+    @Param('petId', { schema: uuidParam }) petId: string,
+    @Body({ schema: giftBody }) body: GiftBody,
+  ) {
+    return this.village.gift(session.playerId, petId, body.item);
+  }
+}
