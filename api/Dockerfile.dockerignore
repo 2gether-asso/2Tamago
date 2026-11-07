@@ -1,0 +1,13 @@
+# Only what the API image needs from the repository.
+*
+!package.json
+!pnpm-lock.yaml
+!pnpm-workspace.yaml
+!tsconfig.base.json
+!shared/core
+!api
+**/node_modules
+**/dist
+**/.data
+**/.env
+**/*.tsbuildinfo
