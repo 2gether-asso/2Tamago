@@ -3,17 +3,17 @@
   "dockerComposeFile": ["docker-compose.yml"],
   "service": "devcontainer",
   "workspaceFolder": "/workdir",
-  "postCreateCommand": "git config --global --add safe.directory /workdir",
+  "postCreateCommand": "git config --global --add safe.directory /workdir && pnpm install",
   "shutdownAction": "stopCompose",
   "forwardPorts": [4321],
   "portsAttributes": {
-    "4321": { "label": "app" }
+    "4321": {
+      "label": "2Tamago (web + /api)"
+    }
   },
   "customizations": {
     "vscode": {
-      "extensions": [
-        "astro-build.astro-vscode"
-      ]
+      "extensions": ["svelte.svelte-vscode", "esbenp.prettier-vscode"]
     }
   }
 }
