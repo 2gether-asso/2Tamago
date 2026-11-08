@@ -135,14 +135,6 @@ export class AuthSessionService {
       }
       const now = this.clock.now();
 
-      if (row.refreshHash !== hash) {
-        // An old token. Just replaced and within the grace: a second tab. Later: it was copied.
-        if (now - row.rotatedAt.getTime() <= ROTATION_GRACE_MS) {
-          return { ok: true, playerId: row.playerId, sessionId: row.id };
-        }
-        return { ok: false, error: new AuthError('invalid_grant'), revoke: row.id };
-      }
-
       const { auth } = this.config;
       const verdict = assessRefresh(
         {
@@ -156,6 +148,18 @@ export class AuthSessionService {
         now,
         { refreshIdleSeconds: auth.refreshIdleSeconds, roamingSeconds: auth.roamingSeconds },
       );
+
+      if (row.refreshHash !== hash) {
+        // An old token. Just replaced and within the grace: a second tab. Later: it was copied.
+        if (now - row.rotatedAt.getTime() > ROTATION_GRACE_MS) {
+          return { ok: false, error: new AuthError('invalid_grant'), revoke: row.id };
+        }
+        // The same policy applies, but nothing is written: the session already rotated.
+        if (!verdict.allowed) {
+          return { ok: false, error: new AuthError(verdict.reason), revoke: row.id };
+        }
+        return { ok: true, playerId: row.playerId, sessionId: row.id };
+      }
       if (!verdict.allowed) {
         return { ok: false, error: new AuthError(verdict.reason), revoke: row.id };
       }

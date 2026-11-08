@@ -427,6 +427,17 @@ describe('sessions (e2e)', () => {
       await refresh(client, back.refresh_token!, { ip: MOBILE }).expect(200);
     });
 
+    it('applies the same checks to a second tab inside the rotation grace', async () => {
+      const { client, tokens } = await signIn();
+      const next: TokenResponse = (await refresh(client, tokens.refresh_token!).expect(200)).body;
+      const duplicate = await refresh(client, tokens.refresh_token!, { ua: FIREFOX });
+      expect(duplicate.status).toBe(401);
+      expect(duplicate.body.code).toBe('session_suspicious');
+      // The session is gone, including the token that was legitimately issued.
+      const after = await refresh(client, next.refresh_token!);
+      expect(after.body.code).toBe('invalid_grant');
+    });
+
     it('revokes a session that shows up in another browser or system', async () => {
       const { client, tokens } = await signIn();
       const other = await refresh(client, tokens.refresh_token!, { ua: FIREFOX });
