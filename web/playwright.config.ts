@@ -33,6 +33,8 @@ export default defineConfig({
         GAME_TIME_SCALE: '120',
         GAME_DEPARTURE: 'false',
         ADMIN_DISCORD_IDS: 'dev:root',
+        // Enables the feedback form; nothing listens there, so reports go nowhere.
+        SENTRY_DSN: 'http://key@127.0.0.1:9/1',
       },
     },
     {

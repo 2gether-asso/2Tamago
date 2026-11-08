@@ -3,7 +3,9 @@
   import '@fontsource/bungee';
   import '../app.css';
   import favicon from '#lib/assets/favicon.svg';
+  import FeedbackModal from '#lib/components/FeedbackModal.svelte';
   import Toasts from '#lib/components/Toasts.svelte';
+  import { clientConfig } from '#lib/client-config.svelte.ts';
   import { api } from '#lib/api.ts';
   import { game } from '#lib/game.svelte.ts';
   import { theme } from '#lib/theme.svelte.ts';
@@ -13,6 +15,7 @@
 
   let { children }: LayoutProps = $props();
   let error = $state<string | null>(null);
+  let feedbackOpen = $state(false);
 
   const NAV = [
     { href: '/', label: 'Maison', icon: '🏠' },
@@ -60,7 +63,7 @@
 
 {#snippet themeToggle()}
   <button
-    class="theme-toggle"
+    class="icon-button"
     onclick={() => theme.cycle()}
     title="{themeUi.label} (cliquer pour changer)"
     aria-label={themeUi.label}
@@ -80,6 +83,16 @@
         <span class="coins" title="Pièces">🪙 {game.player.coins}</span>
         <span class="muted">{game.player.displayName}</span>
         <button class="link" onclick={logout}>Déconnexion</button>
+        {#if clientConfig.feedbackEnabled}
+          <button
+            class="icon-button"
+            onclick={() => (feedbackOpen = true)}
+            title="Donner un avis"
+            aria-label="Donner un avis"
+          >
+            💬
+          </button>
+        {/if}
         {@render themeToggle()}
       </div>
     {:else}
@@ -110,6 +123,9 @@
   </nav>
 {/if}
 
+{#if clientConfig.feedbackEnabled}
+  <FeedbackModal bind:open={feedbackOpen} />
+{/if}
 <Toasts />
 
 <style>
@@ -145,7 +161,7 @@
     background: var(--surface);
     border: 1px solid var(--border);
   }
-  .theme-toggle {
+  .icon-button {
     padding: 0.25rem 0.6rem;
     font-size: 1.05rem;
     line-height: 1.3;

@@ -7,6 +7,7 @@ import type {
   AlbumEntry,
   ApiErrorBody,
   ClientConfig,
+  FeedbackBody,
   BuyBody,
   Inventory,
   MeResponse,
@@ -58,6 +59,7 @@ export const api = {
   logout: () => call<void>('POST', '/auth/logout'),
   discordLoginUrl: `${BASE}/auth/discord`,
 
+  sendFeedback: (body: FeedbackBody) => call<void>('POST', '/feedback', body),
   clientConfig: () => call<ClientConfig>('GET', '/config'),
   rules: () => call<GameRules>('GET', '/game/rules'),
   me: () => call<MeResponse>('GET', '/me'),
