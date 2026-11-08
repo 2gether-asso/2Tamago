@@ -37,7 +37,7 @@ Ouvrir <http://localhost:4321> et se connecter avec un pseudo (mode dev). Il n'y
 | `make ci`                                                                                 | Ce que lance la CI                                                              |
 | `make db-generate`                                                                        | Génère une migration SQL après une modification de `api/src/database/schema.ts` |
 | `make db-up` / `make db-down`                                                             | PostgreSQL seul, joignable depuis le devcontainer à l'adresse `db:5432`         |
-| `make up` / `make down` / `make logs`                                                     | PostgreSQL et API construits depuis les sources, sur <http://localhost:3000>    |
+| `make up` / `make down` / `make logs`                                                     | Stack complète construite depuis les sources, sur <http://localhost:8080>       |
 
 ## Structure
 
@@ -65,7 +65,7 @@ Makefile                Commandes courantes
 
 Deux parties, deux workflows :
 
-- **API** : `docker.yml` publie l'image `ghcr.io/2gether-asso/2tamago-api` à chaque push sur `main` (tag `latest`) et pour chaque tag `vX.Y.Z` (tags `X.Y.Z`, `X.Y`, `X`). Sur le serveur, seuls `docker-compose.prod.yml`, le `Makefile` (facultatif) et un `.env` sont nécessaires. L'API écoute sur `127.0.0.1:3000` : un reverse proxy (non fourni) gère le HTTPS et la publie sur `API_ORIGIN`.
+- **API** : `docker.yml` publie les images `ghcr.io/2gether-asso/2tamago-api` et `2tamago-web` (nginx, facultative : `--profile web`) à chaque push sur `main` (tag `latest`) et pour chaque tag `vX.Y.Z` (tags `X.Y.Z`, `X.Y`, `X`). Sur le serveur, il faut `docker-compose.yml` et `docker-compose.prod.yml` (qui l'étend), le `Makefile` (facultatif) et un `.env`. L'API écoute sur `127.0.0.1:3000` : un reverse proxy (non fourni) gère le HTTPS et la publie sur `API_ORIGIN`.
 
   ```bash
   cp .env.example .env   # renseigner WEB_ORIGIN, API_ORIGIN, les secrets et Discord
