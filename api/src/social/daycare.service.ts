@@ -53,6 +53,7 @@ export class DaycareService {
       or(eq(daycares.ownerId, viewerId), eq(daycares.caretakerId, viewerId))!,
     );
     return {
+      maxDays: DAYCARE.maxDays,
       entrusted: mine.find((d) => d.ownerId === viewerId) ?? null,
       caring: mine.filter((d) => d.caretakerId === viewerId && d.status === 'active'),
       invitations: mine.filter((d) => d.caretakerId === viewerId && d.status === 'pending'),

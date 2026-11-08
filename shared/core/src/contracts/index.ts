@@ -520,6 +520,8 @@ export interface DaycareDto {
 }
 
 export interface DaycareOverview {
+  /** How long a stay lasts at most, in days (it ends by itself after that). */
+  maxDays: number;
   /** The viewer's own companion, entrusted to someone (or an invitation waiting for an answer). */
   entrusted: DaycareDto | null;
   /** Companions the viewer looks after. */

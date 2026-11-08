@@ -103,6 +103,7 @@ describe('Daycare (e2e)', () => {
 
     // Both sides see it; the caretaker was told; nobody else may touch it.
     expect((await overview(alice)).entrusted?.status).toBe('pending');
+    expect((await overview(alice)).maxDays).toBe(DAYCARE.maxDays);
     expect((await overview(bob)).invitations.map((d) => d.id)).toEqual([invitation.id]);
     expect((await overview(carol)).invitations).toEqual([]);
     expect((await journal(bob)).map((entry) => entry.kind)).toContain('daycare_invite');

@@ -17,6 +17,9 @@ import type {
   PlayerProfile,
   VillagePet,
   VisitResponse,
+  CareActionBody,
+  DaycareDto,
+  DaycareOverview,
   PushSubscriptionBody,
   ClaimResponse,
   CommunityGoal,
@@ -122,6 +125,14 @@ export const api = {
 
   communityGoal: () => call<CommunityGoal>('GET', '/community/goal'),
   claimCommunityGoal: () => call<ClaimResponse>('POST', '/community/goal/claim'),
+
+  daycare: () => call<DaycareOverview>('GET', '/daycare'),
+  daycareInvite: (caretakerId: string) => call<DaycareDto>('POST', '/daycare', { caretakerId }),
+  daycareAccept: (id: string) => call<DaycareDto>('POST', `/daycare/${id}/accept`),
+  daycareDecline: (id: string) => call<void>('POST', `/daycare/${id}/decline`),
+  daycareEnd: (id: string) => call<void>('DELETE', `/daycare/${id}`),
+  daycareCare: (id: string, body: CareActionBody) =>
+    call<ActionResponse>('POST', `/daycare/${id}/care`, body),
 
   pushSubscribe: (body: PushSubscriptionBody) => call<void>('PUT', '/push/subscription', body),
   pushUnsubscribe: (endpoint: string) => call<void>('DELETE', '/push/subscription', { endpoint }),

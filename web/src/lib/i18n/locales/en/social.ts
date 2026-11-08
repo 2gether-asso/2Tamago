@@ -23,6 +23,32 @@ export const social: Record<keyof typeof fr, string> = {
   'goal.claimed_toast_one': 'Village reward: +{count} coin!',
   'goal.claimed_toast_other': 'Village reward: +{count} coins!',
 
+  'daycare.title': 'Daycare',
+  'daycare.owner_intro':
+    'Need to be away without pausing {name}? Entrust it to another member from their profile: they will look after it while you are gone (time keeps passing, unlike on vacation).',
+  'daycare.entrust': '🏡 Entrust my companion to them',
+  'daycare.entrust_confirm':
+    'Entrust {pet} to {caretaker}? {caretaker} will have to accept, then can feed, clean and care for it for up to {days} days.',
+  'daycare.invited_toast': 'Invitation sent to {caretaker}.',
+  'daycare.pending': 'Invitation sent to {caretaker}, unanswered until {date}.',
+  'daycare.active': '{pet} is looked after by {caretaker}, until {date} at the latest.',
+  'daycare.cancel': 'Cancel the invitation',
+  'daycare.retrieve': 'Take my companion back',
+  'daycare.invitations': 'Invitations',
+  'daycare.invitation':
+    '{owner} would like to entrust you with {pet} for up to {days} days. Answer before {date}.',
+  'daycare.accept': 'Accept',
+  'daycare.decline': 'Decline',
+  'daycare.accepted_toast': 'You are looking after {pet}!',
+  'daycare.caring': 'Companions you look after',
+  'daycare.caring_item': '{pet} ({owner}), until {date}',
+  'daycare.look_after': 'Look after it',
+  'daycare.give_back': 'Give back',
+  'daycare.care_title': 'You are looking after {name}',
+  'daycare.care_intro':
+    'During your watch you can feed it, clean it, care for it… Each real care earns a few coins (within the daily limit).',
+  'daycare.care_caress': '🤚 Pet it',
+
   'album.title': 'Album',
   'album.intro': 'The companions who shared your life.',
   'album.empty': 'Your album is empty for now.',

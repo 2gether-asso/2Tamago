@@ -1,6 +1,6 @@
 <script lang="ts">
   import { ageInDays, ITEMS, SPECIES_LABELS, TRICKS, trickLevel, type ItemId } from '@2tamago/core';
-  import type { PlayerProfile } from '@2tamago/core/contracts';
+  import type { DaycareOverview, PlayerProfile } from '@2tamago/core/contracts';
   import PushSettings from '#lib/components/PushSettings.svelte';
   import PetSprite from '#lib/components/PetSprite.svelte';
   import StatBar from '#lib/components/StatBar.svelte';
@@ -31,6 +31,50 @@
       .then((p) => (profile = p))
       .catch((e: Error) => (error = e.message));
   });
+
+  let daycare = $state.raw<DaycareOverview | null>(null);
+  let entrusting = $state(false);
+  // Only someone else's profile can receive the companion, and only if it is not entrusted yet.
+  $effect(() => {
+    daycare = null;
+    api
+      .daycare()
+      .then((overview) => (daycare = overview))
+      .catch(() => {});
+  });
+  let canEntrust = $derived(
+    !!profile &&
+      !profile.player.isYou &&
+      game.pet?.status === 'alive' &&
+      daycare !== null &&
+      daycare.entrusted === null,
+  );
+
+  async function entrust() {
+    if (!profile || !daycare || !game.pet || entrusting) return;
+    const caretaker = profile.player.displayName;
+    if (
+      !confirm(
+        t('daycare.entrust_confirm', {
+          pet: game.pet.name,
+          caretaker,
+          days: daycare.maxDays,
+        }),
+      )
+    ) {
+      return;
+    }
+    entrusting = true;
+    try {
+      const sent = await api.daycareInvite(profile.player.id);
+      daycare = { ...daycare, entrusted: sent };
+      toasts.push(t('daycare.invited_toast', { caretaker }));
+    } catch (e) {
+      toasts.push((e as Error).message, 'error');
+    } finally {
+      entrusting = false;
+    }
+  }
 
   let toggling = $state(false);
   async function toggleFavorite() {
@@ -116,6 +160,11 @@
       >
         {player.favorite ? t('profile.unfollow') : t('profile.follow')}
       </button>
+      {#if canEntrust}
+        <button class="link-button" type="button" disabled={entrusting} onclick={entrust}>
+          {t('daycare.entrust')}
+        </button>
+      {/if}
     {/if}
   </section>
 

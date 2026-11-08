@@ -16,6 +16,7 @@
     type TrickId,
   } from '@2tamago/core';
   import type { WalkResponse } from '@2tamago/core/contracts';
+  import DaycareOwner from '#lib/components/DaycareOwner.svelte';
   import AdoptForm from '#lib/components/AdoptForm.svelte';
   import PetSprite from '#lib/components/PetSprite.svelte';
   import PlayGame from '#lib/components/PlayGame.svelte';
@@ -290,6 +291,8 @@
         >
       {/if}
     </section>
+
+    <DaycareOwner petName={pet.name} />
 
     {#if pet.stage !== 'baby' && !pet.outing && game.rules}
       {@const rules = game.rules}

@@ -32,7 +32,7 @@ const NAMESPACES: Record<string, string[]> = {
   adopt: ['adopt'],
   profile: ['profile'],
   push: ['push'],
-  social: ['village', 'goal', 'visit', 'album', 'journal'],
+  social: ['village', 'goal', 'daycare', 'visit', 'album', 'journal'],
   shop: ['shop'],
   auth: ['login'],
   admin: ['admin'],
