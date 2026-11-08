@@ -112,7 +112,10 @@ export class VillageService {
       pet: toPetDto(result.row, result.ownerName),
       events: [],
       coins: await this.players.coinsOf(viewerId),
-      notices: [`${result.row.state.name} est tout content !`, `+${CARESS_REWARD} pièces`],
+      notices: [
+        { code: 'pet_happy', petName: result.row.state.name },
+        { code: 'coins_earned', count: CARESS_REWARD },
+      ],
     };
   }
 
@@ -153,7 +156,7 @@ export class VillageService {
       pet: toPetDto(result.row, result.ownerName),
       events: [],
       coins: await this.players.coinsOf(viewerId),
-      notices: [`${ITEMS[item].label} offert à ${result.row.state.name} !`],
+      notices: [{ code: 'gift_given', item, petName: result.row.state.name }],
     };
   }
 

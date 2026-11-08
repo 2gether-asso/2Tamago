@@ -9,7 +9,8 @@ import {
   type TrickId,
 } from '@2tamago/core';
 import type { Alert, Form, Mood } from '@2tamago/core';
-import type { ActivityDto } from '@2tamago/core/contracts';
+import type { ActivityDto, Notice } from '@2tamago/core/contracts';
+import { t } from './i18n/index.svelte.ts';
 
 /** French texts of the game. */
 
@@ -101,5 +102,25 @@ export function activityText(entry: ActivityDto): string {
         eventText({ type: d.event as PetEvent['type'], at: 0, data: d }, String(d.petName)) ??
         String(d.event)
       );
+  }
+}
+
+export function itemLabel(id: ItemId): string {
+  return t(`item.${id}`);
+}
+
+export function noticeText(notice: Notice): string {
+  switch (notice.code) {
+    case 'coins_earned':
+    case 'walk_found_coins':
+      return t(`notice.${notice.code}`, { count: notice.count });
+    case 'pet_happy':
+      return t('notice.pet_happy', { petName: notice.petName });
+    case 'gift_given':
+      return t('notice.gift_given', { item: itemLabel(notice.item), petName: notice.petName });
+    case 'walk_found_item':
+      return t('notice.walk_found_item', { item: itemLabel(notice.item) });
+    case 'walk_met':
+      return t('notice.walk_met', { petName: notice.petName, ownerName: notice.ownerName });
   }
 }

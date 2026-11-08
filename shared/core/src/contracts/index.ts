@@ -212,12 +212,23 @@ export interface MeResponse {
   serverTime: number;
 }
 
+/**
+ * A short message to show as a toast. The API sends a code and its parameters, not a sentence:
+ * the web app writes it in the player's language.
+ */
+export type Notice =
+  | { code: 'coins_earned'; count: number }
+  | { code: 'pet_happy'; petName: string }
+  | { code: 'gift_given'; item: ItemId; petName: string }
+  | { code: 'walk_found_coins'; count: number }
+  | { code: 'walk_found_item'; item: ItemId }
+  | { code: 'walk_met'; petName: string; ownerName: string };
+
 export interface ActionResponse {
   pet: PetDto;
   events: PetEvent[];
   coins: number;
-  /** Short French messages to show as toasts. */
-  notices: string[];
+  notices: Notice[];
 }
 
 export interface WalkEncounter {

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { applyAction, ITEMS, isSnack, type GameRules, type ItemId } from '@2tamago/core';
-import type { WalkEncounter, WalkResponse, ActionResponse } from '@2tamago/core/contracts';
+import type { ActionResponse, Notice, WalkEncounter, WalkResponse } from '@2tamago/core/contracts';
 import { aliasedTable, and, desc, eq, gt, inArray, isNull, lt, ne, or } from 'drizzle-orm';
 import { ActivityService } from '../activity/activity.service.js';
 import { GameRulesService } from '../game/game-rules.service.js';
@@ -76,10 +76,11 @@ export class WalksService {
     );
 
     const { found, met } = result.extra!;
-    const notices = [`+${found.coins} pièces trouvées`];
-    for (const item of found.items) notices.push(`Trouvé : ${ITEMS[item].label}`);
-    for (const encounter of met)
-      notices.push(`Rencontre avec ${encounter.name} (${encounter.ownerName})`);
+    const notices: Notice[] = [{ code: 'walk_found_coins', count: found.coins }];
+    for (const item of found.items) notices.push({ code: 'walk_found_item', item });
+    for (const encounter of met) {
+      notices.push({ code: 'walk_met', petName: encounter.name, ownerName: encounter.ownerName });
+    }
     return {
       pet: toPetDto(result.row, result.ownerName),
       events: result.events,

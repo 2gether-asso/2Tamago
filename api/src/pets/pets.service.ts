@@ -15,6 +15,7 @@ import type {
   AdoptBody,
   AlbumEntry,
   MeResponse,
+  Notice,
   OwnerActionBody,
 } from '@2tamago/core/contracts';
 import { and, desc, eq, ne, type SQL } from 'drizzle-orm';
@@ -95,7 +96,7 @@ export class PetsService {
   }
 
   async act(playerId: string, action: OwnerActionBody): Promise<ActionResponse> {
-    const notices: string[] = [];
+    const notices: Notice[] = [];
     const result = await this.mutate(eq(pets.ownerId, playerId), async (state, now, tx) => {
       const change = applyAction(state, action, now, this.rules);
       if (action.type === 'treat') {
@@ -107,7 +108,7 @@ export class PetsService {
       const reward = action.type === 'play' ? 2 : action.type === 'train' ? 1 : 0;
       if (reward > 0) {
         const earned = await this.players.earnCappedReward(tx, playerId, reward);
-        if (earned > 0) notices.push(`+${earned} pièce${earned > 1 ? 's' : ''}`);
+        if (earned > 0) notices.push({ code: 'coins_earned', count: earned });
       }
       return change;
     });

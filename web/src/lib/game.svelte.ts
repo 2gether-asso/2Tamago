@@ -14,7 +14,7 @@ import type {
   PlayerDto,
 } from '@2tamago/core/contracts';
 import { api, ApiError } from './api.ts';
-import { eventText } from './texts.ts';
+import { eventText, noticeText } from './texts.ts';
 import { toasts } from './toasts.svelte.ts';
 
 const REFRESH_MS = 60_000;
@@ -120,7 +120,7 @@ class Game {
       this.snapshot = response.pet;
       this.#announce(response.events, response.pet.state.name);
     }
-    for (const notice of response.notices) toasts.push(notice);
+    for (const notice of response.notices) toasts.push(noticeText(notice));
   }
 
   signOut(): void {
