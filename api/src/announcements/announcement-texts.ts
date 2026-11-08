@@ -41,4 +41,7 @@ export const texts = {
 
   firstMeeting: (petA: string, ownerA: string, petB: string, ownerB: string) =>
     `🤝 ${bold(petA)} (${plain(ownerA)}) et ${bold(petB)} (${plain(ownerB)}) se sont croisés en promenade pour la première fois !`,
+
+  communityGoal: (walks: number) =>
+    `🎉 Le village a atteint son objectif de la semaine : ${walks} promenades ! Chaque membre qui a promené son compagnon peut récupérer sa récompense.`,
 };

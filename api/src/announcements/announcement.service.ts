@@ -52,6 +52,11 @@ export class AnnouncementService {
     this.post(texts.firstMeeting(a.petName, a.ownerName, b.petName, b.ownerName));
   }
 
+  /** The village reached its weekly walk target. */
+  communityGoal(walks: number): void {
+    this.post(texts.communityGoal(walks));
+  }
+
   private post(text: string): void {
     if (!this.sender.enabled) return;
     const now = this.clock.now();
