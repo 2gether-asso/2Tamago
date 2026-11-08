@@ -31,7 +31,14 @@ const envSchema = z
 
     AUTH_SECRET: z.string().min(16).optional(),
     AUTH_DEV_LOGIN: bool,
-    COOKIE_SECURE: bool,
+    /** Access tokens are short: the web app renews them quietly. */
+    AUTH_ACCESS_TTL_MINUTES: z.coerce.number().positive().default(30),
+    /** A session ends after this long without a refresh (each refresh starts the delay again). */
+    AUTH_REFRESH_IDLE_DAYS: z.coerce.number().positive().default(7),
+    /** Hard limit of a session, however active. */
+    AUTH_SESSION_MAX_DAYS: z.coerce.number().positive().default(30),
+    /** How long a session keeps refreshing after it moved to another network than its sign-in's. */
+    AUTH_ROAMING_HOURS: z.coerce.number().positive().default(6),
     /** Sentry or GlitchTip DSN; error reporting is off without it. */
     SENTRY_DSN: z.string().optional(),
     /** DSN of the browser project (a public value, sent to the web app); web tracking is off without it. */
@@ -74,7 +81,10 @@ export class AppConfig {
   readonly auth: {
     secret: string;
     devLogin: boolean;
-    cookieSecure: boolean;
+    accessTtlSeconds: number;
+    refreshIdleSeconds: number;
+    sessionMaxSeconds: number;
+    roamingSeconds: number;
     adminDiscordIds: string[];
   };
   readonly webOrigin: string;
@@ -100,7 +110,10 @@ export class AppConfig {
       // A missing secret is only accepted outside production (see the schema).
       secret: env.AUTH_SECRET ?? 'dev-only-insecure-secret-do-not-use',
       devLogin: env.AUTH_DEV_LOGIN,
-      cookieSecure: env.COOKIE_SECURE,
+      accessTtlSeconds: Math.round(env.AUTH_ACCESS_TTL_MINUTES * 60),
+      refreshIdleSeconds: Math.round(env.AUTH_REFRESH_IDLE_DAYS * 86_400),
+      sessionMaxSeconds: Math.round(env.AUTH_SESSION_MAX_DAYS * 86_400),
+      roamingSeconds: Math.round(env.AUTH_ROAMING_HOURS * 3_600),
       adminDiscordIds: env.ADMIN_DISCORD_IDS,
     };
     this.webOrigin = env.WEB_ORIGIN;

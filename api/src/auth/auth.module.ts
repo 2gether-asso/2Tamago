@@ -5,6 +5,7 @@ import { AppConfig } from '../config/app-config.js';
 import { PlayersModule } from '../players/players.module.js';
 import { AuthController } from './auth.controller.js';
 import { AuthGuard } from './auth.guard.js';
+import { AuthSessionService } from './auth-session.service.js';
 import { DiscordClient } from './discord.client.js';
 
 @Module({
@@ -17,6 +18,6 @@ import { DiscordClient } from './discord.client.js';
     PlayersModule,
   ],
   controllers: [AuthController],
-  providers: [DiscordClient, { provide: APP_GUARD, useClass: AuthGuard }],
+  providers: [DiscordClient, AuthSessionService, { provide: APP_GUARD, useClass: AuthGuard }],
 })
 export class AuthModule {}

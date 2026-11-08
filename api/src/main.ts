@@ -10,8 +10,6 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const config = app.get(AppConfig);
   initErrorReporting({ dsn: config.sentryDsn, environment: config.env });
-  // Behind the reverse proxy: trust X-Forwarded-* for client IPs (rate limits).
-  app.set('trust proxy', 1);
   setupApp(app);
   await app.listen(config.port);
 }

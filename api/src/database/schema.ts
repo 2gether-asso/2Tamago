@@ -144,3 +144,56 @@ export const gameSettings = pgTable('game_settings', {
   value: jsonb().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
+
+/**
+ * A sign-in of a browser (or other client), identified by the key it proves it owns on every
+ * refresh (DPoP). The refresh token is opaque and rotates; only its hash is stored.
+ */
+export const authSessions = pgTable(
+  'auth_sessions',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    playerId: uuid('player_id')
+      .notNull()
+      .references(() => players.id, { onDelete: 'cascade' }),
+    /** SHA-256 thumbprint (RFC 7638) of the client's public key. */
+    keyThumbprint: text('key_thumbprint').notNull(),
+    refreshHash: text('refresh_hash').notNull().unique(),
+    /** The token before the last rotation, still accepted for a few seconds (two tabs racing). */
+    previousRefreshHash: text('previous_refresh_hash'),
+    rotatedAt: timestamp('rotated_at', { withTimezone: true }).notNull().defaultNow(),
+    createdAt: createdAt(),
+    lastUsedAt: timestamp('last_used_at', { withTimezone: true }).notNull().defaultNow(),
+    /** Slides with each refresh; the session ends when the player stops playing for this long. */
+    idleExpiresAt: timestamp('idle_expires_at', { withTimezone: true }).notNull(),
+    absoluteExpiresAt: timestamp('absolute_expires_at', { withTimezone: true }).notNull(),
+    /** What the client looked like at sign-in: later refreshes are compared with it. */
+    firstIp: text('first_ip').notNull(),
+    firstNetwork: text('first_network').notNull(),
+    firstUserAgent: text('first_user_agent').notNull(),
+    /** Coarse browser and system (no version), so that browser updates do not matter. */
+    clientFamily: text('client_family').notNull(),
+    lastIp: text('last_ip').notNull(),
+    /** Since when the refreshes come from another network than the sign-in's (null: same network). */
+    roamingSince: timestamp('roaming_since', { withTimezone: true }),
+  },
+  (t) => [index('auth_sessions_player_idx').on(t.playerId)],
+);
+
+/** One-time codes handed back after Discord, redeemed with the PKCE verifier. */
+export const authCodes = pgTable('auth_codes', {
+  hash: text().primaryKey(),
+  playerId: uuid('player_id')
+    .notNull()
+    .references(() => players.id, { onDelete: 'cascade' }),
+  codeChallenge: text('code_challenge').notNull(),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+});
+
+/** Proofs already seen (key thumbprint + jti): a proof works once. */
+export const authProofs = pgTable('auth_proofs', {
+  id: text().primaryKey(),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+});
+
+export type AuthSessionRow = typeof authSessions.$inferSelect;

@@ -56,7 +56,8 @@ describe('Discord announcements (e2e)', () => {
 
   async function signIn(name: string) {
     const agent = request.agent(app.getHttpServer());
-    await agent.post('/api/auth/dev-login').send({ name }).expect(200);
+    const { body } = await agent.post('/api/auth/dev-login').send({ name }).expect(200);
+    agent.set('Authorization', `Bearer ${body.access_token}`);
     return agent;
   }
   const say = (fragment: string) => sender.messages.filter((m) => m.includes(fragment));

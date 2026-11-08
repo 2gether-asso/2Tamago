@@ -73,10 +73,11 @@ describe('2Tamago API (e2e)', () => {
     await app.close();
   });
 
-  /** Signs in and returns an agent that keeps the session cookie. */
+  /** Signs in (development login) and returns an agent that sends the access token. */
   async function signIn(name: string) {
     const agent = request.agent(app.getHttpServer());
-    await agent.post('/api/auth/dev-login').send({ name }).expect(200);
+    const { body } = await agent.post('/api/auth/dev-login').send({ name }).expect(200);
+    agent.set('Authorization', `Bearer ${body.access_token}`);
     return agent;
   }
 

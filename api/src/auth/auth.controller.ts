@@ -1,26 +1,37 @@
-import { randomBytes, timingSafeEqual } from 'node:crypto';
 import {
   Body,
   Controller,
   Get,
   HttpCode,
+  Logger,
   NotFoundException,
   Post,
   Query,
   Req,
   Res,
 } from '@nestjs/common';
-import { Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { devLoginBody, type DevLoginBody } from '@2tamago/core/contracts';
-import type { CookieOptions, Request, Response } from 'express';
+import {
+  devLoginBody,
+  refreshBody,
+  tokenBody,
+  type DevLoginBody,
+  type RefreshBody,
+  type TokenBody,
+  type TokenResponse,
+} from '@2tamago/core/contracts';
+import type { Request, Response } from 'express';
 import { captureError } from '../common/error-reporter.js';
+import { Clock } from '../common/clock.js';
 import { AppConfig } from '../config/app-config.js';
 import { PlayersService } from '../players/players.service.js';
+import { AuthError } from './auth-error.js';
+import { AuthSessionService } from './auth-session.service.js';
+import { describeClient } from './client-info.js';
+import { isPkceChallenge } from './crypto.js';
 import { DiscordClient, type DiscordIdentity } from './discord.client.js';
-import { OAUTH_STATE_COOKIE, Public, SESSION_COOKIE, readCookie } from './session.js';
-
-const SESSION_DAYS = 30;
+import { verifyDpopProof } from './dpop.js';
+import { Authenticated, CurrentSession, Public, type Session } from './session.js';
 
 @Public()
 @Controller('auth')
@@ -29,9 +40,11 @@ export class AuthController {
 
   constructor(
     private readonly config: AppConfig,
+    private readonly clock: Clock,
     private readonly jwt: JwtService,
     private readonly discord: DiscordClient,
     private readonly players: PlayersService,
+    private readonly sessions: AuthSessionService,
   ) {}
 
   /** What the login page should offer. */
@@ -44,11 +57,20 @@ export class AuthController {
     };
   }
 
+  /**
+   * Starts a Discord sign-in. The web app sends the PKCE challenge of a secret it keeps; the
+   * `state` Discord hands back is a signed value carrying it, so nothing is stored in a cookie.
+   */
   @Get('discord')
-  discordLogin(@Res() res: Response) {
-    const state = randomBytes(24).toString('base64url');
-    res.cookie(OAUTH_STATE_COOKIE, state, { ...this.cookieOptions(), maxAge: 10 * 60_000 });
-    res.redirect(this.discord.authorizeUrl(state));
+  async discordLogin(@Query('code_challenge') challenge: string | undefined, @Res() res: Response) {
+    if (!challenge || !isPkceChallenge(challenge)) {
+      return res.redirect(`${this.config.webOrigin}/login?error=state`);
+    }
+    const state = await this.jwt.signAsync(
+      { typ: 'oauth-state', cc: challenge },
+      { expiresIn: '10m' },
+    );
+    return res.redirect(this.discord.authorizeUrl(state));
   }
 
   @Get('discord/callback')
@@ -56,14 +78,10 @@ export class AuthController {
     @Query('code') code: string | undefined,
     @Query('state') state: string | undefined,
     @Query('error') providerError: string | undefined,
-    @Req() req: Request,
     @Res() res: Response,
   ) {
-    const expected = readCookie(req, OAUTH_STATE_COOKIE);
-    res.clearCookie(OAUTH_STATE_COOKIE, this.cookieOptions());
-    if (!state || !expected || !safeEqual(state, expected)) {
-      return res.redirect(`${this.config.webOrigin}/login?error=state`);
-    }
+    const challenge = await this.readState(state);
+    if (!challenge) return res.redirect(`${this.config.webOrigin}/login?error=state`);
     // The player cancelled on Discord's authorization screen (`error=access_denied`).
     if (providerError || !code) {
       return res.redirect(`${this.config.webOrigin}/login?error=denied`);
@@ -85,63 +103,95 @@ export class AuthController {
       displayName: identity.displayName,
       avatarUrl: identity.avatarUrl,
     });
-    const token = await this.startSession(
-      res,
-      player.id,
-      this.config.auth.adminDiscordIds.includes(identity.id),
-    );
-    // The token travels in the fragment, which browsers never send to a server: the web app
-    // may live on another site than the API, where a cookie would not be sent back.
-    return res.redirect(`${this.config.webOrigin}/login#token=${token}`);
+    // The browser trades this one-time code for tokens, proving it holds the PKCE secret and a key.
+    const oneTimeCode = await this.sessions.createCode(player.id, challenge);
+    return res.redirect(`${this.config.webOrigin}/login?code=${encodeURIComponent(oneTimeCode)}`);
   }
 
-  /** Development only: sign in with just a name. */
+  /** Trades the one-time code, the PKCE verifier and a DPoP proof for the first tokens. */
+  @Post('token')
+  @HttpCode(200)
+  async token(
+    @Body({ schema: tokenBody }) body: TokenBody,
+    @Req() req: Request,
+  ): Promise<TokenResponse> {
+    const proof = await this.checkProof(req);
+    const playerId = await this.sessions.redeemCode(body.code, body.code_verifier);
+    return this.sessions.start(playerId, proof, this.clientOf(req));
+  }
+
+  /** Renews the access token and rotates the refresh token (see `session-policy.ts`). */
+  @Post('refresh')
+  @HttpCode(200)
+  async refresh(
+    @Body({ schema: refreshBody }) body: RefreshBody,
+    @Req() req: Request,
+  ): Promise<TokenResponse> {
+    const proof = await this.checkProof(req);
+    try {
+      return await this.sessions.refresh(body.refresh_token, proof, this.clientOf(req));
+    } catch (error) {
+      if (error instanceof AuthError && error.code !== 'invalid_dpop') {
+        this.logger.warn(`Refresh refused (${error.code}) from ${this.clientOf(req).ip}`);
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Development only: sign in with just a name. With a DPoP proof it opens a real session
+   * (refresh token included, like the Discord flow); without, it returns only an access token.
+   */
   @Post('dev-login')
   @HttpCode(200)
   async devLogin(
     @Body({ schema: devLoginBody }) body: DevLoginBody,
-    @Res({ passthrough: true }) res: Response,
-  ) {
+    @Req() req: Request,
+  ): Promise<TokenResponse> {
     if (!this.config.auth.devLogin) throw new NotFoundException();
-    const discordId = `dev:${body.name.toLowerCase()}`;
     const player = await this.players.upsertFromLogin({
-      discordId,
+      discordId: `dev:${body.name.toLowerCase()}`,
       displayName: body.name,
       avatarUrl: null,
     });
-    const token = await this.startSession(
-      res,
-      player.id,
-      this.config.auth.adminDiscordIds.includes(discordId),
-    );
-    return { token };
+    if (!req.get('dpop')) return this.sessions.accessTokenOnly(player.id);
+    const proof = await this.checkProof(req);
+    return this.sessions.start(player.id, proof, this.clientOf(req));
   }
 
+  /** Ends this session: its refresh token stops working. */
+  @Authenticated()
   @Post('logout')
   @HttpCode(204)
-  logout(@Res({ passthrough: true }) res: Response) {
-    res.clearCookie(SESSION_COOKIE, this.cookieOptions());
+  async logout(@CurrentSession() session: Session) {
+    if (session.sessionId) await this.sessions.revoke(session.sessionId);
   }
 
-  private async startSession(res: Response, playerId: string, isAdmin: boolean): Promise<string> {
-    const token = await this.jwt.signAsync(
-      { sub: playerId, adm: isAdmin || undefined },
-      { expiresIn: `${SESSION_DAYS}d` },
-    );
-    res.cookie(SESSION_COOKIE, token, {
-      ...this.cookieOptions(),
-      maxAge: SESSION_DAYS * 24 * 3_600_000,
+  private clientOf(req: Request) {
+    return describeClient(req.ip, req.get('user-agent'));
+  }
+
+  /** The DPoP proof of this very request, made recently and never seen before. */
+  private async checkProof(req: Request) {
+    const proof = verifyDpopProof(req.get('dpop'), {
+      method: req.method,
+      path: req.path,
+      now: this.clock.now(),
     });
-    return token;
+    await this.sessions.consumeProof(proof);
+    return proof;
   }
 
-  private cookieOptions(): CookieOptions {
-    return { httpOnly: true, sameSite: 'lax', secure: this.config.auth.cookieSecure, path: '/' };
+  /** The PKCE challenge inside a `state` we signed, or null if it is not ours or expired. */
+  private async readState(state: string | undefined): Promise<string | null> {
+    if (!state) return null;
+    try {
+      const payload = await this.jwt.verifyAsync<{ typ?: string; cc?: string }>(state);
+      return payload.typ === 'oauth-state' && payload.cc && isPkceChallenge(payload.cc)
+        ? payload.cc
+        : null;
+    } catch {
+      return null;
+    }
   }
-}
-
-function safeEqual(a: string, b: string): boolean {
-  const left = Buffer.from(a);
-  const right = Buffer.from(b);
-  return left.length === right.length && timingSafeEqual(left, right);
 }

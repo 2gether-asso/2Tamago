@@ -134,6 +134,38 @@ export type RulesOverridesBody = z.infer<typeof rulesOverridesBody>;
 export const devLoginBody = z.object({
   name: z.string().trim().min(2).max(32),
 });
+
+/** `POST /auth/token`: trades the code from the sign-in redirect for tokens (PKCE verifier). */
+export const tokenBody = z.object({
+  code: z.string().min(16).max(128),
+  code_verifier: z.string().min(43).max(128),
+});
+export type TokenBody = z.infer<typeof tokenBody>;
+
+/** `POST /auth/refresh`: the refresh token comes with a DPoP proof in the `DPoP` header. */
+export const refreshBody = z.object({
+  refresh_token: z.string().min(16).max(256),
+});
+export type RefreshBody = z.infer<typeof refreshBody>;
+
+export interface TokenResponse {
+  access_token: string;
+  /** Absent when the refresh duplicated one just done: keep the refresh token you have. */
+  refresh_token?: string;
+  /** Lifetime of the access token, in seconds. */
+  expires_in: number;
+}
+
+/** Why the API refused a sign-in or a refresh (the `code` of a 401). */
+export const AUTH_ERROR_CODES = [
+  'invalid_grant',
+  'invalid_dpop',
+  'session_expired',
+  'session_suspicious',
+  'session_roaming',
+] as const;
+export type AuthErrorCode = (typeof AUTH_ERROR_CODES)[number];
+
 export const FEEDBACK_TYPES = ['bug', 'idea', 'other'] as const;
 export type FeedbackType = (typeof FEEDBACK_TYPES)[number];
 
