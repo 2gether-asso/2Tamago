@@ -20,6 +20,10 @@ export const errors = {
   'error.not_elder': 'Seul un compagnon âgé peut prendre sa retraite.',
   'error.not_night': 'Ce n’est pas encore l’heure du coucher.',
   'error.already_caressed': 'Tu as déjà caressé ce compagnon aujourd’hui.',
+  'error.already_claimed': 'Tu as déjà récupéré la récompense de cette semaine.',
+  'error.goal_not_reached': 'Le village n’a pas encore atteint son objectif.',
+  'error.no_contribution':
+    'Promène ton compagnon au moins une fois cette semaine pour y avoir droit.',
   'error.already_has_pet': 'Tu as déjà un compagnon.',
   'error.feedback_disabled': 'Les avis ne sont pas activés sur ce serveur.',
   'error.missing_item': 'Tu n’as pas cet objet.',

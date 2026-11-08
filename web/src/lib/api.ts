@@ -17,6 +17,8 @@ import type {
   PlayerProfile,
   VillagePet,
   VisitResponse,
+  ClaimResponse,
+  CommunityGoal,
   FavoriteResponse,
   WalkResponse,
 } from '@2tamago/core/contracts';
@@ -116,6 +118,9 @@ export const api = {
   caress: (petId: string) => call<ActionResponse>('POST', `/village/${petId}/caress`),
   gift: (petId: string, item: string) =>
     call<ActionResponse>('POST', `/village/${petId}/gift`, { item }),
+
+  communityGoal: () => call<CommunityGoal>('GET', '/community/goal'),
+  claimCommunityGoal: () => call<ClaimResponse>('POST', '/community/goal/claim'),
 
   activity: () => call<ActivityDto[]>('GET', '/activity'),
   adminStats: () => call<AdminStats>('GET', '/admin/stats'),

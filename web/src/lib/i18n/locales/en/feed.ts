@@ -27,6 +27,8 @@ export const feed: Record<keyof typeof fr, string> = {
 
   'activity.daily_bonus_one': 'Daily bonus: +{count} coin.',
   'activity.daily_bonus_other': 'Daily bonus: +{count} coins.',
+  'activity.community_reward_one': 'Village goal reached: +{count} coin for taking part.',
+  'activity.community_reward_other': 'Village goal reached: +{count} coins for taking part.',
   'activity.visit_caress': '{visitorName} stopped by to pet {petName}.',
   'activity.visit_gift': '{visitorName} gave {item} to {petName}.',
   'activity.encounter': 'Met {otherPetName} ({otherOwnerName}) on a walk.',

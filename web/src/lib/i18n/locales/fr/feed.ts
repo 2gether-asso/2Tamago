@@ -25,6 +25,10 @@ export const feed = {
 
   'activity.daily_bonus_one': 'Bonus du jour : +{count} pièce.',
   'activity.daily_bonus_other': 'Bonus du jour : +{count} pièces.',
+  'activity.community_reward_one':
+    'Objectif du village atteint : +{count} pièce pour ta participation.',
+  'activity.community_reward_other':
+    'Objectif du village atteint : +{count} pièces pour ta participation.',
   'activity.visit_caress': '{visitorName} est passé caresser {petName}.',
   'activity.visit_gift': '{visitorName} a offert {item} à {petName}.',
   'activity.encounter': 'Rencontre en promenade avec {otherPetName} ({otherOwnerName}).',

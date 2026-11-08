@@ -71,6 +71,8 @@ export function activityText(entry: ActivityDto): string {
         item: String(d.item) in ITEMS ? itemLabel(d.item as ItemId) : t('item.unknown'),
         petName: String(d.petName),
       });
+    case 'community_reward':
+      return t('activity.community_reward', { count: Number(d.coins) });
     case 'encounter':
       return t('activity.encounter', {
         otherPetName: String(d.otherPetName),

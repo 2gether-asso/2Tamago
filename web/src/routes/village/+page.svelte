@@ -1,4 +1,5 @@
 <script lang="ts">
+  import CommunityGoal from '#lib/components/CommunityGoal.svelte';
   import PetSprite from '#lib/components/PetSprite.svelte';
   import { api } from '#lib/api.ts';
   import { moodLabel, stageLabel } from '#lib/texts.ts';
@@ -9,6 +10,8 @@
 
 <h1>{t('village.title')}</h1>
 <p class="muted">{t('village.intro')}</p>
+
+<CommunityGoal />
 
 {#await village}
   <p class="muted">{t('common.loading')}</p>

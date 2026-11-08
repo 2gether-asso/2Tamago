@@ -20,7 +20,7 @@ const NAMESPACES: Record<string, string[]> = {
   minigame: ['minigame'],
   adopt: ['adopt'],
   profile: ['profile'],
-  social: ['village', 'visit', 'album', 'journal'],
+  social: ['village', 'goal', 'visit', 'album', 'journal'],
   shop: ['shop'],
   auth: ['login'],
   admin: ['admin'],
