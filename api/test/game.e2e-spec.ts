@@ -133,6 +133,24 @@ describe('2Tamago API (e2e)', () => {
     expect(feed.map((entry) => entry.data.event)).toContain('hatched');
   });
 
+  it('derives the night clock from the game time zone and lets a player switch the lights off', async () => {
+    const rulesNow = (await request(app.getHttpServer()).get('/api/game/rules').expect(200)).body;
+    // 2026-11-07: Paris is on UTC+1.
+    expect(rulesNow.night.clockOffsetHours).toBe(1);
+
+    const alice = await signIn('Alice');
+    await adopt(alice, 'Lune');
+    clock.advance(hours(0.5)); // hatched, 09:30 UTC = 10:30 local: broad daylight
+    await alice.post('/api/pet/actions').send({ type: 'lights', on: false }).expect(409);
+
+    clock.time = Date.UTC(2026, 10, 7, 21, 30); // 22:30 local
+    await alice.post('/api/pet/actions').send({ type: 'lights', on: false }).expect(201);
+    clock.advance(10 * 60_000);
+    const me: MeResponse = (await alice.get('/api/me').expect(200)).body;
+    expect(me.pet?.state.lightsOff).toBe(true);
+    expect(me.pet?.state.asleep).toBe(true);
+  });
+
   it('keeps traits secret while the pet is an egg, then reveals them', async () => {
     const alice = await signIn('Alice');
     const bob = await signIn('Bob');

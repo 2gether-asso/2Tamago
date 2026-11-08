@@ -3,6 +3,7 @@ import { InjectDrizzle } from '@nestjs/drizzle';
 import { eq } from 'drizzle-orm';
 import { applyRulesOverrides, withRules, type GameRules, type RulesOverrides } from '@2tamago/core';
 import { rulesOverridesBody } from '@2tamago/core/contracts';
+import { Clock, utcOffsetHours } from '../common/clock.js';
 import { AppConfig } from '../config/app-config.js';
 import type { Database } from '../database/database.js';
 import { gameSettings } from '../database/schema.js';
@@ -17,19 +18,17 @@ const REFRESH_MS = 30_000;
  */
 @Injectable()
 export class GameRulesService implements OnModuleInit, OnModuleDestroy {
-  readonly base: GameRules;
+  base: GameRules;
   private overrides: RulesOverrides = {};
   private effective: GameRules;
   private timer?: NodeJS.Timeout;
 
   constructor(
     @InjectDrizzle() private readonly db: Database,
-    config: AppConfig,
+    private readonly config: AppConfig,
+    private readonly clock: Clock,
   ) {
-    this.base = withRules({
-      timeScale: config.game.timeScale,
-      departureEnabled: config.game.departureEnabled,
-    });
+    this.base = this.buildBase();
     this.effective = this.base;
   }
 
@@ -71,7 +70,21 @@ export class GameRulesService implements OnModuleInit, OnModuleDestroy {
     this.apply(parsed.success ? parsed.data : {});
   }
 
+  /** Defaults and environment. The night follows the wall clock of `GAME_TIMEZONE`, daylight saving included. */
+  private buildBase(): GameRules {
+    const night = {
+      ...withRules().night,
+      clockOffsetHours: utcOffsetHours(this.clock.now(), this.config.game.timezone),
+    };
+    return withRules({
+      timeScale: this.config.game.timeScale,
+      departureEnabled: this.config.game.departureEnabled,
+      night,
+    });
+  }
+
   private apply(overrides: RulesOverrides) {
+    this.base = this.buildBase();
     this.overrides = overrides;
     this.effective = applyRulesOverrides(this.base, overrides);
   }
