@@ -32,6 +32,7 @@ export default defineConfig({
         // Time runs 120x faster: an egg hatches in ~3 s. Nobody leaves during the test.
         GAME_TIME_SCALE: '120',
         GAME_DEPARTURE: 'false',
+        ADMIN_DISCORD_IDS: 'dev:root',
       },
     },
     {
