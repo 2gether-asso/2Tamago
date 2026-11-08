@@ -90,4 +90,7 @@ export const SPECIES_LABELS: Record<Species, string> = {
   mochi: 'Mochi',
   pyon: 'Pyon',
   kumo: 'Kumo',
+  koro: 'Koro',
+  nyao: 'Nyao',
+  toge: 'Toge',
 };

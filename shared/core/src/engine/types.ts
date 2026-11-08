@@ -4,7 +4,7 @@
  * All timestamps are epoch milliseconds (real time).
  */
 
-export const SPECIES = ['mochi', 'pyon', 'kumo'] as const;
+export const SPECIES = ['mochi', 'pyon', 'kumo', 'koro', 'nyao', 'toge'] as const;
 export type Species = (typeof SPECIES)[number];
 
 /** Personality, rolled once per pet. Each one nudges the rules with a pro and a con (see `traits.ts`). */

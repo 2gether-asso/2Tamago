@@ -106,6 +106,76 @@
       <circle cx="100" cy="100" r="46" />
       <rect x="64" y="118" width="72" height="56" />
     </g>
+  {:else if species === 'koro'}
+    <!-- Dog-like: floppy ears and a wagging tail nub -->
+    <ellipse
+      cx="40"
+      cy="112"
+      rx="16"
+      ry="34"
+      fill={shade}
+      stroke={line}
+      stroke-width="4"
+      transform="rotate(14 40 112)"
+    />
+    <ellipse
+      cx="160"
+      cy="112"
+      rx="16"
+      ry="34"
+      fill={shade}
+      stroke={line}
+      stroke-width="4"
+      transform="rotate(-14 160 112)"
+    />
+    <ellipse
+      class="tail"
+      cx="166"
+      cy="150"
+      rx="12"
+      ry="8"
+      fill={body}
+      stroke={line}
+      stroke-width="4"
+      transform="rotate(-35 166 150)"
+    />
+    <ellipse cx="100" cy="125" rx="60" ry="56" fill={body} stroke={line} stroke-width="4" />
+  {:else if species === 'nyao'}
+    <!-- Cat-like: pointy ears and a curled tail -->
+    <path
+      class="tail"
+      d="M 150 160 C 192 158, 190 108, 170 104 C 180 118, 176 140, 146 144 Z"
+      fill={shade}
+      stroke={line}
+      stroke-width="4"
+    />
+    <path
+      d="M 46 92 L 54 30 L 96 62 Z"
+      fill={body}
+      stroke={line}
+      stroke-width="4"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M 154 92 L 146 30 L 104 62 Z"
+      fill={body}
+      stroke={line}
+      stroke-width="4"
+      stroke-linejoin="round"
+    />
+    <path d="M 56 78 L 58 46 L 80 64 Z" fill="hsl(350 80% 80%)" />
+    <path d="M 144 78 L 142 46 L 120 64 Z" fill="hsl(350 80% 80%)" />
+    <ellipse cx="100" cy="128" rx="64" ry="54" fill={body} stroke={line} stroke-width="4" />
+  {:else if species === 'toge'}
+    <!-- Hedgehog-like: a crest of spikes behind a round body -->
+    <path
+      d="M 36 142 L 24 112 L 44 114 L 38 82 L 58 94 L 62 60 L 80 78 L 100 48 L 120 78 L 138 60 L 142 94 L 162 82 L 156 114 L 176 112 L 164 142 Z"
+      fill={shade}
+      stroke={line}
+      stroke-width="4"
+      stroke-linejoin="round"
+    />
+    <ellipse cx="100" cy="130" rx="58" ry="50" fill={body} stroke={line} stroke-width="4" />
   {:else}
     <path
       d="M 36 150 C 30 80, 70 58, 100 58 C 130 58, 170 80, 164 150 C 162 176, 38 176, 36 150 Z"
@@ -231,6 +301,17 @@
             <path d="M 84 132 q 16 8 32 0" stroke-width="5" />
           {/if}
         </g>
+        {#if species === 'nyao'}
+          <g stroke={line} stroke-width="3" stroke-linecap="round" fill="none">
+            <path d="M 54 130 l -26 -4 M 54 138 l -26 6" />
+            <path d="M 146 130 l 26 -4 M 146 138 l 26 6" />
+          </g>
+          <path d="M 96 130 l 8 0 l -4 5 z" fill="hsl(350 70% 65%)" />
+        {:else if species === 'koro'}
+          <ellipse cx="100" cy="131" rx="7" ry="5" fill={line} />
+        {:else if species === 'toge'}
+          <ellipse cx="100" cy="131" rx="5" ry="4" fill={line} />
+        {/if}
         {#if form !== 'rascal'}
           <ellipse
             cx="62"
@@ -329,6 +410,11 @@
     transform-origin: 100px 180px;
     animation: wobble 3s ease-in-out infinite;
   }
+  .tail {
+    transform-box: fill-box;
+    transform-origin: left center;
+    animation: wag 1.4s ease-in-out infinite;
+  }
   .zzz {
     animation: float 2.5s ease-in-out infinite;
   }
@@ -355,6 +441,15 @@
     }
     50% {
       translate: 0 -6px;
+    }
+  }
+  @keyframes wag {
+    0%,
+    100% {
+      rotate: -8deg;
+    }
+    50% {
+      rotate: 10deg;
     }
   }
   @keyframes breathe {
@@ -431,6 +526,7 @@
   @media (prefers-reduced-motion: reduce) {
     .body,
     .wobble,
+    .tail,
     .zzz,
     .sparkle {
       animation: none;
