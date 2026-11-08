@@ -21,7 +21,7 @@ export const DAILY_REWARD_CAP = 30;
 
 export class NotEnoughCoinsError extends ConflictException {
   constructor() {
-    super({ statusCode: 409, message: 'Pas assez de pièces.', code: 'not_enough_coins' });
+    super({ statusCode: 409, code: 'not_enough_coins' });
   }
 }
 

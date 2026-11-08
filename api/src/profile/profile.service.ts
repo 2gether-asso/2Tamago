@@ -29,7 +29,6 @@ export class ProfileService {
     if (!player) {
       throw new NotFoundException({
         statusCode: 404,
-        message: 'Ce joueur est introuvable.',
         code: 'no_player',
       });
     }

@@ -89,7 +89,6 @@ export class PetsService {
     if (inserted.length === 0) {
       throw new ConflictException({
         statusCode: 409,
-        message: 'Tu as déjà un compagnon.',
         code: 'already_has_pet',
       });
     }
@@ -171,7 +170,6 @@ export class PetsService {
       if (!found) {
         throw new NotFoundException({
           statusCode: 404,
-          message: 'Aucun compagnon.',
           code: 'no_pet',
         });
       }
@@ -221,7 +219,6 @@ export class PetsService {
 function missingItem() {
   return new ConflictException({
     statusCode: 409,
-    message: 'Tu n’as pas cet objet.',
     code: 'missing_item',
   });
 }

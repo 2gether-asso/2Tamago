@@ -38,7 +38,6 @@ export class FeedbackController {
     if (!this.config.sentryDsn) {
       throw new ServiceUnavailableException({
         statusCode: 503,
-        message: 'Les avis ne sont pas activés sur ce serveur.',
         code: 'feedback_disabled',
       });
     }

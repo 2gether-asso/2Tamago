@@ -123,7 +123,6 @@ export class VillageService {
     if (!isSnack(item)) {
       throw new ConflictException({
         statusCode: 409,
-        message: 'Seules les friandises peuvent être offertes.',
         code: 'not_giftable',
       });
     }
@@ -134,7 +133,6 @@ export class VillageService {
       if (!(await this.players.takeItem(tx, viewerId, item))) {
         throw new ConflictException({
           statusCode: 409,
-          message: 'Tu n’as pas cet objet.',
           code: 'missing_item',
         });
       }
@@ -164,7 +162,6 @@ export class VillageService {
     if (ownerId === viewerId) {
       throw new ForbiddenException({
         statusCode: 403,
-        message: 'C’est ton propre compagnon !',
         code: 'own_pet',
       });
     }
@@ -189,7 +186,6 @@ export class VillageService {
 function notFound() {
   return new NotFoundException({
     statusCode: 404,
-    message: 'Ce compagnon n’est plus là.',
     code: 'no_pet',
   });
 }
