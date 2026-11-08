@@ -17,6 +17,7 @@ import {
   type PetTraits,
   type Species,
   type Stage,
+  type Stats,
   type Temperament,
 } from '../engine/types.js';
 
@@ -189,6 +190,75 @@ export interface AdminRulesResponse {
   base: GameRules;
   overrides: RulesOverrides;
   effective: GameRules;
+}
+
+/** Aggregates for one group of companions (a temperament, a species), to compare groups. */
+export interface GroupStats {
+  key: string;
+  /** Hatched companions of the group, alive or not. */
+  pets: number;
+  alive: number;
+  retired: number;
+  departed: number;
+  /** Departed over ended (retired or departed), `null` while none has ended. */
+  departureRate: number | null;
+  /** Mean life of the ended companions, in game days. */
+  avgLifespanDays: number | null;
+  /** Care mistakes per game day lived, over the whole group. */
+  mistakesPerDay: number | null;
+  /** Means over the living companions. */
+  avgBond: number | null;
+  avgHappiness: number | null;
+}
+
+export interface DailyActivity {
+  /** `YYYY-MM-DD` in the game time zone. */
+  day: string;
+  newPlayers: number;
+  caresses: number;
+  gifts: number;
+  walks: number;
+}
+
+/** What the admin sees about the whole game: adoption, activity, economy and balance. */
+export interface AdminStats {
+  generatedAt: number;
+  players: {
+    total: number;
+    newLast7Days: number;
+    /** Seen in the last 24 hours (the daily bonus counts as being seen). */
+    activeToday: number;
+    activeLast7Days: number;
+    withLivingPet: number;
+  };
+  pets: {
+    total: number;
+    hatched: number;
+    alive: number;
+    retired: number;
+    departed: number;
+    /** Living companions per stage. */
+    byStage: Record<Stage, number>;
+    /** Hatched companions per evolution form (the form they had last). */
+    byForm: Record<Form, number>;
+  };
+  /** Means over the living, hatched companions. */
+  averages: Stats & { bond: number };
+  economy: {
+    coinsInCirculation: number;
+    averageCoins: number;
+    items: { itemId: string; quantity: number }[];
+  };
+  activity: {
+    /** The last 14 days, oldest first. */
+    days: DailyActivity[];
+    encounters: number;
+  };
+  /** Species are cosmetic: their rows should look alike. Temperaments should be close, not equal. */
+  balance: {
+    byTemperament: GroupStats[];
+    bySpecies: GroupStats[];
+  };
 }
 
 export interface PlayerDto {

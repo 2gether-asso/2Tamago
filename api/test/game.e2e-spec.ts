@@ -3,6 +3,7 @@ import { Test } from '@nestjs/testing';
 import { gameHours, withRules } from '@2tamago/core';
 import type {
   ActionResponse,
+  AdminStats,
   ActivityDto,
   MeResponse,
   PlayerProfile,
@@ -198,6 +199,28 @@ describe('2Tamago API (e2e)', () => {
     await request(app.getHttpServer())
       .get('/api/players/00000000-0000-4000-8000-000000000000')
       .expect(401);
+  });
+
+  it('gives admins, and only them, the figures of the whole game', async () => {
+    const alice = await signIn('Alice');
+    const bob = await signIn('Bob');
+    const root = await signIn('Root');
+    await adopt(alice, 'Pompon');
+    await adopt(bob, 'Mochi');
+    clock.advance(hours(0.5));
+    const aliceMe: MeResponse = (await alice.get('/api/me').expect(200)).body;
+    await bob.post(`/api/village/${aliceMe.pet!.id}/caress`).expect(200);
+
+    await alice.get('/api/admin/stats').expect(403);
+    await request(app.getHttpServer()).get('/api/admin/stats').expect(401);
+
+    const stats: AdminStats = (await root.get('/api/admin/stats').expect(200)).body;
+    expect(stats.players).toMatchObject({ total: 3, withLivingPet: 2 });
+    expect(stats.pets).toMatchObject({ total: 2, hatched: 2, alive: 2 });
+    expect(stats.pets.byStage.baby).toBe(2);
+    expect(stats.activity.days).toHaveLength(14);
+    expect(stats.balance.bySpecies.find((g) => g.key === 'mochi')?.pets).toBe(2);
+    expect(stats.balance.byTemperament.reduce((sum, g) => sum + g.pets, 0)).toBe(2);
   });
 
   it('keeps traits secret while the pet is an egg, then reveals them', async () => {
