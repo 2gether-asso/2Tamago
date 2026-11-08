@@ -65,7 +65,7 @@ Makefile                Commandes courantes
 
 Deux parties, deux workflows :
 
-- **API** : `docker.yml` publie les images `ghcr.io/2gether-asso/2tamago-api` et `2tamago-web` (nginx, facultative : `--profile web`) à chaque push sur `main` (tag `latest`) et pour chaque tag `vX.Y.Z` (tags `X.Y.Z`, `X.Y`, `X`). Sur le serveur, il faut `docker-compose.yml` et `docker-compose.prod.yml` (qui l'étend), le `Makefile` (facultatif) et un `.env`. L'API écoute sur `127.0.0.1:3000` : un reverse proxy (non fourni) gère le HTTPS et la publie sur `API_ORIGIN`.
+- **API** : `docker.yml` publie les images `ghcr.io/2gether-asso/2tamago-api` et `2tamago-web` (nginx, facultative : `--profile web`) à chaque push sur `main` (tag `latest`) et pour chaque tag `vX.Y.Z` (tags `X.Y.Z`, `X.Y`, `X`). Sur le serveur, il faut `docker-compose.yml` et `docker-compose.prod.yml` (qui l'étend), le `Makefile` (facultatif) et un `.env`. L'API est publiée sur `0.0.0.0:3000` (`API_BIND=127.0.0.1` si le proxy est sur la même machine) : un reverse proxy (non fourni) gère le HTTPS et la publie sur `API_ORIGIN`.
 
   ```bash
   cp .env.example .env   # renseigner WEB_ORIGIN, API_ORIGIN, les secrets et Discord
