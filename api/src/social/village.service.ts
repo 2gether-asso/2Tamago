@@ -1,7 +1,6 @@
 import {
   ConflictException,
   ForbiddenException,
-  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -19,7 +18,7 @@ import type { ActionResponse, VillagePet, VisitResponse } from '@2tamago/core/co
 import { and, desc, eq, ne } from 'drizzle-orm';
 import { ActivityService } from '../activity/activity.service.js';
 import { Clock } from '../common/clock.js';
-import { GAME_RULES } from '../common/tokens.js';
+import { GameRulesService } from '../game/game-rules.service.js';
 import type { Database, Executor } from '../database/database.js';
 import { interactions, pets, players } from '../database/schema.js';
 import { toPetDto } from '../pets/pet-mapper.js';
@@ -37,12 +36,16 @@ const VILLAGE_SIZE = 60;
 export class VillageService {
   constructor(
     @InjectDrizzle() private readonly db: Database,
-    @Inject(GAME_RULES) private readonly rules: GameRules,
+    private readonly gameRules: GameRulesService,
     private readonly clock: Clock,
     private readonly pets: PetsService,
     private readonly players: PlayersService,
     private readonly activity: ActivityService,
   ) {}
+
+  private get rules(): GameRules {
+    return this.gameRules.current;
+  }
 
   async list(viewerId: string): Promise<VillagePet[]> {
     const rows = await this.db

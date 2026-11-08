@@ -1,9 +1,9 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { applyAction, ITEMS, isSnack, type GameRules, type ItemId } from '@2tamago/core';
 import type { WalkEncounter, WalkResponse, ActionResponse } from '@2tamago/core/contracts';
 import { aliasedTable, and, desc, eq, gt, inArray, isNull, lt, ne, or } from 'drizzle-orm';
 import { ActivityService } from '../activity/activity.service.js';
-import { GAME_RULES } from '../common/tokens.js';
+import { GameRulesService } from '../game/game-rules.service.js';
 import type { Transaction } from '../database/database.js';
 import { encounters, pets, players, walks } from '../database/schema.js';
 import { toPetDto } from '../pets/pet-mapper.js';
@@ -21,11 +21,15 @@ const SNACKS = (Object.keys(ITEMS) as ItemId[]).filter(isSnack);
 @Injectable()
 export class WalksService {
   constructor(
-    @Inject(GAME_RULES) private readonly rules: GameRules,
+    private readonly gameRules: GameRulesService,
     private readonly pets: PetsService,
     private readonly players: PlayersService,
     private readonly activity: ActivityService,
   ) {}
+
+  private get rules(): GameRules {
+    return this.gameRules.current;
+  }
 
   async start(playerId: string): Promise<ActionResponse> {
     const result = await this.pets.mutate(

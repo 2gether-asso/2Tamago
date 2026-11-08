@@ -1,4 +1,4 @@
-import { ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectDrizzle } from '@nestjs/drizzle';
 import {
   applyAction,
@@ -18,7 +18,7 @@ import type {
 import { and, desc, eq, ne, type SQL } from 'drizzle-orm';
 import { ActivityService } from '../activity/activity.service.js';
 import { Clock } from '../common/clock.js';
-import { GAME_RULES } from '../common/tokens.js';
+import { GameRulesService } from '../game/game-rules.service.js';
 import type { Database, Transaction } from '../database/database.js';
 import { pets, players, type PetRow } from '../database/schema.js';
 import { PlayersService } from '../players/players.service.js';
@@ -47,11 +47,15 @@ export interface MutationResult<T> {
 export class PetsService {
   constructor(
     @InjectDrizzle() private readonly db: Database,
-    @Inject(GAME_RULES) private readonly rules: GameRules,
+    private readonly gameRules: GameRulesService,
     private readonly clock: Clock,
     private readonly players: PlayersService,
     private readonly activity: ActivityService,
   ) {}
+
+  private get rules(): GameRules {
+    return this.gameRules.current;
+  }
 
   now(): number {
     return this.clock.now();
