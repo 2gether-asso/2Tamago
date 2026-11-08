@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 const bool = z
-  .enum(['true', 'false', '1', '0', ''])
+  .enum(['true', 'false', '1', '0'])
   .optional()
   .transform((value) => value === 'true' || value === '1');
 
@@ -15,8 +15,7 @@ const csv = z
       .filter(Boolean),
   );
 
-/** A URL, or an empty value (a variable that is set but blank, as docker compose does). */
-const optionalUrl = z.union([z.literal(''), z.url()]).optional();
+const optionalUrl = z.url().optional();
 
 const envSchema = z
   .object({
@@ -122,7 +121,10 @@ export class AppConfig {
   readonly game: { timeScale: number; departureEnabled: boolean; timezone: string };
 
   constructor(source: Record<string, string | undefined> = process.env) {
-    const env = envSchema.parse(source);
+    // A variable that is set but blank (as docker compose passes unset ones) counts as unset.
+    const env = envSchema.parse(
+      Object.fromEntries(Object.entries(source).filter(([, value]) => value !== '')),
+    );
     this.env = env.NODE_ENV;
     this.port = env.PORT;
     this.databaseUrl = databaseUrl(env);

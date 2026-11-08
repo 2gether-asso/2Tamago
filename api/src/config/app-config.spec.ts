@@ -27,6 +27,25 @@ describe('AppConfig', () => {
     expect(() => new AppConfig({ DATABASE_HOST: 'h' })).toThrow(/DATABASE_NAME/);
   });
 
+  it('applies the defaults to blank values, as docker compose passes them', () => {
+    const config = new AppConfig({
+      DATABASE_URL: '',
+      AUTH_ACCESS_TTL_MINUTES: '',
+      AUTH_DEV_LOGIN: '',
+      GAME_TIME_SCALE: '',
+      GAME_DEPARTURE: '',
+      GAME_TIMEZONE: '',
+      DISCORD_INVITE_URL: '',
+      WEB_ORIGIN: '',
+    });
+    expect(config.databaseUrl).toBe('pglite://.data/pglite');
+    expect(config.auth.accessTtlSeconds).toBe(1800);
+    expect(config.auth.devLogin).toBe(false);
+    expect(config.game).toEqual({ timeScale: 1, departureEnabled: true, timezone: 'Europe/Paris' });
+    expect(config.discordInviteUrl).toBeUndefined();
+    expect(config.webOrigin).toBe('http://localhost:4321');
+  });
+
   it('prefers DATABASE_URL over its parts', () => {
     const config = new AppConfig({ DATABASE_URL: 'postgres://a@b/c', DATABASE_HOST: 'other' });
     expect(config.databaseUrl).toBe('postgres://a@b/c');
