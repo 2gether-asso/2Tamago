@@ -1,4 +1,20 @@
-import type { Stage } from './types.js';
+import type { Stage, Temperament } from './types.js';
+
+/** Rule multipliers a temperament can apply. Missing keys mean ×1. */
+export interface TemperamentMods {
+  satietyDecay: number;
+  happinessDecay: number;
+  energyDecay: number;
+  hygieneDecay: number;
+  /** Energy regained per hour while asleep. */
+  energyRecovery: number;
+  /** Health lost per hour while sick. */
+  sickHealthLoss: number;
+  /** Bond gained per caress. */
+  caressBond: number;
+  /** Delay between two tantrums (a lower value means more tantrums). */
+  tantrumInterval: number;
+}
 
 /**
  * Every tunable number of the simulation. Durations are in *game hours*:
@@ -51,6 +67,13 @@ export interface GameRules {
    */
   departureEnabled: boolean;
 
+  /**
+   * What each temperament changes. An override replaces a temperament's whole set, so to tweak
+   * one multiplier send all of that temperament's multipliers. The defaults give each one a pro
+   * and a con (a test enforces it); an admin is free to break that.
+   */
+  temperaments: Record<Temperament, Partial<TemperamentMods>>;
+
   /** Safety cap on the number of steps simulated in one call. */
   maxStepsPerSimulation: number;
 }
@@ -87,6 +110,15 @@ export const DEFAULT_RULES: GameRules = {
   caressCooldownSeconds: 15,
 
   departureEnabled: true,
+
+  temperaments: {
+    greedy: { satietyDecay: 1.3, happinessDecay: 0.85 },
+    sleepy: { energyDecay: 1.3, energyRecovery: 1.3 },
+    cuddly: { caressBond: 1.5, happinessDecay: 1.2 },
+    prankster: { tantrumInterval: 0.7, satietyDecay: 0.85 },
+    tidy: { hygieneDecay: 0.7, energyDecay: 1.15 },
+    sturdy: { sickHealthLoss: 0.7, satietyDecay: 1.15 },
+  },
 
   maxStepsPerSimulation: 200_000,
 };

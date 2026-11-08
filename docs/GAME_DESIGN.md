@@ -86,7 +86,7 @@ Le tempérament est tiré **indépendamment de l'espèce**. Chacun a **un avanta
 | Propre      | propreté baisse ×0,7               | énergie baisse ×1,15         |
 | Costaud     | perte de santé malade ×0,7         | satiété baisse ×1,15         |
 
-Les valeurs sont dans `TEMPERAMENT_MODS` (`traits.ts`). Elles ne sont pas encore dans `GameRules`, donc pas modifiables depuis l'écran Admin.
+Les valeurs sont la règle `temperaments` de `GameRules` : un admin peut les modifier depuis l'écran Admin (JSON), par exemple `{ "temperaments": { "greedy": { "satietyDecay": 1.2, "happinessDecay": 0.85 } } }`. Une surcharge remplace **tout** le jeu de multiplicateurs du tempérament (il faut donc renvoyer tous ses multiplicateurs), chaque valeur doit rester entre ×0,5 et ×2. L'admin peut casser la règle « un avantage, un inconvénient » ; seules les valeurs par défaut sont contrôlées par un test.
 
 ## Actions
 

@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
+import { rulesOverridesBody } from '../src/contracts/index.js';
 import {
   applyAction,
+  applyRulesOverrides,
   createPet,
   gameHours,
   MOD_BETTER,
-  TEMPERAMENT_MODS,
   EYES,
   PATTERNS,
   rollTraits,
@@ -54,7 +55,7 @@ describe('temperaments', () => {
 
   for (const temperament of TEMPERAMENTS) {
     it(`${temperament} has at least one pro and one con, within bounds`, () => {
-      const mods = TEMPERAMENT_MODS[temperament];
+      const mods = rules.temperaments[temperament];
       let pros = 0;
       let cons = 0;
       for (const key of keys) {
@@ -98,5 +99,36 @@ describe('temperaments', () => {
       applyAction(petWith(temperament), { type: 'caress' }, T0 + gameHours(rules, 0.3), rules).state
         .bond;
     expect(caress('cuddly')).toBeGreaterThan(caress('sturdy'));
+  });
+});
+
+describe('temperament tuning', () => {
+  it('lets an admin retune one temperament without touching the others', () => {
+    const tuned = applyRulesOverrides(rules, {
+      temperaments: { greedy: { satietyDecay: 2 } },
+    });
+    expect(tuned.temperaments.greedy).toEqual({ satietyDecay: 2 });
+    expect(tuned.temperaments.sleepy).toEqual(rules.temperaments.sleepy);
+
+    const decayed = (r: typeof rules) => {
+      const egg = createPet({ name: 'T', species: 'mochi', color: 0, now: T0 }, r);
+      egg.traits = { temperament: 'greedy', pattern: 'plain', eyes: 'round' };
+      const baby = simulate(egg, T0 + gameHours(r, 0.2), r).state;
+      return simulate(baby, T0 + gameHours(r, 3), r).state.stats.satiety;
+    };
+    expect(decayed(tuned)).toBeLessThan(decayed(rules));
+  });
+
+  it('validates admin tunings: known temperaments and keys, bounded multipliers', () => {
+    const ok = rulesOverridesBody.safeParse({ temperaments: { cuddly: { caressBond: 1.2 } } });
+    expect(ok.success).toBe(true);
+    for (const bad of [
+      { temperaments: { nope: { caressBond: 1.2 } } },
+      { temperaments: { cuddly: { nope: 1.2 } } },
+      { temperaments: { cuddly: { caressBond: 5 } } },
+      { temperaments: { cuddly: { caressBond: 0 } } },
+    ]) {
+      expect(rulesOverridesBody.safeParse(bad).success).toBe(false);
+    }
   });
 });

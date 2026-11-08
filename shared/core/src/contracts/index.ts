@@ -8,6 +8,7 @@ import type { Alert, Mood } from '../engine/view.js';
 import type { GameRules, RulesOverrides } from '../engine/rules.js';
 import {
   SPECIES,
+  TEMPERAMENTS,
   TRICKS,
   type Form,
   type PetEvent,
@@ -15,6 +16,7 @@ import {
   type PetTraits,
   type Species,
   type Stage,
+  type Temperament,
 } from '../engine/types.js';
 
 const itemId = z.enum(ITEM_IDS as [ItemId, ...ItemId[]]);
@@ -37,6 +39,21 @@ const perStage = z
     teen: nonNegative,
     adult: nonNegative,
     elder: nonNegative,
+  })
+  .partial()
+  .strict();
+
+const modifier = z.number().min(0.5).max(2);
+const temperamentMods = z
+  .object({
+    satietyDecay: modifier,
+    happinessDecay: modifier,
+    energyDecay: modifier,
+    hygieneDecay: modifier,
+    energyRecovery: modifier,
+    sickHealthLoss: modifier,
+    caressBond: modifier,
+    tantrumInterval: modifier,
   })
   .partial()
   .strict();
@@ -76,6 +93,15 @@ export const rulesOverridesBody = z
     outingHours: nonNegative,
     caressCooldownSeconds: nonNegative,
     departureEnabled: z.boolean(),
+    temperaments: z
+      .object(
+        Object.fromEntries(TEMPERAMENTS.map((t) => [t, temperamentMods])) as Record<
+          Temperament,
+          typeof temperamentMods
+        >,
+      )
+      .partial()
+      .strict(),
   })
   .partial()
   .strict() satisfies z.ZodType<RulesOverrides>;

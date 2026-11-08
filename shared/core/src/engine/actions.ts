@@ -186,7 +186,7 @@ export function applyAction(
         state.tantrumSince = null;
         state.nextTantrumAt =
           alignToGrid(rules, at) +
-          gameHours(rules, rules.tantrumIntervalHours * modOf(state, 'tantrumInterval'));
+          gameHours(rules, rules.tantrumIntervalHours * modOf(state, rules, 'tantrumInterval'));
       } else {
         // Scolding for nothing hurts.
         add('happiness', -10);
@@ -198,7 +198,7 @@ export function applyAction(
       requireHome();
       if (caressReady(state, at, rules)) {
         add('happiness', 3);
-        state.bond = clamp(state.bond + modOf(state, 'caressBond'));
+        state.bond = clamp(state.bond + modOf(state, rules, 'caressBond'));
         state.lastCaressAt = at;
       }
       break;
