@@ -7,6 +7,22 @@
 export const SPECIES = ['mochi', 'pyon', 'kumo'] as const;
 export type Species = (typeof SPECIES)[number];
 
+/** Personality, rolled once per pet. Each one nudges the rules with a pro and a con (see `traits.ts`). */
+export const TEMPERAMENTS = ['greedy', 'sleepy', 'cuddly', 'prankster', 'tidy', 'sturdy'] as const;
+export type Temperament = (typeof TEMPERAMENTS)[number];
+
+/** Coat pattern and eye style: purely cosmetic. */
+export const PATTERNS = ['plain', 'spots', 'stripes', 'gradient'] as const;
+export type Pattern = (typeof PATTERNS)[number];
+export const EYES = ['round', 'sleepy', 'sparkle', 'sly'] as const;
+export type Eyes = (typeof EYES)[number];
+
+export interface PetTraits {
+  temperament: Temperament;
+  pattern: Pattern;
+  eyes: Eyes;
+}
+
 export const STAGES = ['egg', 'baby', 'child', 'teen', 'adult', 'elder'] as const;
 export type Stage = (typeof STAGES)[number];
 
@@ -51,6 +67,11 @@ export interface PetState {
   species: Species;
   /** Hue (0-359) used to tint the pet. */
   color: number;
+  /**
+   * Rolled at creation and revealed at hatching. Absent on pets created before traits existed:
+   * `simulate()` backfills it deterministically.
+   */
+  traits?: PetTraits;
 
   status: PetStatus;
   stage: Stage;

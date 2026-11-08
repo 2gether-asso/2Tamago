@@ -1,4 +1,5 @@
 import { alignToGrid, gameHours, stepMs, type GameRules } from './rules.js';
+import { traitsOf } from './traits.js';
 import {
   STAGES,
   type Form,
@@ -23,6 +24,7 @@ export interface SimulationResult {
 export function simulate(input: PetState, now: number, rules: GameRules): SimulationResult {
   const state = structuredClone(input);
   const events: PetEvent[] = [];
+  state.traits = traitsOf(state);
   if (state.status !== 'alive') return { state, events };
 
   const step = stepMs(rules);

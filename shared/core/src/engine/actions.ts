@@ -2,12 +2,15 @@ import { getItem, isAccessory, isSnack, type ItemId } from './catalog.js';
 import { GameError } from './errors.js';
 import { alignToGrid, gameHours, type GameRules } from './rules.js';
 import { clamp, simulate } from './simulate.js';
+import { hashSeed, rollTraits } from './traits.js';
 import { type PetEvent, type PetState, type Species, type TrickId, TRICKS } from './types.js';
 
 export interface NewPetInput {
   name: string;
   species: Species;
   color: number;
+  /** Randomness for the traits; defaults to a hash of the name and the creation time. */
+  seed?: number;
   now: number;
 }
 
@@ -19,6 +22,7 @@ export function createPet(input: NewPetInput, rules: GameRules): PetState {
     name: input.name,
     species: input.species,
     color: Math.round(clamp(input.color, 0, 359)),
+    traits: rollTraits(input.seed ?? hashSeed(`${input.name}:${input.now}`)),
     status: 'alive',
     stage: 'egg',
     form: null,
