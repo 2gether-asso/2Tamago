@@ -144,4 +144,19 @@ describe('Discord sign-in (e2e)', () => {
     const replay = await callback(agent, { code: 'ok', state }).expect(302);
     expect(replay.headers.location).toBe(`${WEB}/login?error=state`);
   });
+
+  it('lets the web app, and only it, call the API with its session cookie', async () => {
+    const allowed = await request(app.getHttpServer())
+      .options('/api/me')
+      .set('Origin', WEB)
+      .set('Access-Control-Request-Method', 'GET')
+      .expect(204);
+    expect(allowed.headers['access-control-allow-origin']).toBe(WEB);
+    expect(allowed.headers['access-control-allow-credentials']).toBe('true');
+
+    const other = await request(app.getHttpServer())
+      .get('/api/auth/config')
+      .set('Origin', 'https://evil.example');
+    expect(other.headers['access-control-allow-origin']).toBe(WEB);
+  });
 });
