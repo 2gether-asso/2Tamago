@@ -72,6 +72,6 @@ Deux parties, deux workflows :
   make prod-pull prod-up
   ```
 
-- **Front** : `pages.yml` construit le site statique et le déploie sur GitHub Pages. Réglages du dépôt : _Pages → Source : GitHub Actions_, domaine personnalisé (CNAME vers `2gether-asso.github.io`) et variable de dépôt `API_URL` (adresse publique de l'API, par exemple `https://tamago-api.2gether-asso.fr`).
+- **Front** : `pages.yml` construit le site statique et le déploie sur GitHub Pages. Réglages du dépôt : _Pages → Source : GitHub Actions_, domaine personnalisé (CNAME vers `2gether-asso.github.io`) et variable de dépôt `API_URL` (adresse publique de l'API, par exemple `https://tamago-api.2gether-asso.fr`). Variable facultative `CSP_CONNECT_SRC` : l'hôte du DSN Sentry (`SENTRY_WEB_DSN`), pour que la Content-Security-Policy laisse passer l'envoi des erreurs.
 
 Pour mettre à jour l'API, relancer `make prod-pull prod-up`. Pour une préproduction, utiliser un autre dossier avec son propre `.env` et un autre `TAG`.
