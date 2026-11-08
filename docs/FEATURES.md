@@ -86,5 +86,7 @@ Le jeu s'inspire de trois sources :
 | ✅  | Réglages du jeu en base, éditables depuis l'écran Admin (JSON), sans redéploiement                    | Durée du temps et pas fixes       |
 | 🔜  | Interface d'admin : événements, codes cadeaux, modération des noms                                    |                                   |
 | 🔜  | Sauvegardes PostgreSQL automatisées (pg_dump vers Azure Blob, comme 2Gatcha)                          |                                   |
-| ✅  | Suivi des erreurs côté API (`SENTRY_DSN`, Sentry ou GlitchTip)                                        | Pas encore côté web               |
+| ✅  | Suivi des erreurs côté API (`SENTRY_DSN`, Sentry ou GlitchTip)                                        |                                   |
+| ✅  | Suivi des erreurs côté web (`SENTRY_WEB_DSN`, chargé seulement si configuré)                          |                                   |
+| ✅  | « Donner un avis » : bug, idée ou autre, transmis à GlitchTip avec une sévérité selon le type         | Nécessite `SENTRY_DSN`            |
 | 💡  | Statistiques d'équilibrage : durée de vie moyenne, causes de départ                                   |                                   |

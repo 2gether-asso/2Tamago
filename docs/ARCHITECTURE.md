@@ -122,13 +122,14 @@ Un module Nest par domaine :
 
 | Méthode et route                                                                                     | Rôle                                                                        |
 | ---------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| `GET /health` · `GET /game/rules` · `GET /auth/config`                                               | Publiques                                                                   |
+| `GET /health` · `GET /game/rules` · `GET /auth/config` · `GET /config`                               | Publiques                                                                   |
 | `GET /auth/discord` · `GET /auth/discord/callback` · `POST /auth/dev-login` · `POST /auth/logout`    | Connexion                                                                   |
 | `GET /me`                                                                                            | Joueur, compagnon (rattrapé), inventaire et heure serveur, en un seul appel |
 | `POST /pet` · `POST /pet/actions` · `GET /album`                                                     | Adoption, actions (`{type: 'feed' \| 'play' \| …}`), album                  |
 | `POST /pet/walk` · `POST /pet/walk/return`                                                           | Promenades                                                                  |
 | `GET /village` · `GET /village/:petId` · `POST /village/:petId/caress` · `POST /village/:petId/gift` | Social                                                                      |
 | `POST /shop/buy` · `GET /activity` · `POST /activity/read`                                           | Boutique, journal                                                           |
+| `POST /feedback`                                                                                     | Avis d'un joueur (bug, idée, autre), transmis à Sentry / GlitchTip          |
 | `GET /admin/rules` · `PUT /admin/rules`                                                              | Admin : réglages du jeu en base                                             |
 
 ### Modèle de données
@@ -160,6 +161,18 @@ Le sprite écrit la silhouette de chaque espèce une seule fois (un `snippet` Sv
 ### Suivi des erreurs
 
 Avec `SENTRY_DSN` (Sentry, ou GlitchTip qui parle le même protocole), l'API signale les erreurs inattendues (5xx) via un filtre d'exceptions global ; sans la variable, rien n'est envoyé. Les refus du moteur (409) et les erreurs 4xx ne sont pas signalés.
+
+**Côté web**, le SDK `@sentry/browser` est chargé à la demande (un chunk à part) uniquement si l'API fournit un DSN. Comme le front est servi en fichiers statiques, il le lit au démarrage via `GET /api/config`, qui renvoie `SENTRY_WEB_DSN` (un DSN **public**, d'un projet navigateur distinct de celui de l'API) et `feedbackEnabled`. Le hook `init` de `hooks.client.ts` charge cette configuration ; `handleError` signale les erreurs inconnues (`kind === 'unknown'`) et le SDK capte lui-même les erreurs non interceptées et les rejets de promesses. Les erreurs levées avant la fin du chargement du SDK sont mises en attente puis envoyées. Aucune donnée personnelle n'est ajoutée.
+
+**Avis des joueurs.** La modale « Donner un avis » (bouton 💬 de l'en-tête, visible seulement si `feedbackEnabled`) envoie `POST /api/feedback` (`{ type, message, page }`, 10 à 2000 caractères, 5 envois par minute). L'API le transforme (`api/src/feedback/feedback-report.ts`) en un message Sentry au format cohérent, signalé avec le `SENTRY_DSN` de l'API :
+
+| Type  | Sévérité  | Titre                    |
+| ----- | --------- | ------------------------ |
+| Bug   | `error`   | `[Bug] première ligne`   |
+| Idée  | `info`    | `[Idée] première ligne`  |
+| Autre | `warning` | `[Autre] première ligne` |
+
+Le titre est tronqué à 80 caractères ; le texte complet, la page et le navigateur sont dans les données supplémentaires. Les étiquettes `kind:feedback`, `feedback_type` et `page` permettent de filtrer, et le joueur (identifiant et pseudo) est associé au signalement. Deux avis identiques du même type se regroupent dans une même issue (empreinte calculée sur le texte), ce qui compte les « +1 ». Sans `SENTRY_DSN`, l'API répond 503 (`feedback_disabled`) et le bouton n'est pas affiché : un avis n'est jamais perdu en silence.
 
 ## Ajouter une fonctionnalité
 
