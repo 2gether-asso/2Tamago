@@ -1,7 +1,7 @@
 import { getItem, isAccessory, isSnack, type ItemId } from './catalog.js';
 import { GameError } from './errors.js';
 import { alignToGrid, gameHours, type GameRules } from './rules.js';
-import { clamp, simulate } from './simulate.js';
+import { clamp, endVacation, simulate } from './simulate.js';
 import { isNight } from './night.js';
 import { hashSeed, modOf, rollTraits } from './traits.js';
 import { type PetEvent, type PetState, type Species, type TrickId, TRICKS } from './types.js';
@@ -67,7 +67,9 @@ export type OwnerAction =
   | { type: 'caress' }
   | { type: 'train'; trick: TrickId }
   | { type: 'equip'; item: ItemId | null }
-  | { type: 'retire' };
+  | { type: 'retire' }
+  | { type: 'startVacation' }
+  | { type: 'endVacation' };
 
 /** Actions triggered by the server: outings, and what other players do. */
 export type SystemAction =
@@ -101,6 +103,10 @@ export function applyAction(
 
   if (state.status !== 'alive') throw new GameError('pet_gone');
   if (state.stage === 'egg') throw new GameError('still_an_egg');
+  // Paused: the only thing left to do is to bring it back.
+  if (state.vacationSince != null && action.type !== 'endVacation') {
+    throw new GameError('on_vacation');
+  }
 
   const requireHome = () => {
     if (state.outing) throw new GameError('away');
@@ -250,6 +256,21 @@ export function applyAction(
       state.status = 'retired';
       state.endedAt = at;
       events.push({ type: 'retired', at });
+      break;
+    }
+    case 'startVacation': {
+      requireHome();
+      const coolingDown =
+        state.vacationEndedAt != null &&
+        at - state.vacationEndedAt < gameHours(rules, rules.vacationCooldownHours);
+      if (coolingDown) throw new GameError('vacation_cooldown');
+      state.vacationSince = at;
+      events.push({ type: 'vacation_started', at });
+      break;
+    }
+    case 'endVacation': {
+      if (state.vacationSince == null) throw new GameError('not_on_vacation');
+      endVacation(state, at, rules, events, false);
       break;
     }
     case 'startOuting': {

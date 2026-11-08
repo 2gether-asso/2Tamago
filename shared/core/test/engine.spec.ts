@@ -173,3 +173,125 @@ describe('applyAction', () => {
     expect(twice.bond).toBe(once.bond);
   });
 });
+
+describe('vacation', () => {
+  /** A baby, a few hours after hatching, at a moment aligned on the simulation grid. */
+  function child(): PetState {
+    return simulate(hatched(), T0 + h(2), rules).state;
+  }
+  const start = (pet: PetState, at = pet.simulatedAt) =>
+    applyAction(pet, { type: 'startVacation' }, at, rules);
+  const codeOf = (fn: () => unknown) => {
+    try {
+      fn();
+    } catch (error) {
+      return (error as GameError).code;
+    }
+    return undefined;
+  };
+
+  it('freezes the pet while it is away', () => {
+    const pet = child();
+    const away = start(pet).state;
+    const later = simulate(away, away.simulatedAt + h(200), rules);
+    expect(later.events).toEqual([]);
+    expect(later.state).toEqual(away);
+    expect(moodOf(later.state)).toBe('vacation');
+    expect(alertsOf({ ...later.state, stats: { ...later.state.stats, satiety: 0 } })).toEqual([]);
+  });
+
+  it('changes nothing about the life of the pet once it is back', () => {
+    const pet = child();
+    const awayFor = h(72);
+    const away = start(pet).state;
+    const back = applyAction(away, { type: 'endVacation' }, away.vacationSince! + awayFor, rules);
+    expect(back.events.map((e) => e.type)).toEqual(['vacation_ended']);
+    expect(back.state.vacationSince).toBeNull();
+    expect(back.state.stats).toEqual(pet.stats);
+
+    // The same stretch of life, with and without the vacation in the middle.
+    const lived = simulate(pet, pet.simulatedAt + h(30), rules).state;
+    const withVacation = simulate(back.state, back.state.simulatedAt + h(30), rules).state;
+    expect(withVacation.stats).toEqual(lived.stats);
+    expect(withVacation.stage).toBe(lived.stage);
+    expect(withVacation.poops).toBe(lived.poops);
+    expect(withVacation.careMistakes).toBe(lived.careMistakes);
+    expect(withVacation.sickSince === null).toBe(lived.sickSince === null);
+    // Its age did not grow while it was away.
+    expect(withVacation.bornAt - lived.bornAt).toBe(awayFor);
+  });
+
+  it('keeps the dates it was waiting for in the future', () => {
+    const pet = simulate(child(), T0 + h(5), rules).state;
+    const away = start({ ...pet, tantrumSince: pet.simulatedAt - 60_000 }).state;
+    const back = applyAction(away, { type: 'endVacation' }, away.vacationSince! + h(100), rules);
+    expect(back.state.nextPoopAt - pet.nextPoopAt).toBe(h(100));
+    expect(back.state.nextTantrumAt - pet.nextTantrumAt).toBe(h(100));
+    expect(back.state.tantrumSince! - (pet.simulatedAt - 60_000)).toBe(h(100));
+    // Nothing is due at the very moment it comes back.
+    expect(simulate(back.state, back.state.simulatedAt, rules).events).toEqual([]);
+  });
+
+  it('ends by itself at the limit, and life goes on from there', () => {
+    const pet = child();
+    const away = start(pet).state;
+    const limit = away.vacationSince! + h(rules.vacationMaxHours);
+    const { state, events } = simulate(away, limit + h(5), rules);
+    expect(state.vacationSince).toBeNull();
+    expect(events).toContainEqual({ type: 'vacation_ended', at: limit, data: { automatic: true } });
+    // Only the five hours after the limit counted.
+    const lived = simulate(pet, pet.simulatedAt + h(5), rules).state;
+    expect(state.stats).toEqual(lived.stats);
+    expect(simulate(away, limit - 1, rules).state.vacationSince).toBe(away.vacationSince);
+  });
+
+  it('refuses every action but the return while away', () => {
+    const away = start(child()).state;
+    const at = away.simulatedAt + h(1);
+    for (const action of [
+      { type: 'feed' },
+      { type: 'sleep' },
+      { type: 'clean' },
+      { type: 'caress' },
+      { type: 'retire' },
+      { type: 'startVacation' },
+      { type: 'startOuting' },
+      { type: 'visitorCaress' },
+    ] as const) {
+      expect(
+        codeOf(() => applyAction(away, action, at, rules)),
+        action.type,
+      ).toBe('on_vacation');
+    }
+    expect(codeOf(() => applyAction(child(), { type: 'endVacation' }, T0 + h(3), rules))).toBe(
+      'not_on_vacation',
+    );
+  });
+
+  it('is not for eggs, nor for a pet out on a walk', () => {
+    const egg = createPet({ name: 'Pompon', species: 'mochi', color: 120, now: T0 }, rules);
+    expect(codeOf(() => applyAction(egg, { type: 'startVacation' }, T0 + 1000, rules))).toBe(
+      'still_an_egg',
+    );
+    const grown = { ...child(), stage: 'child' as const };
+    const walking = applyAction(grown, { type: 'startOuting' }, T0 + h(2.1), rules).state;
+    expect(codeOf(() => applyAction(walking, { type: 'startVacation' }, T0 + h(2.2), rules))).toBe(
+      'away',
+    );
+  });
+
+  it('makes the owner wait between two vacations', () => {
+    // Left alone for days the pet would leave: not what this is about.
+    const kind = withRules({ departureEnabled: false });
+    const away = applyAction(child(), { type: 'startVacation' }, T0 + h(2), kind).state;
+    const home = applyAction(away, { type: 'endVacation' }, T0 + h(2 + 24), kind).state;
+    const wait = gameHours(kind, kind.vacationCooldownHours);
+    expect(
+      codeOf(() =>
+        applyAction(home, { type: 'startVacation' }, home.vacationEndedAt! + wait - 1, kind),
+      ),
+    ).toBe('vacation_cooldown');
+    const again = applyAction(home, { type: 'startVacation' }, home.vacationEndedAt! + wait, kind);
+    expect(again.state.vacationSince).toBe(home.vacationEndedAt! + wait);
+  });
+});

@@ -2,7 +2,17 @@ import { gameHours, type GameRules } from './rules.js';
 import type { PetState } from './types.js';
 
 export type Mood =
-  'egg' | 'gone' | 'retired' | 'away' | 'sleeping' | 'sick' | 'sad' | 'calling' | 'ok' | 'happy';
+  | 'egg'
+  | 'gone'
+  | 'retired'
+  | 'vacation'
+  | 'away'
+  | 'sleeping'
+  | 'sick'
+  | 'sad'
+  | 'calling'
+  | 'ok'
+  | 'happy';
 
 export type Alert = 'hungry' | 'bored' | 'tired' | 'dirty' | 'poop' | 'sick' | 'calling';
 
@@ -11,6 +21,7 @@ export function moodOf(state: PetState): Mood {
   if (state.status === 'gone') return 'gone';
   if (state.status === 'retired') return 'retired';
   if (state.stage === 'egg') return 'egg';
+  if (state.vacationSince != null) return 'vacation';
   if (state.outing) return 'away';
   if (state.asleep) return 'sleeping';
   if (state.sickSince !== null) return 'sick';
@@ -25,6 +36,7 @@ export function moodOf(state: PetState): Mood {
 /** What the owner should take care of now. */
 export function alertsOf(state: PetState): Alert[] {
   if (state.status !== 'alive' || state.stage === 'egg' || state.outing) return [];
+  if (state.vacationSince != null) return [];
   const s = state.stats;
   const alerts: Alert[] = [];
   if (state.sickSince !== null) alerts.push('sick');

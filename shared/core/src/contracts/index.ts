@@ -96,6 +96,8 @@ export const rulesOverridesBody = z
     tantrumIntervalHours: positive,
     tantrumWindowHours: nonNegative,
     outingHours: nonNegative,
+    vacationMaxHours: positive,
+    vacationCooldownHours: nonNegative,
     caressCooldownSeconds: nonNegative,
     departureEnabled: z.boolean(),
     night: z
@@ -201,6 +203,8 @@ export const ownerActionBody = z.discriminatedUnion('type', [
   z.object({ type: z.literal('train'), trick: z.enum(TRICKS) }),
   z.object({ type: z.literal('equip'), item: itemId.nullable() }),
   z.object({ type: z.literal('retire') }),
+  z.object({ type: z.literal('startVacation') }),
+  z.object({ type: z.literal('endVacation') }),
 ]);
 export type OwnerActionBody = z.infer<typeof ownerActionBody>;
 

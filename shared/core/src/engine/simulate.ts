@@ -29,6 +29,13 @@ export function simulate(input: PetState, now: number, rules: GameRules): Simula
   if (state.stage !== 'egg') state.traits = traitsOf(state);
   if (state.status !== 'alive') return { state, events };
 
+  if (state.vacationSince != null) {
+    // Paused: nothing happens, until the vacation reaches its limit and ends by itself.
+    const limit = state.vacationSince + gameHours(rules, rules.vacationMaxHours);
+    if (now < limit) return { state, events };
+    endVacation(state, limit, rules, events, true);
+  }
+
   const step = stepMs(rules);
   const target = alignToGrid(rules, now);
   let t = alignToGrid(rules, state.simulatedAt);
@@ -42,6 +49,36 @@ export function simulate(input: PetState, now: number, rules: GameRules): Simula
   }
   state.simulatedAt = state.status === 'alive' ? Math.max(t, state.simulatedAt) : t;
   return { state, events };
+}
+
+/**
+ * Brings the pet back from vacation at `at`. The time spent away did not count: every date the
+ * pet is waiting for (growth, poop, tantrum, sickness…) moves by as much, so nothing is due
+ * the moment it comes back.
+ */
+export function endVacation(
+  state: PetState,
+  at: number,
+  rules: GameRules,
+  events: PetEvent[],
+  automatic: boolean,
+): void {
+  const away = Math.max(0, at - (state.vacationSince ?? at));
+  // `MAX_SAFE_INTEGER` stands for "never" (an egg has no poop to wait for).
+  const later = (time: number) => (time >= Number.MAX_SAFE_INTEGER ? time : time + away);
+  state.bornAt += away;
+  state.stageStartedAt += away;
+  state.nextPoopAt = later(state.nextPoopAt);
+  state.nextTantrumAt = later(state.nextTantrumAt);
+  if (state.sickSince !== null) state.sickSince += away;
+  if (state.tantrumSince !== null) state.tantrumSince += away;
+  for (const tracker of Object.values(state.needs)) {
+    if (tracker) tracker.since += away;
+  }
+  state.simulatedAt = Math.max(state.simulatedAt, alignToGrid(rules, at));
+  state.vacationSince = null;
+  state.vacationEndedAt = at;
+  events.push({ type: 'vacation_ended', at, data: { automatic } });
 }
 
 function tick(state: PetState, t: number, rules: GameRules, events: PetEvent[]): void {

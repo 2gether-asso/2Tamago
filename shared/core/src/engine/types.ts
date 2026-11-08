@@ -119,6 +119,14 @@ export interface PetState {
 
   /** The owner switched the lights off for the night. Absent (or false) = lights on. */
   lightsOff?: boolean;
+
+  /**
+   * Vacation: since when the pet is paused (the simulation stands still, and `simulate()` ends
+   * it by itself after `vacationMaxHours`). Absent (or null) = not on vacation.
+   */
+  vacationSince?: number | null;
+  /** When the last vacation ended, for the cooldown before the next one. */
+  vacationEndedAt?: number | null;
 }
 
 export type PetEventType =
@@ -134,7 +142,9 @@ export type PetEventType =
   | 'attention_ignored'
   | 'trick_level_up'
   | 'departed'
-  | 'retired';
+  | 'retired'
+  | 'vacation_started'
+  | 'vacation_ended';
 
 export interface PetEvent {
   type: PetEventType;
