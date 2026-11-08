@@ -120,18 +120,19 @@ Un module Nest par domaine :
 
 ### Routes (`/api/…`)
 
-| Méthode et route                                                                                     | Rôle                                                                        |
-| ---------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| `GET /health` · `GET /game/rules` · `GET /auth/config` · `GET /config`                               | Publiques                                                                   |
-| `GET /auth/discord` · `GET /auth/discord/callback` · `POST /auth/dev-login` · `POST /auth/logout`    | Connexion                                                                   |
-| `GET /me`                                                                                            | Joueur, compagnon (rattrapé), inventaire et heure serveur, en un seul appel |
-| `POST /pet` · `POST /pet/actions` · `GET /album`                                                     | Adoption, actions (`{type: 'feed' \| 'play' \| …}`), album                  |
-| `POST /pet/walk` · `POST /pet/walk/return`                                                           | Promenades                                                                  |
-| `GET /village` · `GET /village/:petId` · `POST /village/:petId/caress` · `POST /village/:petId/gift` | Social                                                                      |
-| `POST /shop/buy` · `GET /activity` · `POST /activity/read`                                           | Boutique, journal                                                           |
-| `GET /players/:playerId`                                                                             | Profil : joueur, statistiques, compagnon vivant                             |
-| `POST /feedback`                                                                                     | Avis d'un joueur (bug, idée, autre), transmis à Sentry / GlitchTip          |
-| `GET /admin/rules` · `PUT /admin/rules`                                                              | Admin : réglages du jeu en base                                             |
+| Méthode et route                                                                                     | Rôle                                                                                  |
+| ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `GET /health` · `GET /game/rules` · `GET /auth/config` · `GET /config`                               | Publiques                                                                             |
+| `GET /auth/discord` · `GET /auth/discord/callback` · `POST /auth/dev-login` · `POST /auth/logout`    | Connexion                                                                             |
+| `GET /me`                                                                                            | Joueur, compagnon (rattrapé), inventaire et heure serveur, en un seul appel           |
+| `POST /pet` · `POST /pet/actions` · `GET /album`                                                     | Adoption, actions (`{type: 'feed' \| 'play' \| …}`), album                            |
+| `POST /pet/walk` · `POST /pet/walk/return`                                                           | Promenades                                                                            |
+| `GET /village` · `GET /village/:petId` · `POST /village/:petId/caress` · `POST /village/:petId/gift` | Social                                                                                |
+| `POST /shop/buy` · `GET /activity` · `POST /activity/read`                                           | Boutique, journal                                                                     |
+| `GET /players/:playerId`                                                                             | Profil : joueur, statistiques, compagnon vivant                                       |
+| `POST /feedback`                                                                                     | Avis d'un joueur (bug, idée, autre), transmis à Sentry / GlitchTip                    |
+| `GET /admin/stats`                                                                                   | Admin : chiffres du jeu entier (joueurs, compagnons, économie, activité, équilibrage) |
+| `GET /admin/rules` · `PUT /admin/rules`                                                              | Admin : réglages du jeu en base                                                       |
 
 ### Modèle de données
 
@@ -139,22 +140,28 @@ Un module Nest par domaine :
 
 ## Frontend (`web/src`)
 
-| Emplacement                       | Rôle                                                                                                                              |
-| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `lib/api.ts`                      | Client `fetch` typé par les contrats, avec une `ApiError` qui porte le `code`                                                     |
-| `lib/game.svelte.ts`              | Store de jeu en runes : instantané reçu de l'API, prédiction locale avec `simulate()`, actions, minuteurs                         |
-| `lib/components/PetSprite.svelte` | Rendu SVG du compagnon (espèce, stade, forme, humeur, accessoire, motif et yeux des traits) et détection des caresses au pointeur |
-| `lib/theme.svelte.ts`             | Préférence jour / nuit / automatique, mémorisée dans `localStorage`                                                               |
-| `app.css`                         | Jetons de design et styles de base (voir ci-dessous)                                                                              |
-| `lib/i18n/`                       | Traductions françaises et anglaises : `t()`, langue courante, un module par domaine dans `locales/` (voir [I18N.md](I18N.md))     |
-| `lib/texts.ts`                    | Mise en phrases des noms du jeu, événements, journal et notices de l'API, dans la langue courante                                 |
-| `routes/`                         | `/` (maison), `/login`, `/village`, `/village/[petId]`, `/players/[id]` (profil), `/shop`, `/journal`, `/album`                   |
+| Emplacement                       | Rôle                                                                                                                                        |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `lib/api.ts`                      | Client `fetch` typé par les contrats, avec une `ApiError` qui porte le `code`                                                               |
+| `lib/game.svelte.ts`              | Store de jeu en runes : instantané reçu de l'API, prédiction locale avec `simulate()`, actions, minuteurs                                   |
+| `lib/components/PetSprite.svelte` | Rendu SVG du compagnon (espèce, stade, forme, humeur, accessoire, motif et yeux des traits) et détection des caresses au pointeur           |
+| `lib/theme.svelte.ts`             | Préférence jour / nuit / automatique, mémorisée dans `localStorage`                                                                         |
+| `app.css`                         | Jetons de design et styles de base (voir ci-dessous)                                                                                        |
+| `lib/i18n/`                       | Traductions françaises et anglaises : `t()`, langue courante, un module par domaine dans `locales/` (voir [I18N.md](I18N.md))               |
+| `lib/texts.ts`                    | Mise en phrases des noms du jeu, événements, journal et notices de l'API, dans la langue courante                                           |
+| `routes/`                         | `/` (maison), `/login`, `/village`, `/village/[petId]`, `/players/[id]` (profil), `/admin` et `/admin/stats`, `/shop`, `/journal`, `/album` |
 
 ### Apparence et thèmes
 
 `app.css` définit les jetons (couleurs, rayons, polices) : la palette violet / cyan / rose et la police de marque Bungee sont celles des autres projets 2GETHER (2Gatcha), avec un thème jour pastel et un thème nuit « nébuleuse ». Inter et Bungee sont auto-hébergées (Fontsource). Le thème suit le système, sauf si `data-theme="light"` ou `"dark"` est posé sur `<html>` ; un petit script dans `app.html` l'applique avant le premier affichage pour éviter un flash. Les composants n'utilisent que des variables (`--surface`, `--accent`, `--scene-top`…), jamais de couleurs en dur, pour suivre le thème.
 
 Le sprite écrit la silhouette de chaque espèce une seule fois (un `snippet` Svelte) et la réutilise comme `clipPath` pour y découper les motifs. Pour ajouter une espèce : l'ajouter à `SPECIES` et `SPECIES_LABELS` dans le moteur, puis dessiner sa silhouette dans `PetSprite.svelte`. Les traits (tirage, tempéraments) sont dans `shared/core/src/engine/traits.ts`.
+
+### Statistiques admin
+
+`GET /api/admin/stats` (admins seulement) alimente l'onglet « Statistiques » de l'écran Admin. `AdminStatsService` (`api/src/game/`) lit les tables, remet les compagnons vivants à l'heure (lecture seule) et confie le tout à `buildAdminStats` (`admin-stats.ts`), une fonction **pure** testée sans base. Elle donne : les joueurs (inscrits, actifs aujourd'hui et sur 7 jours, nouveaux), les compagnons (par statut, stade et forme, moyennes des besoins), l'économie (pièces, objets dans les sacs), l'activité des 14 derniers jours (nouveaux joueurs, caresses, cadeaux, promenades) et l'**équilibrage**.
+
+L'équilibrage regroupe les compagnons éclos par tempérament et par espèce : effectif, vivants, retraités, partis, taux de départ, vie moyenne, erreurs de soin par jour de jeu, lien et bonheur moyens. L'écran colore une valeur qui s'écarte de plus de 25 % de la moyenne des groupes (groupes de moins de 5 compagnons ignorés). Les espèces étant purement visuelles, leurs lignes doivent se ressembler : un écart signale un problème. Les tempéraments, eux, doivent être proches sans être identiques ; pour corriger, on ajuste `temperaments` dans les réglages (voir GAME_DESIGN.md). Le service charge tous les compagnons en mémoire : suffisant pour quelques centaines de joueurs, au-delà il faudra déplacer les sommes en SQL. « Actif aujourd'hui » s'appuie sur `last_seen_at`, mis à jour à la connexion et à la première visite du jour (bonus quotidien).
 
 ### Réglages du jeu en base
 
