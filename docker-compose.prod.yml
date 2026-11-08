@@ -1,47 +1,44 @@
-# Production (or staging) stack, from the published images. Self-contained: the
-# server only needs this file and a .env (see .env.example).
+# Production (or staging) stack, from the published images. It extends the services
+# of docker-compose.yml, so the server needs both files and a .env (see .env.example).
 #   docker compose -f docker-compose.prod.yml pull
 #   docker compose -f docker-compose.prod.yml up -d
 # For a staging instance, use another directory or project name (-p) and .env.
-# Only the API runs here, on 127.0.0.1:${API_PORT}: a reverse proxy in front of it
-# terminates HTTPS. The web app is static (GitHub Pages).
+# The API listens on 127.0.0.1:${API_PORT}: a reverse proxy in front of it terminates
+# HTTPS. The web app is static (GitHub Pages); the web image is optional (profile `web`).
 name: 2tamago-prod
 
 services:
   db:
-    image: postgres:17-alpine
+    extends:
+      file: docker-compose.yml
+      service: db
     restart: unless-stopped
     environment:
-      POSTGRES_USER: tamago
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
-      POSTGRES_DB: tamago
-    volumes:
-      - db-data:/var/lib/postgresql/data
-    healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U tamago']
-      interval: 5s
-      timeout: 5s
-      retries: 10
 
   # One-shot deployment step: applies the migrations, then the API starts.
   migrate:
+    extends:
+      file: docker-compose.yml
+      service: migrate
+    build: !reset null
     image: ${REGISTRY:-ghcr.io/2gether-asso}/2tamago-api:${TAG:-latest}
-    command: ['node', 'dist/migrate.js']
     environment:
       NODE_ENV: production
-      DATABASE_URL: postgres://tamago:${POSTGRES_PASSWORD}@db:5432/tamago
-    depends_on:
-      db:
-        condition: service_healthy
+      DATABASE_URL: postgres://tamago:${POSTGRES_PASSWORD:?}@db:5432/tamago
 
   api:
+    extends:
+      file: docker-compose.yml
+      service: api
+    build: !reset null
     image: ${REGISTRY:-ghcr.io/2gether-asso}/2tamago-api:${TAG:-latest}
     restart: unless-stopped
     environment:
       NODE_ENV: production
-      DATABASE_URL: postgres://tamago:${POSTGRES_PASSWORD}@db:5432/tamago
-      DATABASE_AUTO_MIGRATE: 'false'
+      DATABASE_URL: postgres://tamago:${POSTGRES_PASSWORD:?}@db:5432/tamago
       AUTH_SECRET: ${AUTH_SECRET:?AUTH_SECRET is required (32+ characters)}
+      AUTH_DEV_LOGIN: 'false'
       COOKIE_SECURE: 'true'
       # Where the web app is served (CORS, and where sign-in sends players back).
       WEB_ORIGIN: ${WEB_ORIGIN:?WEB_ORIGIN is required, for example https://tamago.example.org}
@@ -49,19 +46,20 @@ services:
       DISCORD_CLIENT_SECRET: ${DISCORD_CLIENT_SECRET:?}
       DISCORD_GUILD_ID: ${DISCORD_GUILD_ID:?}
       DISCORD_REDIRECT_URI: ${API_ORIGIN:?API_ORIGIN is required, for example https://api.example.org}/api/auth/discord/callback
-      DISCORD_INVITE_URL: ${DISCORD_INVITE_URL:-}
-      DISCORD_WEBHOOK_URL: ${DISCORD_WEBHOOK_URL:-}
-      ADMIN_DISCORD_IDS: ${ADMIN_DISCORD_IDS:-}
-      SENTRY_DSN: ${SENTRY_DSN:-}
-      SENTRY_WEB_DSN: ${SENTRY_WEB_DSN:-}
-      GAME_TIME_SCALE: ${GAME_TIME_SCALE:-1}
-      GAME_DEPARTURE: ${GAME_DEPARTURE:-true}
-      GAME_TIMEZONE: ${GAME_TIMEZONE:-Europe/Paris}
-    ports:
+    ports: !override
       - '${API_BIND:-127.0.0.1}:${API_PORT:-3000}:3000'
-    depends_on:
-      migrate:
-        condition: service_completed_successfully
+
+  # Optional: the web app on the same origin as the API, instead of GitHub Pages.
+  web:
+    extends:
+      file: docker-compose.yml
+      service: web
+    build: !reset null
+    image: ${REGISTRY:-ghcr.io/2gether-asso}/2tamago-web:${TAG:-latest}
+    restart: unless-stopped
+    profiles: [web]
+    ports: !override
+      - '${WEB_BIND:-127.0.0.1}:${WEB_PORT:-8080}:80'
 
 volumes:
   db-data:
