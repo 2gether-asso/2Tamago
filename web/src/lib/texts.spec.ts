@@ -4,6 +4,9 @@ import { activityText, eventText } from './texts.ts';
 describe('texts', () => {
   it('describes pet events', () => {
     expect(eventText({ type: 'hatched', at: 0 }, 'Pompon')).toBe('Pompon est sorti de son œuf !');
+    expect(eventText({ type: 'hatched', at: 0, data: { temperament: 'greedy' } }, 'Pompon')).toBe(
+      'Pompon est sorti de son œuf ! Tempérament : gourmand.',
+    );
     expect(eventText({ type: 'evolved', at: 0, data: { to: 'child' } }, 'Pompon')).toContain(
       'Enfant',
     );

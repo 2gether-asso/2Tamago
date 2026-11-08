@@ -1,4 +1,4 @@
-import type { Species, Stats, TrickId } from './types.js';
+import type { Species, Stats, Temperament, TrickId } from './types.js';
 
 /** Shop and inventory items. Labels are the French texts shown in the game. */
 
@@ -93,4 +93,14 @@ export const SPECIES_LABELS: Record<Species, string> = {
   koro: 'Koro',
   nyao: 'Nyao',
   toge: 'Toge',
+};
+
+/** French label and a one-line "pro, but con" hint per temperament. */
+export const TEMPERAMENT_LABELS: Record<Temperament, { label: string; hint: string }> = {
+  greedy: { label: 'Gourmand', hint: 'A vite faim, mais garde le moral.' },
+  sleepy: { label: 'Dormeur', hint: 'Se fatigue vite, mais récupère vite aussi.' },
+  cuddly: { label: 'Câlin', hint: 'Se lie plus fort à chaque caresse, mais boude plus vite.' },
+  prankster: { label: 'Farceur', hint: 'Fait plus de caprices, mais mange moins.' },
+  tidy: { label: 'Propre', hint: 'Reste propre plus longtemps, mais s’épuise plus vite.' },
+  sturdy: { label: 'Costaud', hint: 'Résiste mieux à la maladie, mais a plus d’appétit.' },
 };

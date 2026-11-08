@@ -5,6 +5,7 @@
     isAccessory,
     isSnack,
     SPECIES_LABELS,
+    TEMPERAMENT_LABELS,
     TRICK_LABELS,
     traitsOf,
     TRICKS,
@@ -98,6 +99,12 @@
         {#if pet.form}· {FORM_LABELS[pet.form]}{/if}
         · {game.rules ? ageInDays(pet, now, game.rules) : 0} j
       </p>
+      {#if pet.stage !== 'egg'}
+        {@const temperament = TEMPERAMENT_LABELS[traitsOf(pet).temperament]}
+        <p class="temperament" title={temperament.hint}>
+          {temperament.label} <span class="muted">· {temperament.hint}</span>
+        </p>
+      {/if}
       <p class="mood">{MOOD_LABELS[game.mood ?? 'ok']}</p>
       <div class="alerts">
         {#each game.alerts as alert (alert)}<span class="chip">{ALERT_LABELS[alert]}</span>{/each}
@@ -296,6 +303,12 @@
   }
   .mood {
     font-weight: bold;
+  }
+  .temperament {
+    margin: 0.2rem 0 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--accent);
   }
   .alerts {
     display: flex;

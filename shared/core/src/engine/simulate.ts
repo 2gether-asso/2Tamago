@@ -48,7 +48,7 @@ function tick(state: PetState, t: number, rules: GameRules, events: PetEvent[]):
   if (state.stage === 'egg') {
     if (t - state.stageStartedAt >= gameHours(rules, rules.stageHours.egg ?? 0)) {
       hatch(state, t, rules);
-      events.push({ type: 'hatched', at: t });
+      events.push({ type: 'hatched', at: t, data: { temperament: traitsOf(state).temperament } });
     }
     return;
   }

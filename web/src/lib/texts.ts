@@ -1,9 +1,11 @@
 import {
   ITEMS,
+  TEMPERAMENT_LABELS,
   TRICK_LABELS,
   type ItemId,
   type PetEvent,
   type Stage,
+  type Temperament,
   type TrickId,
 } from '@2tamago/core';
 import type { Alert, Form, Mood } from '@2tamago/core';
@@ -49,10 +51,15 @@ export const ALERT_LABELS: Record<Alert, string> = {
   calling: 'Fait un caprice',
 };
 
+function hatchedTemperament(event: PetEvent): string {
+  const temperament = TEMPERAMENT_LABELS[event.data?.temperament as Temperament];
+  return temperament ? ` Tempérament : ${temperament.label.toLowerCase()}.` : '';
+}
+
 export function eventText(event: PetEvent, name: string): string | null {
   switch (event.type) {
     case 'hatched':
-      return `${name} est sorti de son œuf !`;
+      return `${name} est sorti de son œuf !${hatchedTemperament(event)}`;
     case 'evolved':
       return `${name} a grandi : ${STAGE_LABELS[event.data?.to as Stage] ?? ''} !`;
     case 'fell_ill':
