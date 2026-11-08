@@ -1,4 +1,11 @@
-import { EYES, PATTERNS, TEMPERAMENTS, type PetState, type PetTraits } from './types.js';
+import {
+  EYES,
+  PATTERNS,
+  TEMPERAMENTS,
+  type PetState,
+  type PetTraits,
+  type Temperament,
+} from './types.js';
 
 /** Small seeded PRNG (mulberry32): same seed, same sequence, on every machine. */
 function prng(seed: number): () => number {
@@ -37,4 +44,51 @@ export function legacyTraits(state: Pick<PetState, 'name' | 'bornAt'>): PetTrait
 /** The pet's traits, whether stored or backfilled. */
 export function traitsOf(state: Pick<PetState, 'name' | 'bornAt' | 'traits'>): PetTraits {
   return state.traits ?? legacyTraits(state);
+}
+
+/** Rule multipliers a temperament can apply. Missing keys mean ×1. */
+export interface TemperamentMods {
+  satietyDecay: number;
+  happinessDecay: number;
+  energyDecay: number;
+  hygieneDecay: number;
+  /** Energy regained per hour while asleep. */
+  energyRecovery: number;
+  /** Health lost per hour while sick. */
+  sickHealthLoss: number;
+  /** Bond gained per caress. */
+  caressBond: number;
+  /** Delay between two tantrums (a lower value means more tantrums). */
+  tantrumInterval: number;
+}
+export type ModKey = keyof TemperamentMods;
+
+/** Whether a higher or a lower multiplier is good for the pet and its owner. */
+export const MOD_BETTER: Record<ModKey, 'higher' | 'lower'> = {
+  satietyDecay: 'lower',
+  happinessDecay: 'lower',
+  energyDecay: 'lower',
+  hygieneDecay: 'lower',
+  energyRecovery: 'higher',
+  sickHealthLoss: 'lower',
+  caressBond: 'higher',
+  tantrumInterval: 'higher',
+};
+
+/**
+ * Every temperament has at least one pro and one con (enforced by a test), so no egg is a
+ * "bad" egg. Temperaments are independent of the species: no species is better than another.
+ */
+export const TEMPERAMENT_MODS: Record<Temperament, Partial<TemperamentMods>> = {
+  greedy: { satietyDecay: 1.3, happinessDecay: 0.85 },
+  sleepy: { energyDecay: 1.3, energyRecovery: 1.3 },
+  cuddly: { caressBond: 1.5, happinessDecay: 1.2 },
+  prankster: { tantrumInterval: 0.7, satietyDecay: 0.85 },
+  tidy: { hygieneDecay: 0.7, energyDecay: 1.15 },
+  sturdy: { sickHealthLoss: 0.7, satietyDecay: 1.15 },
+};
+
+/** The multiplier a pet's temperament applies to a rule (1 when it does not). */
+export function modOf(state: Pick<PetState, 'name' | 'bornAt' | 'traits'>, key: ModKey): number {
+  return TEMPERAMENT_MODS[traitsOf(state).temperament][key] ?? 1;
 }

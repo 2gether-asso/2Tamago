@@ -1,5 +1,5 @@
 import { alignToGrid, gameHours, stepMs, type GameRules } from './rules.js';
-import { traitsOf } from './traits.js';
+import { modOf, traitsOf } from './traits.js';
 import {
   STAGES,
   type Form,
@@ -76,25 +76,29 @@ function hatch(state: PetState, t: number, rules: GameRules): void {
     discipline: 0,
   };
   state.nextPoopAt = t + gameHours(rules, rules.poopIntervalHours);
-  state.nextTantrumAt = t + gameHours(rules, rules.tantrumIntervalHours);
+  state.nextTantrumAt =
+    t + gameHours(rules, rules.tantrumIntervalHours * modOf(state, 'tantrumInterval'));
 }
 
 function decay(state: PetState, dtH: number, rules: GameRules): void {
   const s = state.stats;
   const k = rules.stageNeediness[state.stage] * dtH;
   const messLoss = state.poops * rules.hygieneLossPerPoopPerHour * dtH;
+  const satietyK = k * modOf(state, 'satietyDecay');
+  const happinessK = k * modOf(state, 'happinessDecay');
+  const hygieneK = k * modOf(state, 'hygieneDecay');
   if (state.asleep) {
     const d = rules.asleepDecayPerHour;
-    s.satiety -= d.satiety * k;
-    s.happiness -= d.happiness * k;
-    s.hygiene -= d.hygiene * k + messLoss;
-    s.energy += rules.energyRecoveryPerHour * dtH;
+    s.satiety -= d.satiety * satietyK;
+    s.happiness -= d.happiness * happinessK;
+    s.hygiene -= d.hygiene * hygieneK + messLoss;
+    s.energy += rules.energyRecoveryPerHour * modOf(state, 'energyRecovery') * dtH;
   } else {
     const d = rules.awakeDecayPerHour;
-    s.satiety -= d.satiety * k;
-    s.happiness -= d.happiness * k;
-    s.hygiene -= d.hygiene * k + messLoss;
-    s.energy -= d.energy * k;
+    s.satiety -= d.satiety * satietyK;
+    s.happiness -= d.happiness * happinessK;
+    s.hygiene -= d.hygiene * hygieneK + messLoss;
+    s.energy -= d.energy * k * modOf(state, 'energyDecay');
   }
   s.discipline -= rules.disciplineDecayPerHour * dtH;
   clampStats(s);
@@ -158,7 +162,8 @@ function health(
   events: PetEvent[],
 ): void {
   const s = state.stats;
-  if (state.sickSince !== null) s.health -= rules.sickHealthLossPerHour * dtH;
+  if (state.sickSince !== null)
+    s.health -= rules.sickHealthLossPerHour * modOf(state, 'sickHealthLoss') * dtH;
   if (s.satiety <= 0) s.health -= rules.starvingHealthLossPerHour * dtH;
   if (state.sickSince === null && s.satiety > 40 && s.happiness > 30) {
     s.health += rules.healthRegenPerHour * dtH;
@@ -208,7 +213,8 @@ function tantrum(state: PetState, t: number, rules: GameRules, events: PetEvent[
       // Nobody reacted: the pet learns it can get away with it.
       state.tantrumSince = null;
       state.stats.discipline = clamp(state.stats.discipline - 10);
-      state.nextTantrumAt = t + gameHours(rules, rules.tantrumIntervalHours);
+      state.nextTantrumAt =
+        t + gameHours(rules, rules.tantrumIntervalHours * modOf(state, 'tantrumInterval'));
       events.push({ type: 'attention_ignored', at: t });
     }
     return;

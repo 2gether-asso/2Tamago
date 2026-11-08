@@ -2,7 +2,7 @@ import { getItem, isAccessory, isSnack, type ItemId } from './catalog.js';
 import { GameError } from './errors.js';
 import { alignToGrid, gameHours, type GameRules } from './rules.js';
 import { clamp, simulate } from './simulate.js';
-import { hashSeed, rollTraits } from './traits.js';
+import { hashSeed, modOf, rollTraits } from './traits.js';
 import { type PetEvent, type PetState, type Species, type TrickId, TRICKS } from './types.js';
 
 export interface NewPetInput {
@@ -184,7 +184,9 @@ export function applyAction(
       if (state.tantrumSince !== null) {
         add('discipline', 25);
         state.tantrumSince = null;
-        state.nextTantrumAt = alignToGrid(rules, at) + gameHours(rules, rules.tantrumIntervalHours);
+        state.nextTantrumAt =
+          alignToGrid(rules, at) +
+          gameHours(rules, rules.tantrumIntervalHours * modOf(state, 'tantrumInterval'));
       } else {
         // Scolding for nothing hurts.
         add('happiness', -10);
@@ -196,7 +198,7 @@ export function applyAction(
       requireHome();
       if (caressReady(state, at, rules)) {
         add('happiness', 3);
-        state.bond = clamp(state.bond + 1);
+        state.bond = clamp(state.bond + modOf(state, 'caressBond'));
         state.lastCaressAt = at;
       }
       break;
