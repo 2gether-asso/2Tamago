@@ -1,0 +1,10 @@
+# Each service lives at the root (api/, web/) and shared code in shared/.
+# Only the Node.js ones are listed here: a future service in another language
+# simply sits next to them without being part of the pnpm workspace.
+packages:
+  - api
+  - web
+  - shared/core
+
+allowBuilds:
+  esbuild: true

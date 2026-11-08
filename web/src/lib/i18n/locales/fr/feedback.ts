@@ -1,0 +1,21 @@
+/** The feedback form (header button and modal). */
+export const feedback = {
+  'feedback.title': 'Donner un avis',
+  'feedback.intro': 'Ton message part directement à l’équipe de 2Tamago.',
+  'feedback.type_label': 'Type d’avis',
+  'feedback.type.bug': 'Bug',
+  'feedback.type.bug_hint': 'Quelque chose ne marche pas comme prévu.',
+  'feedback.type.idea': 'Idée',
+  'feedback.type.idea_hint': 'Une envie, une amélioration, une créature…',
+  'feedback.type.other': 'Autre',
+  'feedback.type.other_hint': 'Une question, un mot gentil, autre chose.',
+  'feedback.message_label': 'Ton message',
+  'feedback.placeholder': 'Décris ton idée ou ce qui s’est passé…',
+  'feedback.min_remaining_one': 'Encore {count} caractère minimum',
+  'feedback.min_remaining_other': 'Encore {count} caractères minimum',
+  'feedback.cancel': 'Annuler',
+  'feedback.send': 'Envoyer',
+  'feedback.sending': 'Envoi…',
+  'feedback.thanks': 'Merci pour ton retour ! 💜',
+  'feedback.failed': 'Impossible d’envoyer ton avis pour le moment.',
+} as const;

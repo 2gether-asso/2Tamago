@@ -1,0 +1,23 @@
+{
+  "name": "2tamago",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.4.1",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build": "pnpm -r --workspace-concurrency=1 build",
+    "dev": "pnpm --filter @2tamago/core build && pnpm -r --parallel --filter @2tamago/core --filter @2tamago/api --filter @2tamago/web dev",
+    "test": "pnpm -r test",
+    "check": "pnpm -r check",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "biome lint ."
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.6.6",
+    "prettier": "^3.6.2",
+    "prettier-plugin-svelte": "^3.4.0"
+  }
+}

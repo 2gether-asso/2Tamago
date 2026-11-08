@@ -1,0 +1,88 @@
+# Local stack, built from source: PostgreSQL + API + web (nginx).
+#   make up      → http://localhost:8080 (from the host); the API is also on :3000
+#   make db-up   → only PostgreSQL, for developing against it from the devcontainer
+#
+# Same project name as .devcontainer/docker-compose.yml: these services share the
+# devcontainer's network, so the devcontainer reaches them as db:5432, api:3000, web:80.
+name: 2tamago
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: tamago
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tamago}
+      POSTGRES_DB: tamago
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U tamago']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  migrate:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    image: 2tamago-api:local
+    command: ['node', 'dist/migrate.js']
+    environment:
+      DATABASE_URL: postgres://tamago:${POSTGRES_PASSWORD:-tamago}@db:5432/tamago
+    depends_on:
+      db:
+        condition: service_healthy
+
+  api:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    image: 2tamago-api:local
+    environment:
+      # Runtime
+      NODE_ENV: ${NODE_ENV:-development}
+      # Database
+      DATABASE_URL: postgres://tamago:${POSTGRES_PASSWORD:-tamago}@db:5432/tamago
+      DATABASE_AUTO_MIGRATE: 'false'
+      # Authentication
+      AUTH_SECRET: ${AUTH_SECRET:-local-only-secret-not-for-production-use}
+      AUTH_DEV_LOGIN: ${AUTH_DEV_LOGIN:-true}
+      AUTH_ACCESS_TTL_MINUTES: ${AUTH_ACCESS_TTL_MINUTES:-}
+      AUTH_REFRESH_IDLE_DAYS: ${AUTH_REFRESH_IDLE_DAYS:-}
+      AUTH_SESSION_MAX_DAYS: ${AUTH_SESSION_MAX_DAYS:-}
+      AUTH_ROAMING_HOURS: ${AUTH_ROAMING_HOURS:-}
+      # Web app
+      WEB_ORIGIN: ${WEB_ORIGIN:-http://localhost:8080}
+      # Discord
+      DISCORD_CLIENT_ID: ${DISCORD_CLIENT_ID:-}
+      DISCORD_CLIENT_SECRET: ${DISCORD_CLIENT_SECRET:-}
+      DISCORD_GUILD_ID: ${DISCORD_GUILD_ID:-}
+      DISCORD_REDIRECT_URI: ${DISCORD_REDIRECT_URI:-http://localhost:8080/api/auth/discord/callback}
+      DISCORD_INVITE_URL: ${DISCORD_INVITE_URL:-}
+      DISCORD_WEBHOOK_URL: ${DISCORD_WEBHOOK_URL:-}
+      ADMIN_DISCORD_IDS: ${ADMIN_DISCORD_IDS:-}
+      # Error tracking
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      SENTRY_WEB_DSN: ${SENTRY_WEB_DSN:-}
+      # Game
+      GAME_TIME_SCALE: ${GAME_TIME_SCALE:-}
+      GAME_DEPARTURE: ${GAME_DEPARTURE:-}
+      GAME_TIMEZONE: ${GAME_TIMEZONE:-}
+    ports:
+      - '${API_PORT:-3000}:3000'
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  web:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+    image: 2tamago-web:local
+    ports:
+      - '${WEB_PORT:-8080}:80'
+    depends_on:
+      - api
+
+volumes:
+  db-data:

@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: tamago
+          POSTGRES_PASSWORD: tamago
+          POSTGRES_DB: tamago_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U tamago"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm format:check
+      - run: pnpm lint
+      - run: pnpm build
+      - run: pnpm check
+      - run: pnpm test
+      - name: API e2e tests against PostgreSQL
+        run: pnpm --filter @2tamago/api test:e2e
+        env:
+          TEST_DATABASE_URL: postgres://tamago:tamago@localhost:5432/tamago_test
+      - name: Sessions against PostgreSQL (row locks, migrations), in a database of their own
+        run: |
+          PGPASSWORD=tamago psql -h localhost -U tamago -d tamago_test -c 'create database tamago_auth_test'
+          pnpm --filter @2tamago/api test:e2e test/auth.e2e-spec.ts
+        env:
+          TEST_AUTH_DATABASE_URL: postgres://tamago:tamago@localhost:5432/tamago_auth_test
+      - run: pnpm --filter @2tamago/web exec playwright install --with-deps chromium
+      - name: Browser tests (Playwright)
+        run: pnpm --filter @2tamago/web test:e2e
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: playwright-traces
+          path: web/test-results/

@@ -1,0 +1,16 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "resolvePackageJsonExports": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "removeComments": true,
+    "outDir": "./dist",
+    "rootDir": ".",
+    "incremental": true,
+    "strictPropertyInitialization": false,
+    "noUncheckedIndexedAccess": false,
+    "types": ["vitest/globals", "node"]
+  },
+  "include": ["src", "test", "*.config.ts"]
+}

@@ -1,0 +1,33 @@
+import type { errors as fr } from '../fr/errors.ts';
+
+/** Error messages, found from the `code` of an API error (engine and API codes). */
+export const errors: Record<keyof typeof fr, string> = {
+  'error.network': 'The server cannot be reached. Try again in a moment.',
+  'error.http': 'Error {status}',
+  'error.invalid_input': 'Some of the information is invalid.',
+  'error.pet_gone': 'Your companion has left.',
+  'error.still_an_egg': 'It is still an egg, be patient!',
+  'error.asleep': 'Shh… it is asleep.',
+  'error.awake': 'It is already awake.',
+  'error.away': 'It is out for a walk.',
+  'error.not_away': 'It is not out for a walk.',
+  'error.outing_not_finished': 'The walk is not over yet.',
+  'error.too_young': 'It is still too young for that.',
+  'error.not_hungry': 'It is not hungry anymore.',
+  'error.not_sleepy': 'It is not sleepy.',
+  'error.not_sick': 'It is not sick.',
+  'error.too_tired': 'It is too tired.',
+  'error.too_hungry': 'It is too hungry for that.',
+  'error.unknown_item': 'Unknown item.',
+  'error.not_elder': 'Only an elder companion can retire.',
+  'error.not_night': 'It is not bedtime yet.',
+  'error.already_caressed': 'You already petted this companion today.',
+  'error.already_has_pet': 'You already have a companion.',
+  'error.feedback_disabled': 'Feedback is not enabled on this server.',
+  'error.missing_item': 'You do not have this item.',
+  'error.no_pet': 'This companion is gone.',
+  'error.no_player': 'This player cannot be found.',
+  'error.not_enough_coins': 'Not enough coins.',
+  'error.not_giftable': 'Only treats can be given.',
+  'error.own_pet': 'This is your own companion!',
+};

@@ -1,0 +1,66 @@
+# Production (or staging) stack, from the published images. It extends the services
+# of docker-compose.yml, so the server needs both files and a .env (see .env.example).
+#   docker compose -f docker-compose.prod.yml pull
+#   docker compose -f docker-compose.prod.yml up -d
+# For a staging instance, use another directory or project name (-p) and .env.
+# The API is published on ${API_BIND}:${API_PORT} (all interfaces by default): a reverse proxy
+# in front of it terminates HTTPS. Firewall the port, or set API_BIND=127.0.0.1 when the
+# proxy runs on the same host. The web app is static (GitHub Pages); the web image is
+# optional (profile `web`).
+name: 2tamago-prod
+
+services:
+  db:
+    extends:
+      file: docker-compose.yml
+      service: db
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+
+  # One-shot deployment step: applies the migrations, then the API starts.
+  migrate:
+    extends:
+      file: docker-compose.yml
+      service: migrate
+    build: !reset null
+    image: ${REGISTRY:-ghcr.io/2gether-asso}/2tamago-api:${TAG:-latest}
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://tamago:${POSTGRES_PASSWORD:?}@db:5432/tamago
+
+  api:
+    extends:
+      file: docker-compose.yml
+      service: api
+    build: !reset null
+    image: ${REGISTRY:-ghcr.io/2gether-asso}/2tamago-api:${TAG:-latest}
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://tamago:${POSTGRES_PASSWORD:?}@db:5432/tamago
+      AUTH_SECRET: ${AUTH_SECRET:?AUTH_SECRET is required (32+ characters)}
+      AUTH_DEV_LOGIN: 'false'
+      # Where the web app is served (CORS, and where sign-in sends players back).
+      WEB_ORIGIN: ${WEB_ORIGIN:?WEB_ORIGIN is required, for example https://tamago.example.org}
+      DISCORD_CLIENT_ID: ${DISCORD_CLIENT_ID:?}
+      DISCORD_CLIENT_SECRET: ${DISCORD_CLIENT_SECRET:?}
+      DISCORD_GUILD_ID: ${DISCORD_GUILD_ID:?}
+      DISCORD_REDIRECT_URI: ${API_ORIGIN:?API_ORIGIN is required, for example https://api.example.org}/api/auth/discord/callback
+    ports: !override
+      - '${API_BIND:-0.0.0.0}:${API_PORT:-3000}:3000'
+
+  # Optional: the web app on the same origin as the API, instead of GitHub Pages.
+  web:
+    extends:
+      file: docker-compose.yml
+      service: web
+    build: !reset null
+    image: ${REGISTRY:-ghcr.io/2gether-asso}/2tamago-web:${TAG:-latest}
+    restart: unless-stopped
+    profiles: [web]
+    ports: !override
+      - '${WEB_BIND:-0.0.0.0}:${WEB_PORT:-8080}:80'
+
+volumes:
+  db-data:

@@ -1,0 +1,36 @@
+{
+  "name": "@2tamago/core",
+  "version": "0.1.0",
+  "private": true,
+  "description": "2Tamago game rules (pure, deterministic) and API contracts shared by the API and the web app.",
+  "type": "module",
+  "exports": {
+    ".": {
+      "@2tamago/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./contracts": {
+      "@2tamago/source": "./src/contracts/index.ts",
+      "types": "./dist/contracts/index.d.ts",
+      "default": "./dist/contracts/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
+    "test": "vitest run",
+    "check": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "zod": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "~6.0.2",
+    "vitest": "^4.1.2"
+  }
+}
