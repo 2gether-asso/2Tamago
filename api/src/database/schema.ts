@@ -119,6 +119,21 @@ export const encounters = pgTable(
   (t) => [primaryKey({ columns: [t.walkA, t.walkB] }), index('encounters_walk_b_idx').on(t.walkB)],
 );
 
+/** Players a player follows: they come first in the village. */
+export const favorites = pgTable(
+  'favorites',
+  {
+    playerId: uuid('player_id')
+      .notNull()
+      .references(() => players.id, { onDelete: 'cascade' }),
+    favoriteId: uuid('favorite_id')
+      .notNull()
+      .references(() => players.id, { onDelete: 'cascade' }),
+    createdAt: createdAt(),
+  },
+  (t) => [primaryKey({ columns: [t.playerId, t.favoriteId] })],
+);
+
 /** What happened to a player: their pet's life events and other players' actions. */
 export const activity = pgTable(
   'activity',
