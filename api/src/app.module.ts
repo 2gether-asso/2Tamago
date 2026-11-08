@@ -7,6 +7,7 @@ import { ErrorReportingFilter } from './common/error-reporter.js';
 import { GameErrorFilter } from './common/game-error.filter.js';
 import { ConfigModule } from './config/config.module.js';
 import { DatabaseModule } from './database/database.module.js';
+import { FeedbackModule } from './feedback/feedback.module.js';
 import { GameModule } from './game/game.module.js';
 import { HealthController } from './health/health.controller.js';
 import { PetsModule } from './pets/pets.module.js';
@@ -21,6 +22,7 @@ import { SocialModule } from './social/social.module.js';
     GameModule,
     AuthModule,
     ActivityModule,
+    FeedbackModule,
     PetsModule,
     ShopModule,
     SocialModule,

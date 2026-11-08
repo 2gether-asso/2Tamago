@@ -84,6 +84,17 @@ export type RulesOverridesBody = z.infer<typeof rulesOverridesBody>;
 export const devLoginBody = z.object({
   name: z.string().trim().min(2).max(32),
 });
+export const FEEDBACK_TYPES = ['bug', 'idea', 'other'] as const;
+export type FeedbackType = (typeof FEEDBACK_TYPES)[number];
+
+export const feedbackBody = z.object({
+  type: z.enum(FEEDBACK_TYPES),
+  message: z.string().trim().min(10).max(2000),
+  /** Route the player was on, to help reproduce. */
+  page: z.string().max(200).optional(),
+});
+export type FeedbackBody = z.infer<typeof feedbackBody>;
+
 export type DevLoginBody = z.infer<typeof devLoginBody>;
 
 export const adoptBody = z.object({
