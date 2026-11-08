@@ -56,13 +56,25 @@ Une **erreur de soin** est comptée quand l'une de ces situations dure plus d'un
 
 ## Jour et nuit
 
-Le jeu a un cycle jour/nuit calé sur l'horloge du **fuseau configuré** (`GAME_TIMEZONE`, heure d'été comprise : le décalage est recalculé toutes les 30 s). Par défaut, il fait nuit **de 21 h à 7 h** (règle `night`). Avec une vitesse du temps accélérée, la journée du jeu est accélérée aussi.
+Le jeu a un cycle jour/nuit calé sur l'horloge du **fuseau configuré** (`GAME_TIMEZONE`, heure d'été comprise : le décalage est recalculé toutes les 30 s). Avec une vitesse du temps accélérée, la journée du jeu est accélérée aussi.
 
-- **Lumière allumée la nuit** : un compagnon éveillé est agité, son bonheur baisse **×1,5** plus vite (`awakeHappinessFactor`). Un rappel s'affiche. Ça ne s'applique pas pendant une promenade.
-- **Lumière éteinte** (action réservée à la nuit) : il s'endort tout seul, sans le malus de l'épuisement, et **dort jusqu'au matin** même avec l'énergie pleine.
-- **Le matin**, la lumière se rallume toute seule et il se réveille (s'il a récupéré toute son énergie).
+**Heure du coucher par stade.** Chaque stade a sa propre nuit : les petits se couchent plus tôt et se lèvent plus tard.
+
+| Stade  | Coucher | Lever |
+| ------ | ------- | ----- |
+| Bébé   | 19 h    | 8 h   |
+| Enfant | 20 h    | 7 h   |
+| Ado    | 21 h    | 7 h   |
+| Adulte | 22 h    | 7 h   |
+| Ancien | 20 h    | 8 h   |
+
+L'œuf n'a pas de nuit. Les heures générales de la règle `night` (`startHour` 21, `endHour` 7) servent aux stades qui n'ont pas la leur. L'écran d'accueil affiche l'heure de coucher du compagnon. Quand il change de stade, il adopte la nuit du nouveau stade.
+
+- **Lumière allumée à l'heure du coucher** : un compagnon éveillé est agité, son bonheur baisse **×1,5** plus vite (`awakeHappinessFactor`). Un rappel s'affiche. Ça ne s'applique pas pendant une promenade.
+- **Lumière éteinte** (action réservée à l'heure du coucher du stade) : il s'endort tout seul, sans le malus de l'épuisement, et **dort jusqu'au lever** même avec l'énergie pleine.
+- **Au lever**, la lumière se rallume toute seule et il se réveille (s'il a récupéré toute son énergie).
 - **Réveiller** un compagnon rallume la lumière (sinon il se rendormirait aussitôt). Coucher, réveiller et l'épuisement fonctionnent comme avant.
-- Il n'y a pas d'heure de coucher par stade : une seule fenêtre de nuit pour tous. L'heure de début et de fin, le décalage horaire et le facteur sont réglables depuis l'écran Admin (`night`). Si le début et la fin sont égaux, il n'y a pas de nuit.
+- Tout est réglable depuis l'écran Admin (`night`) : heures générales, heures de chaque stade (`stages`), décalage horaire, facteur. Si le début et la fin sont égaux, il n'y a pas de nuit. Les surcharges sont **fusionnées clé par clé, à tous les niveaux** : `{ "night": { "stages": { "baby": { "startHour": 18 } } } }` ne change que le coucher des bébés.
 
 ## Caprices et discipline
 
@@ -96,7 +108,7 @@ Le tempérament est tiré **indépendamment de l'espèce**. Chacun a **un avanta
 | Propre      | propreté baisse ×0,7               | énergie baisse ×1,15         |
 | Costaud     | perte de santé malade ×0,7         | satiété baisse ×1,15         |
 
-Les valeurs sont la règle `temperaments` de `GameRules` : un admin peut les modifier depuis l'écran Admin (JSON), par exemple `{ "temperaments": { "greedy": { "satietyDecay": 1.2, "happinessDecay": 0.85 } } }`. Une surcharge remplace **tout** le jeu de multiplicateurs du tempérament (il faut donc renvoyer tous ses multiplicateurs), chaque valeur doit rester entre ×0,5 et ×2. L'admin peut casser la règle « un avantage, un inconvénient » ; seules les valeurs par défaut sont contrôlées par un test.
+Les valeurs sont la règle `temperaments` de `GameRules` : un admin peut les modifier depuis l'écran Admin (JSON), par exemple `{ "temperaments": { "greedy": { "satietyDecay": 1.2 } } }`. Une surcharge ne change que les multiplicateurs donnés (on ne peut pas en retirer un, seulement le mettre à 1) ; chaque valeur doit rester entre ×0,5 et ×2. L'admin peut casser la règle « un avantage, un inconvénient » ; seules les valeurs par défaut sont contrôlées par un test.
 
 ## Actions
 
