@@ -3,6 +3,8 @@
 #   docker compose -f docker-compose.prod.yml pull
 #   docker compose -f docker-compose.prod.yml up -d
 # For a staging instance, use another directory or project name (-p) and .env.
+# Only the API runs here, on 127.0.0.1:${API_PORT}: a reverse proxy in front of it
+# terminates HTTPS. The web app is static (GitHub Pages).
 name: 2tamago-prod
 
 services:
@@ -41,11 +43,12 @@ services:
       DATABASE_AUTO_MIGRATE: 'false'
       AUTH_SECRET: ${AUTH_SECRET:?AUTH_SECRET is required (32+ characters)}
       COOKIE_SECURE: 'true'
-      WEB_ORIGIN: https://${SITE_ADDRESS:?SITE_ADDRESS is required}
+      # Where the web app is served (CORS, and where sign-in sends players back).
+      WEB_ORIGIN: ${WEB_ORIGIN:?WEB_ORIGIN is required, for example https://tamago.example.org}
       DISCORD_CLIENT_ID: ${DISCORD_CLIENT_ID:?}
       DISCORD_CLIENT_SECRET: ${DISCORD_CLIENT_SECRET:?}
       DISCORD_GUILD_ID: ${DISCORD_GUILD_ID:?}
-      DISCORD_REDIRECT_URI: https://${SITE_ADDRESS}/api/auth/discord/callback
+      DISCORD_REDIRECT_URI: ${API_ORIGIN:?API_ORIGIN is required, for example https://api.example.org}/api/auth/discord/callback
       DISCORD_INVITE_URL: ${DISCORD_INVITE_URL:-}
       DISCORD_WEBHOOK_URL: ${DISCORD_WEBHOOK_URL:-}
       ADMIN_DISCORD_IDS: ${ADMIN_DISCORD_IDS:-}
@@ -54,24 +57,11 @@ services:
       GAME_TIME_SCALE: ${GAME_TIME_SCALE:-1}
       GAME_DEPARTURE: ${GAME_DEPARTURE:-true}
       GAME_TIMEZONE: ${GAME_TIMEZONE:-Europe/Paris}
+    ports:
+      - '${API_BIND:-127.0.0.1}:${API_PORT:-3000}:3000'
     depends_on:
       migrate:
         condition: service_completed_successfully
 
-  web:
-    image: ${REGISTRY:-ghcr.io/2gether-asso}/2tamago-web:${TAG:-latest}
-    restart: unless-stopped
-    environment:
-      # A domain name: Caddy gets the HTTPS certificate automatically.
-      SITE_ADDRESS: ${SITE_ADDRESS}
-    ports:
-      - '${HTTP_PORT:-80}:80'
-      - '${HTTPS_PORT:-443}:443'
-    volumes:
-      - caddy-data:/data
-    depends_on:
-      - api
-
 volumes:
   db-data:
-  caddy-data:
