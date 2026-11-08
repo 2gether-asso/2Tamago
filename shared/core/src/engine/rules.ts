@@ -1,5 +1,11 @@
 import type { Stage, Temperament } from './types.js';
 
+/** The night of one stage: from `startHour` to `endHour` (hours of the game day, 0 to 23). */
+export interface BedtimeWindow {
+  startHour: number;
+  endHour: number;
+}
+
 /** Rule multipliers a temperament can apply. Missing keys mean ×1. */
 export interface TemperamentMods {
   satietyDecay: number;
@@ -68,21 +74,25 @@ export interface GameRules {
   departureEnabled: boolean;
 
   /**
-   * What each temperament changes. An override replaces a temperament's whole set, so to tweak
-   * one multiplier send all of that temperament's multipliers. The defaults give each one a pro
-   * and a con (a test enforces it); an admin is free to break that.
+   * What each temperament changes. The defaults give each one a pro and a con (a test enforces
+   * it); an admin is free to break that. A multiplier cannot be removed by an override, only set
+   * to 1.
    */
   temperaments: Record<Temperament, Partial<TemperamentMods>>;
 
   /**
    * The day/night cycle of the game clock (game hours, see `dayHour`). Between `startHour` and
-   * `endHour` it is night; equal hours mean there is no night. A pet awake at night with the
-   * lights on is restless: its happiness falls `awakeHappinessFactor` times faster. With the
-   * lights off it goes to sleep, and stays asleep until morning.
+   * `endHour` it is night; equal hours mean there is no night. Each stage can have its own
+   * bedtime in `stages` (babies go to bed earlier than adults), the top-level hours apply to the
+   * stages not listed. A pet awake at night with the lights on is restless: its happiness falls
+   * `awakeHappinessFactor` times faster. With the lights off it goes to sleep, and stays asleep
+   * until morning.
    */
   night: {
     startHour: number;
     endHour: number;
+    /** Bedtime of each stage (the hours of the night as that stage lives it). */
+    stages: Partial<Record<Stage, BedtimeWindow>>;
     /** Hours added to UTC to get the local hour (the API derives it from `GAME_TIMEZONE`). */
     clockOffsetHours: number;
     awakeHappinessFactor: number;
@@ -134,7 +144,19 @@ export const DEFAULT_RULES: GameRules = {
     sturdy: { sickHealthLoss: 0.7, satietyDecay: 1.15 },
   },
 
-  night: { startHour: 21, endHour: 7, clockOffsetHours: 0, awakeHappinessFactor: 1.5 },
+  night: {
+    startHour: 21,
+    endHour: 7,
+    stages: {
+      baby: { startHour: 19, endHour: 8 },
+      child: { startHour: 20, endHour: 7 },
+      teen: { startHour: 21, endHour: 7 },
+      adult: { startHour: 22, endHour: 7 },
+      elder: { startHour: 20, endHour: 8 },
+    },
+    clockOffsetHours: 0,
+    awakeHappinessFactor: 1.5,
+  },
 
   maxStepsPerSimulation: 200_000,
 };
@@ -151,23 +173,28 @@ export type FixedRuleKey = 'timeScale' | 'stepMinutes' | 'maxStepsPerSimulation'
  * `{ stageHours: { baby: 6 } }` keeps the other stages as they are.
  */
 export type RulesOverrides = {
-  [K in Exclude<keyof GameRules, FixedRuleKey>]?: GameRules[K] extends object
-    ? Partial<GameRules[K]>
-    : GameRules[K];
+  [K in Exclude<keyof GameRules, FixedRuleKey>]?: DeepPartial<GameRules[K]>;
 };
+
+type DeepPartial<T> = T extends object ? { [P in keyof T]?: DeepPartial<T[P]> } : T;
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/** Merges `override` into `base` key by key, at any depth. Other values replace. */
+function merge(base: unknown, override: unknown): unknown {
+  if (!isPlainObject(base) || !isPlainObject(override)) return override;
+  const merged: Record<string, unknown> = { ...base };
+  for (const [key, value] of Object.entries(override)) {
+    if (value !== undefined) merged[key] = merge(base[key], value);
+  }
+  return merged;
+}
 
 /** `base` with the overrides applied (pure: `base` is left untouched). */
 export function applyRulesOverrides(base: GameRules, overrides: RulesOverrides): GameRules {
-  const rules: Record<string, unknown> = { ...base };
-  for (const [key, value] of Object.entries(overrides)) {
-    if (value === undefined) continue;
-    const current = rules[key];
-    rules[key] =
-      typeof value === 'object' && value !== null && typeof current === 'object'
-        ? { ...current, ...value }
-        : value;
-  }
-  return rules as unknown as GameRules;
+  return merge(base, overrides) as GameRules;
 }
 
 const HOUR_MS = 3_600_000;

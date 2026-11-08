@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   applyAction,
+  applyRulesOverrides,
+  bedtimeOf,
   createPet,
   dayHour,
   gameHours,
@@ -54,6 +56,52 @@ describe('day and night', () => {
   });
 });
 
+describe('bedtime by stage', () => {
+  it('gives each stage its own night, and the general night to the others', () => {
+    expect(bedtimeOf(rules, 'baby')).toEqual({ startHour: 19, endHour: 8 });
+    expect(bedtimeOf(rules, 'adult')).toEqual({ startHour: 22, endHour: 7 });
+    expect(bedtimeOf(rules, 'egg')).toEqual({ startHour: 21, endHour: 7 });
+    expect(bedtimeOf(rules)).toEqual({ startHour: 21, endHour: 7 });
+  });
+
+  it('puts babies to bed before adults, and wakes them later', () => {
+    expect(isNight(rules, at(19.5), 'baby')).toBe(true);
+    expect(isNight(rules, at(19.5), 'adult')).toBe(false);
+    expect(isNight(rules, at(7.5), 'baby')).toBe(true);
+    expect(isNight(rules, at(7.5), 'adult')).toBe(false);
+    expect(isNight(rules, at(22.5), 'adult')).toBe(true);
+  });
+
+  it('only lets the lights go off at the bedtime of the pet stage', () => {
+    const baby = hatchedAt(19.5);
+    expect(baby.stage).toBe('baby');
+    const off = applyAction(baby, { type: 'lights', on: false }, at(19.6), rules).state;
+    expect(off.lightsOff).toBe(true);
+    // The same hour is still day for an adult.
+    const adult = { ...baby, stage: 'adult' as const };
+    expect(() => applyAction(adult, { type: 'lights', on: false }, at(19.6), rules)).toThrow(
+      GameError,
+    );
+  });
+
+  it('makes a baby restless in the evening where an adult is not', () => {
+    const lost = (stage: 'baby' | 'adult') => {
+      const pet = { ...hatchedAt(19.2), stage };
+      return pet.stats.happiness - simulate(pet, at(20.2), rules).state.stats.happiness;
+    };
+    expect(lost('baby')).toBeGreaterThan(0);
+    // An adult needs less (stage neediness) and is not restless yet: the gap is more than the
+    // difference in neediness alone.
+    expect(lost('baby') / lost('adult')).toBeGreaterThan(1.5 / 0.9 + 0.5);
+  });
+
+  it('can be retuned for one stage without touching the others', () => {
+    const tuned = applyRulesOverrides(rules, { night: { stages: { baby: { startHour: 18 } } } });
+    expect(bedtimeOf(tuned, 'baby')).toEqual({ startHour: 18, endHour: 8 });
+    expect(bedtimeOf(tuned, 'adult')).toEqual(bedtimeOf(rules, 'adult'));
+  });
+});
+
 describe('lights', () => {
   it('can only be switched off at night', () => {
     const pet = hatchedAt(12);
@@ -76,7 +124,7 @@ describe('lights', () => {
     expect(deep.asleep).toBe(true);
     expect(deep.lightsOff).toBe(true);
 
-    const { state: morning, events } = simulate(off, at(7.5, 1), rules);
+    const { state: morning, events } = simulate(off, at(8.5, 1), rules);
     expect(morning.asleep).toBe(false);
     expect(morning.lightsOff).toBe(false);
     expect(events.map((e) => e.type)).toContain('woke_up');

@@ -55,7 +55,7 @@ function tick(state: PetState, t: number, rules: GameRules, events: PetEvent[]):
     return;
   }
 
-  const night = isNight(rules, t);
+  const night = isNight(rules, t, state.stage);
   decay(state, dtH, rules, night);
   sleepCycle(state, t, night, events);
   poop(state, t, rules, events);

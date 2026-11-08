@@ -16,6 +16,16 @@ describe('applyRulesOverrides', () => {
     expect(rules.awakeDecayPerHour).toEqual({ ...base.awakeDecayPerHour, satiety: 1 });
   });
 
+  it('merges nested object rules at any depth', () => {
+    const rules = applyRulesOverrides(base, {
+      night: { stages: { baby: { startHour: 18 } }, awakeHappinessFactor: 2 },
+    });
+    expect(rules.night.stages.baby).toEqual({ startHour: 18, endHour: 8 });
+    expect(rules.night.stages.adult).toEqual(base.night.stages.adult);
+    expect(rules.night.awakeHappinessFactor).toBe(2);
+    expect(rules.night.startHour).toBe(21);
+  });
+
   it('does not mutate the base and keeps it when there is nothing to override', () => {
     const copy = structuredClone(base);
     applyRulesOverrides(base, { stageHours: { egg: 1 } });
@@ -25,6 +35,21 @@ describe('applyRulesOverrides', () => {
 });
 
 describe('rulesOverridesBody', () => {
+  it('validates bedtimes: known stages, whole hours of the day', () => {
+    const ok = rulesOverridesBody.safeParse({
+      night: { stages: { baby: { startHour: 18 }, elder: { startHour: 19, endHour: 9 } } },
+    });
+    expect(ok.success).toBe(true);
+    for (const bad of [
+      { night: { stages: { egg: { startHour: 20 } } } },
+      { night: { stages: { baby: { startHour: 24 } } } },
+      { night: { stages: { baby: { startHour: 18.5 } } } },
+      { night: { stages: { baby: { start: 18 } } } },
+    ]) {
+      expect(rulesOverridesBody.safeParse(bad).success).toBe(false);
+    }
+  });
+
   it('accepts valid tunings, including a null elder duration', () => {
     expect(rulesOverridesBody.safeParse({ stageHours: { elder: null }, maxPoops: 3 }).success).toBe(
       true,

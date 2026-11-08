@@ -114,7 +114,8 @@ describe('temperament tuning', () => {
     const tuned = applyRulesOverrides(rules, {
       temperaments: { greedy: { satietyDecay: 2 } },
     });
-    expect(tuned.temperaments.greedy).toEqual({ satietyDecay: 2 });
+    // Merged key by key: the other multipliers of the temperament stay.
+    expect(tuned.temperaments.greedy).toEqual({ ...rules.temperaments.greedy, satietyDecay: 2 });
     expect(tuned.temperaments.sleepy).toEqual(rules.temperaments.sleepy);
 
     const decayed = (r: typeof rules) => {

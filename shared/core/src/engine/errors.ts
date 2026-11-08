@@ -36,7 +36,7 @@ export const GAME_ERROR_MESSAGES: Record<GameErrorCode, string> = {
   too_hungry: 'Il a trop faim pour ça.',
   unknown_item: 'Objet inconnu.',
   not_elder: 'Seul un compagnon âgé peut prendre sa retraite.',
-  not_night: 'Il fait encore jour.',
+  not_night: 'Ce n’est pas encore l’heure du coucher.',
 };
 
 export class GameError extends Error {

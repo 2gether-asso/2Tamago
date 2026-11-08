@@ -44,6 +44,9 @@ const perStage = z
   .partial()
   .strict();
 
+const hour = z.number().int().min(0).max(23);
+const bedtime = z.object({ startHour: hour, endHour: hour }).partial().strict();
+
 const modifier = z.number().min(0.5).max(2);
 const temperamentMods = z
   .object({
@@ -96,8 +99,18 @@ export const rulesOverridesBody = z
     departureEnabled: z.boolean(),
     night: z
       .object({
-        startHour: z.number().int().min(0).max(23),
-        endHour: z.number().int().min(0).max(23),
+        startHour: hour,
+        endHour: hour,
+        stages: z
+          .object({
+            baby: bedtime,
+            child: bedtime,
+            teen: bedtime,
+            adult: bedtime,
+            elder: bedtime,
+          })
+          .partial()
+          .strict(),
         clockOffsetHours: z.number().min(-12).max(14),
         awakeHappinessFactor: z.number().min(1).max(5),
       })

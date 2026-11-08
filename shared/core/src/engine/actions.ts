@@ -180,7 +180,7 @@ export function applyAction(
       if (action.on) {
         state.lightsOff = false;
       } else {
-        if (!isNight(rules, at)) throw new GameError('not_night');
+        if (!isNight(rules, at, state.stage)) throw new GameError('not_night');
         state.lightsOff = true;
       }
       break;
