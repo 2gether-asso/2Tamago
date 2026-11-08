@@ -5,3 +5,5 @@ build
 pnpm-lock.yaml
 api/drizzle
 .devcontainer/docker-compose.yml
+test-results
+playwright-report
