@@ -12,8 +12,8 @@ export default defineConfig({
         runes: ({ filename }) =>
           filename.split(/[/\\]/).includes('node_modules') ? undefined : true,
       },
-      // Single-page app: every route falls back to 200.html (see deploy/Caddyfile).
-      adapter: adapter({ fallback: '200.html' }),
+      // Single-page app: GitHub Pages serves 404.html for every unknown route, which lets the router take over.
+      adapter: adapter({ fallback: '404.html' }),
     }),
   ],
   resolve: {

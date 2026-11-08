@@ -22,8 +22,11 @@ import type {
 
 import { hasMessage, t, type MessageKey } from './i18n/index.svelte.ts';
 
-/** Same origin: Vite proxies `/api` in development, Caddy in production. */
-const BASE = '/api';
+/**
+ * The API lives on its own origin in production (`VITE_API_URL`, set at build time, for example
+ * `https://api.example.org`). Without it the app uses the same origin: Vite proxies `/api` in development.
+ */
+const BASE = `${(import.meta.env.VITE_API_URL ?? '').replace(/\/+$/, '')}/api`;
 
 /** The message to show for an API error: translated from its `code` when we know it. */
 function errorMessage(status: number, code: string | undefined, serverMessage: string | undefined) {
@@ -47,7 +50,7 @@ async function call<T>(method: string, path: string, body?: unknown): Promise<T>
   try {
     response = await fetch(BASE + path, {
       method,
-      credentials: 'same-origin',
+      credentials: 'include',
       headers: body === undefined ? {} : { 'Content-Type': 'application/json' },
       body: body === undefined ? undefined : JSON.stringify(body),
     });
