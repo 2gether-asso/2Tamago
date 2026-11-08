@@ -12,6 +12,7 @@ import {
   type Form,
   type PetEvent,
   type PetState,
+  type PetTraits,
   type Species,
   type Stage,
 } from '../engine/types.js';
@@ -184,6 +185,7 @@ export interface VillagePet {
   stage: Stage;
   form: Form | null;
   color: number;
+  traits: PetTraits;
   equipped: string | null;
   mood: Mood;
   ownerName: string;
@@ -213,6 +215,7 @@ export interface AlbumEntry {
   stage: Stage;
   form: Form | null;
   color: number;
+  traits: PetTraits;
   status: 'gone' | 'retired';
   bornAt: number;
   endedAt: number | null;

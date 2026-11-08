@@ -1,9 +1,11 @@
+import { randomInt } from 'node:crypto';
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectDrizzle } from '@nestjs/drizzle';
 import {
   applyAction,
   createPet,
   simulate,
+  traitsOf,
   type GameRules,
   type PetEvent,
   type PetState,
@@ -75,7 +77,7 @@ export class PetsService {
 
   async adopt(playerId: string, body: AdoptBody) {
     const now = this.now();
-    const state = createPet({ ...body, now }, this.rules);
+    const state = createPet({ ...body, seed: randomInt(2 ** 32), now }, this.rules);
     const inserted = await this.db
       .insert(pets)
       .values({ ownerId: playerId, status: state.status, state })
@@ -130,6 +132,7 @@ export class PetsService {
       stage: state.stage,
       form: state.form,
       color: state.color,
+      traits: traitsOf(state),
       status: state.status as AlbumEntry['status'],
       bornAt: state.bornAt,
       endedAt: state.endedAt,

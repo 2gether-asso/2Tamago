@@ -11,6 +11,7 @@ import {
   isSnack,
   moodOf,
   simulate,
+  traitsOf,
   type GameRules,
   type ItemId,
 } from '@2tamago/core';
@@ -67,6 +68,7 @@ export class VillageService {
         stage: state.stage,
         form: state.form,
         color: state.color,
+        traits: traitsOf(state),
         equipped: state.equipped,
         mood: moodOf(state),
         ownerName,
