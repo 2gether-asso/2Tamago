@@ -26,6 +26,7 @@ export const errors: Record<keyof typeof fr, string> = {
   'error.feedback_disabled': 'Feedback is not enabled on this server.',
   'error.missing_item': 'You do not have this item.',
   'error.no_pet': 'This companion is gone.',
+  'error.no_player': 'This player cannot be found.',
   'error.not_enough_coins': 'Not enough coins.',
   'error.not_giftable': 'Only treats can be given.',
   'error.own_pet': 'This is your own companion!',

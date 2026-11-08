@@ -12,6 +12,7 @@ import { GameModule } from './game/game.module.js';
 import { HealthController } from './health/health.controller.js';
 import { PetsModule } from './pets/pets.module.js';
 import { ShopModule } from './shop/shop.module.js';
+import { ProfileModule } from './profile/profile.module.js';
 import { SocialModule } from './social/social.module.js';
 
 @Module({
@@ -24,6 +25,7 @@ import { SocialModule } from './social/social.module.js';
     ActivityModule,
     FeedbackModule,
     PetsModule,
+    ProfileModule,
     ShopModule,
     SocialModule,
   ],

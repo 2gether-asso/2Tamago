@@ -5,6 +5,7 @@ import type {
   ActionResponse,
   ActivityDto,
   MeResponse,
+  PlayerProfile,
   VillagePet,
   WalkResponse,
 } from '@2tamago/core/contracts';
@@ -149,6 +150,54 @@ describe('2Tamago API (e2e)', () => {
     const me: MeResponse = (await alice.get('/api/me').expect(200)).body;
     expect(me.pet?.state.lightsOff).toBe(true);
     expect(me.pet?.state.asleep).toBe(true);
+  });
+
+  it('shows a player profile with their stats and living companion', async () => {
+    const alice = await signIn('Alice');
+    const bob = await signIn('Bob');
+    await adopt(alice, 'Pompon');
+    await adopt(bob, 'Mochi');
+    clock.advance(hours(0.5)); // both hatched
+
+    const aliceMe: MeResponse = (await alice.get('/api/me').expect(200)).body;
+    const bobMe: MeResponse = (await bob.get('/api/me').expect(200)).body;
+    const alicePet = aliceMe.pet!.id;
+    await bob.post(`/api/village/${alicePet}/caress`).expect(200);
+    await bob.post(`/api/village/${alicePet}/gift`).send({ item: 'cookie' }).expect(409); // no cookie
+
+    // Bob looks at Alice's profile.
+    const profile: PlayerProfile = (await bob.get(`/api/players/${aliceMe.player.id}`).expect(200))
+      .body;
+    expect(profile.player).toMatchObject({ displayName: 'Alice', isYou: false });
+    expect(profile.pet?.state.name).toBe('Pompon');
+    expect(profile.stats).toMatchObject({
+      companions: 1,
+      retired: 0,
+      departed: 0,
+      caressesReceived: 1,
+      caressesGiven: 0,
+      walks: 0,
+    });
+
+    // Alice sees herself, and Bob's caress counted on his side.
+    const own: PlayerProfile = (await alice.get(`/api/players/${aliceMe.player.id}`).expect(200))
+      .body;
+    expect(own.player.isYou).toBe(true);
+    const bobs: PlayerProfile = (await alice.get(`/api/players/${bobMe.player.id}`).expect(200))
+      .body;
+    expect(bobs.stats.caressesGiven).toBe(1);
+  });
+
+  it('refuses unknown players and bad ids, and anonymous visitors', async () => {
+    const alice = await signIn('Alice');
+    const { body } = await alice
+      .get('/api/players/00000000-0000-4000-8000-000000000000')
+      .expect(404);
+    expect(body.code).toBe('no_player');
+    await alice.get('/api/players/not-a-uuid').expect(400);
+    await request(app.getHttpServer())
+      .get('/api/players/00000000-0000-4000-8000-000000000000')
+      .expect(401);
   });
 
   it('keeps traits secret while the pet is an egg, then reveals them', async () => {

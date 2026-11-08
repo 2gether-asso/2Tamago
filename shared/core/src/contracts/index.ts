@@ -258,6 +258,36 @@ export interface WalkResponse extends ActionResponse {
   encounters: WalkEncounter[];
 }
 
+/** What a player has done so far, shown on their profile. */
+export interface PlayerStats {
+  /** Companions raised so far, the living one included. */
+  companions: number;
+  retired: number;
+  departed: number;
+  /** Age in game days of the longest-lived companion (the living one counts). */
+  bestAgeDays: number;
+  caressesGiven: number;
+  giftsGiven: number;
+  caressesReceived: number;
+  giftsReceived: number;
+  walks: number;
+  encounters: number;
+}
+
+export interface PlayerProfile {
+  player: {
+    id: string;
+    displayName: string;
+    avatarUrl: string | null;
+    /** When they first signed in (epoch ms). */
+    memberSince: number;
+    isYou: boolean;
+  };
+  stats: PlayerStats;
+  /** Their living companion, brought up to date. */
+  pet: PetDto | null;
+}
+
 export interface VillagePet {
   petId: string;
   name: string;
@@ -312,6 +342,7 @@ export const API_ERROR_CODES = [
   'feedback_disabled',
   'missing_item',
   'no_pet',
+  'no_player',
   'not_enough_coins',
   'not_giftable',
   'own_pet',

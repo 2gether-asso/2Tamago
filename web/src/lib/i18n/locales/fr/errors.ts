@@ -24,6 +24,7 @@ export const errors = {
   'error.feedback_disabled': 'Les avis ne sont pas activés sur ce serveur.',
   'error.missing_item': 'Tu n’as pas cet objet.',
   'error.no_pet': 'Ce compagnon n’est plus là.',
+  'error.no_player': 'Ce joueur est introuvable.',
   'error.not_enough_coins': 'Pas assez de pièces.',
   'error.not_giftable': 'Seules les friandises peuvent être offertes.',
   'error.own_pet': 'C’est ton propre compagnon !',
