@@ -12,9 +12,11 @@
     "test": "pnpm -r test",
     "check": "pnpm -r check",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "lint": "biome lint ."
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.6.6",
     "prettier": "^3.6.2",
     "prettier-plugin-svelte": "^3.4.0"
   }
