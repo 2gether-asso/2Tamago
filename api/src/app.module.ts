@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { ActivityModule } from './activity/activity.module.js';
+import { AnnouncementsModule } from './announcements/announcements.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { ErrorReportingFilter } from './common/error-reporter.js';
 import { GameErrorFilter } from './common/game-error.filter.js';
@@ -19,6 +20,7 @@ import { SocialModule } from './social/social.module.js';
   imports: [
     ConfigModule,
     DatabaseModule,
+    AnnouncementsModule,
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 120 }]),
     GameModule,
     AuthModule,

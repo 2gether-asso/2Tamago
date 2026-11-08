@@ -1,7 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { applyAction, ITEMS, isSnack, type GameRules, type ItemId } from '@2tamago/core';
 import type { ActionResponse, Notice, WalkEncounter, WalkResponse } from '@2tamago/core/contracts';
-import { aliasedTable, and, desc, eq, gt, inArray, isNull, lt, ne, or } from 'drizzle-orm';
+import {
+  aliasedTable,
+  and,
+  desc,
+  eq,
+  gt,
+  inArray,
+  isNull,
+  lt,
+  ne,
+  not,
+  or,
+  sql,
+} from 'drizzle-orm';
+import { AnnouncementService } from '../announcements/announcement.service.js';
 import { ActivityService } from '../activity/activity.service.js';
 import { GameRulesService } from '../game/game-rules.service.js';
 import type { Transaction } from '../database/database.js';
@@ -25,6 +39,7 @@ export class WalksService {
     private readonly pets: PetsService,
     private readonly players: PlayersService,
     private readonly activity: ActivityService,
+    private readonly announcements: AnnouncementService,
   ) {}
 
   private get rules(): GameRules {
@@ -70,12 +85,22 @@ export class WalksService {
         await this.players.addCoins(tx, playerId, found.coins);
         for (const item of found.items) await this.players.addItem(tx, playerId, item);
 
-        const met = walk ? await this.meet(tx, walk, row.id, state.name, playerId) : [];
-        return { ...change, extra: { found, met } };
+        const meetings = walk
+          ? await this.meet(tx, walk, row.id, state.name, playerId)
+          : { met: [], first: new Set<string>() };
+        return { ...change, extra: { found, ...meetings } };
       },
     );
 
-    const { found, met } = result.extra!;
+    const { found, met, first } = result.extra!;
+    // Once saved: only the first walk two players ever share is worth the channel's attention.
+    for (const encounter of met) {
+      if (!first.has(encounter.petId)) continue;
+      this.announcements.firstMeeting(
+        { petName: result.row.state.name, ownerName: result.ownerName },
+        { petName: encounter.name, ownerName: encounter.ownerName },
+      );
+    }
     const notices: Notice[] = [{ code: 'walk_found_coins', count: found.coins }];
     for (const item of found.items) notices.push({ code: 'walk_found_item', item });
     for (const encounter of met) {
@@ -91,14 +116,18 @@ export class WalksService {
     };
   }
 
-  /** Records encounters with overlapping walks, and returns everyone met. */
+  /**
+   * Records encounters with overlapping walks. Returns everyone met, and which of them (by pet)
+   * the player had never met before.
+   */
   private async meet(
     tx: Transaction,
     walk: typeof walks.$inferSelect,
     petId: string,
     petName: string,
     playerId: string,
-  ): Promise<WalkEncounter[]> {
+  ): Promise<{ met: WalkEncounter[]; first: Set<string> }> {
+    const first = new Set<string>();
     const overlapping = await tx
       .select({ id: walks.id })
       .from(walks)
@@ -123,7 +152,7 @@ export class WalksService {
       if (inserted.length === 0) continue;
       // Tell the other owner, who may not be online.
       const [otherPet] = await tx
-        .select({ ownerId: pets.ownerId })
+        .select({ ownerId: pets.ownerId, petId: pets.id })
         .from(walks)
         .innerJoin(pets, eq(pets.id, walks.petId))
         .where(eq(walks.id, other.id));
@@ -132,6 +161,9 @@ export class WalksService {
           otherPetName: petName,
           otherOwnerName: me.displayName,
         });
+        if (!(await this.haveMet(tx, playerId, otherPet.ownerId, walkA, walkB))) {
+          first.add(otherPet.petId);
+        }
       }
     }
 
@@ -140,7 +172,7 @@ export class WalksService {
       .from(encounters)
       .where(or(eq(encounters.walkA, walk.id), eq(encounters.walkB, walk.id)));
     const otherWalkIds = links.map((link) => (link.walkA === walk.id ? link.walkB : link.walkA));
-    if (otherWalkIds.length === 0) return [];
+    if (otherWalkIds.length === 0) return { met: [], first };
 
     const otherWalk = aliasedTable(walks, 'other_walk');
     const rows = await tx
@@ -163,6 +195,38 @@ export class WalksService {
         otherOwnerName: encounter.ownerName,
       });
     }
-    return result;
+    return { met: result, first };
+  }
+
+  /** Whether these two players had an encounter before the one made by walks `walkA` and `walkB`. */
+  private async haveMet(
+    tx: Transaction,
+    playerId: string,
+    otherPlayerId: string,
+    walkA: string,
+    walkB: string,
+  ): Promise<boolean> {
+    const first = aliasedTable(walks, 'first_walk');
+    const second = aliasedTable(walks, 'second_walk');
+    const firstPet = aliasedTable(pets, 'first_pet');
+    const secondPet = aliasedTable(pets, 'second_pet');
+    const [previous] = await tx
+      .select({ one: sql<number>`1` })
+      .from(encounters)
+      .innerJoin(first, eq(first.id, encounters.walkA))
+      .innerJoin(firstPet, eq(firstPet.id, first.petId))
+      .innerJoin(second, eq(second.id, encounters.walkB))
+      .innerJoin(secondPet, eq(secondPet.id, second.petId))
+      .where(
+        and(
+          or(
+            and(eq(firstPet.ownerId, playerId), eq(secondPet.ownerId, otherPlayerId)),
+            and(eq(firstPet.ownerId, otherPlayerId), eq(secondPet.ownerId, playerId)),
+          ),
+          not(and(eq(encounters.walkA, walkA), eq(encounters.walkB, walkB))!),
+        ),
+      )
+      .limit(1);
+    return previous !== undefined;
   }
 }

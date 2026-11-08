@@ -19,6 +19,7 @@ import type {
   OwnerActionBody,
 } from '@2tamago/core/contracts';
 import { and, desc, eq, ne, type SQL } from 'drizzle-orm';
+import { AnnouncementService } from '../announcements/announcement.service.js';
 import { ActivityService } from '../activity/activity.service.js';
 import { Clock } from '../common/clock.js';
 import { GameRulesService } from '../game/game-rules.service.js';
@@ -54,6 +55,7 @@ export class PetsService {
     private readonly clock: Clock,
     private readonly players: PlayersService,
     private readonly activity: ActivityService,
+    private readonly announcements: AnnouncementService,
   ) {}
 
   private get rules(): GameRules {
@@ -164,7 +166,7 @@ export class PetsService {
       row: PetRow,
     ) => PetChange<T> | Promise<PetChange<T>>,
   ): Promise<MutationResult<T>> {
-    return this.db.transaction(async (tx) => {
+    const result = await this.db.transaction(async (tx) => {
       const found = await this.findLatest(tx, where, true);
       if (!found) {
         throw new NotFoundException({
@@ -190,6 +192,17 @@ export class PetsService {
       }
       return { row: row!, ownerName: found.ownerName, events, extra };
     });
+    // Once the change is saved for good, not before: a rolled back hatching is not news.
+    this.announcements.petEvents(
+      {
+        petName: result.row.state.name,
+        ownerName: result.ownerName,
+        species: result.row.state.species,
+        form: result.row.state.form,
+      },
+      result.events,
+    );
+    return result;
   }
 
   private async findLatest(executor: Database | Transaction, where: SQL, lock = false) {

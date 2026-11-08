@@ -8,6 +8,7 @@ import { InjectDrizzle } from '@nestjs/drizzle';
 import type { ItemId } from '@2tamago/core';
 import type { Inventory, PlayerDto } from '@2tamago/core/contracts';
 import { and, eq, gt, gte, sql } from 'drizzle-orm';
+import { AnnouncementService } from '../announcements/announcement.service.js';
 import { ActivityService } from '../activity/activity.service.js';
 import { Clock, dayOf } from '../common/clock.js';
 import { AppConfig } from '../config/app-config.js';
@@ -32,6 +33,7 @@ export class PlayersService {
     private readonly config: AppConfig,
     private readonly clock: Clock,
     private readonly activity: ActivityService,
+    private readonly announcements: AnnouncementService,
   ) {}
 
   async upsertFromLogin(input: {
@@ -39,6 +41,10 @@ export class PlayersService {
     displayName: string;
     avatarUrl: string | null;
   }): Promise<PlayerRow> {
+    const [existing] = await this.db
+      .select({ id: players.id })
+      .from(players)
+      .where(eq(players.discordId, input.discordId));
     const [row] = await this.db
       .insert(players)
       .values(input)
@@ -47,6 +53,7 @@ export class PlayersService {
         set: { displayName: input.displayName, avatarUrl: input.avatarUrl, lastSeenAt: new Date() },
       })
       .returning();
+    if (!existing) this.announcements.newPlayer(row!.displayName);
     return row!;
   }
 
