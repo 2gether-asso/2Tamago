@@ -29,6 +29,8 @@ const envSchema = z
     AUTH_SECRET: z.string().min(16).optional(),
     AUTH_DEV_LOGIN: bool,
     COOKIE_SECURE: bool,
+    /** Sentry or GlitchTip DSN; error reporting is off without it. */
+    SENTRY_DSN: z.string().optional(),
     WEB_ORIGIN: z.url().default('http://localhost:4321'),
 
     DISCORD_CLIENT_ID: z.string().optional(),
@@ -67,6 +69,7 @@ export class AppConfig {
     adminDiscordIds: string[];
   };
   readonly webOrigin: string;
+  readonly sentryDsn: string | undefined;
   readonly discord: {
     clientId: string;
     clientSecret: string;
@@ -89,6 +92,7 @@ export class AppConfig {
       adminDiscordIds: env.ADMIN_DISCORD_IDS,
     };
     this.webOrigin = env.WEB_ORIGIN;
+    this.sentryDsn = env.SENTRY_DSN || undefined;
     this.discord =
       env.DISCORD_CLIENT_ID && env.DISCORD_CLIENT_SECRET && env.DISCORD_GUILD_ID
         ? {
