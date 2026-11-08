@@ -513,6 +513,7 @@ export const API_ERROR_CODES = [
   'not_giftable',
   'own_pet',
   'own_profile',
+  'push_disabled',
 ] as const;
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];
 

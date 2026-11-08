@@ -12,6 +12,7 @@ import { FeedbackModule } from './feedback/feedback.module.js';
 import { GameModule } from './game/game.module.js';
 import { HealthController } from './health/health.controller.js';
 import { PetsModule } from './pets/pets.module.js';
+import { PushModule } from './push/push.module.js';
 import { ShopModule } from './shop/shop.module.js';
 import { ProfileModule } from './profile/profile.module.js';
 import { SocialModule } from './social/social.module.js';
@@ -28,6 +29,7 @@ import { SocialModule } from './social/social.module.js';
     FeedbackModule,
     PetsModule,
     ProfileModule,
+    PushModule,
     ShopModule,
     SocialModule,
   ],
