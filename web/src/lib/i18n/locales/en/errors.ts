@@ -30,4 +30,5 @@ export const errors: Record<keyof typeof fr, string> = {
   'error.not_enough_coins': 'Not enough coins.',
   'error.not_giftable': 'Only treats can be given.',
   'error.own_pet': 'This is your own companion!',
+  'error.own_profile': 'You cannot follow yourself.',
 };

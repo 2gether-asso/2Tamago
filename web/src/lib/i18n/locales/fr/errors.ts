@@ -28,4 +28,5 @@ export const errors = {
   'error.not_enough_coins': 'Pas assez de pièces.',
   'error.not_giftable': 'Seules les friandises peuvent être offertes.',
   'error.own_pet': 'C’est ton propre compagnon !',
+  'error.own_profile': 'Tu ne peux pas te suivre toi-même.',
 } as const;

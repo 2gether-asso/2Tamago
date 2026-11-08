@@ -1,6 +1,7 @@
-import { Body, Controller, Get, HttpCode, Param, Post } from '@nestjs/common';
-import { giftBody, uuidParam, type GiftBody } from '@2tamago/core/contracts';
+import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put } from '@nestjs/common';
+import { giftBody, uuidParam, type FavoriteResponse, type GiftBody } from '@2tamago/core/contracts';
 import { CurrentSession, type Session } from '../auth/session.js';
+import { FavoritesService } from './favorites.service.js';
 import { VillageService } from './village.service.js';
 import { WalksService } from './walks.service.js';
 
@@ -9,6 +10,7 @@ export class SocialController {
   constructor(
     private readonly village: VillageService,
     private readonly walks: WalksService,
+    private readonly favorites: FavoritesService,
   ) {}
 
   @Post('pet/walk')
@@ -47,5 +49,21 @@ export class SocialController {
     @Body({ schema: giftBody }) body: GiftBody,
   ) {
     return this.village.gift(session.playerId, petId, body.item);
+  }
+
+  @Put('players/:playerId/favorite')
+  async follow(
+    @CurrentSession() session: Session,
+    @Param('playerId', { schema: uuidParam }) playerId: string,
+  ): Promise<FavoriteResponse> {
+    return { favorite: await this.favorites.set(session.playerId, playerId, true) };
+  }
+
+  @Delete('players/:playerId/favorite')
+  async unfollow(
+    @CurrentSession() session: Session,
+    @Param('playerId', { schema: uuidParam }) playerId: string,
+  ): Promise<FavoriteResponse> {
+    return { favorite: await this.favorites.set(session.playerId, playerId, false) };
   }
 }

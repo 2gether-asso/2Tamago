@@ -384,6 +384,8 @@ export interface PlayerProfile {
     /** When they first signed in (epoch ms). */
     memberSince: number;
     isYou: boolean;
+    /** Whether the viewer follows this player. */
+    favorite: boolean;
   };
   stats: PlayerStats;
   /** Their living companion, brought up to date. */
@@ -401,8 +403,15 @@ export interface VillagePet {
   traits: PetTraits | null;
   equipped: string | null;
   mood: Mood;
+  ownerId: string;
   ownerName: string;
   caressedToday: boolean;
+  /** Whether the viewer follows the owner (favorites come first in the village). */
+  favorite: boolean;
+}
+
+export interface FavoriteResponse {
+  favorite: boolean;
 }
 
 export interface VisitResponse {
@@ -448,6 +457,7 @@ export const API_ERROR_CODES = [
   'not_enough_coins',
   'not_giftable',
   'own_pet',
+  'own_profile',
 ] as const;
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];
 

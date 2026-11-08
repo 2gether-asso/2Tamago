@@ -5,7 +5,7 @@ import type { PlayerProfile, PlayerStats } from '@2tamago/core/contracts';
 import { and, count, eq, inArray, isNotNull, or } from 'drizzle-orm';
 import { Clock } from '../common/clock.js';
 import type { Database } from '../database/database.js';
-import { encounters, interactions, pets, players, walks } from '../database/schema.js';
+import { encounters, favorites, interactions, pets, players, walks } from '../database/schema.js';
 import { GameRulesService } from '../game/game-rules.service.js';
 import { toPetDto } from '../pets/pet-mapper.js';
 import { PetsService } from '../pets/pets.service.js';
@@ -32,6 +32,10 @@ export class ProfileService {
         code: 'no_player',
       });
     }
+    const [followed] = await this.db
+      .select({ id: favorites.favoriteId })
+      .from(favorites)
+      .where(and(eq(favorites.playerId, viewerId), eq(favorites.favoriteId, playerId)));
     const living = await this.pets.sync(and(eq(pets.ownerId, playerId), eq(pets.status, 'alive'))!);
     return {
       player: {
@@ -40,6 +44,7 @@ export class ProfileService {
         avatarUrl: player.avatarUrl,
         memberSince: player.createdAt.getTime(),
         isYou: player.id === viewerId,
+        favorite: followed !== undefined,
       },
       stats: await this.stats(playerId),
       pet: living ? toPetDto(living.row, living.ownerName) : null,

@@ -190,6 +190,71 @@ describe('2Tamago API (e2e)', () => {
     expect(bobs.stats.caressesGiven).toBe(1);
   });
 
+  it('follows players, and sorts the village by favorites then affinity', async () => {
+    const alice = await signIn('Alice');
+    const bob = await signIn('Bob');
+    const carol = await signIn('Carol');
+    const dave = await signIn('Dave');
+    for (const [agent, name] of [
+      [alice, 'Pompon'],
+      [bob, 'Caillou'],
+      [carol, 'Nuage'],
+      [dave, 'Mochi'],
+    ] as const) {
+      await adopt(agent, name);
+      clock.advance(hours(0.1));
+    }
+    clock.advance(hours(0.5));
+    const me = async (agent: typeof alice): Promise<MeResponse> =>
+      (await agent.get('/api/me').expect(200)).body;
+    const [aliceMe, bobMe, carolMe, daveMe] = [
+      await me(alice),
+      await me(bob),
+      await me(carol),
+      await me(dave),
+    ];
+    const names = async () =>
+      ((await alice.get('/api/village').expect(200)).body as VillagePet[]).map((p) => p.name);
+
+    // Alice visits Carol: she comes first, as a close player (the rest is by recent activity).
+    expect(await names()).toHaveLength(3);
+    await alice.post(`/api/village/${carolMe.pet!.id}/caress`).expect(200);
+    expect((await names())[0]).toBe('Nuage');
+
+    // A favorite comes before everyone else, whatever the affinity.
+    expect((await alice.put(`/api/players/${bobMe.player.id}/favorite`).expect(200)).body).toEqual({
+      favorite: true,
+    });
+    await alice.put(`/api/players/${bobMe.player.id}/favorite`).expect(200); // idempotent
+    const village: VillagePet[] = (await alice.get('/api/village').expect(200)).body;
+    expect(village.map((p) => p.name).slice(0, 2)).toEqual(['Caillou', 'Nuage']);
+    expect(village.map((p) => p.favorite)).toEqual([true, false, false]);
+    expect(village[0]!.ownerId).toBe(bobMe.player.id);
+
+    const profile: PlayerProfile = (await alice.get(`/api/players/${bobMe.player.id}`).expect(200))
+      .body;
+    expect(profile.player.favorite).toBe(true);
+    // Following is private to the follower.
+    const seenByBob: PlayerProfile = (
+      await bob.get(`/api/players/${aliceMe.player.id}`).expect(200)
+    ).body;
+    expect(seenByBob.player.favorite).toBe(false);
+
+    expect(
+      (await alice.delete(`/api/players/${bobMe.player.id}/favorite`).expect(200)).body,
+    ).toEqual({ favorite: false });
+    expect((await names())[0]).toBe('Nuage');
+
+    // Not yourself, not a stranger.
+    const self = await alice.put(`/api/players/${aliceMe.player.id}/favorite`).expect(400);
+    expect(self.body.code).toBe('own_profile');
+    const ghost = await alice
+      .put('/api/players/00000000-0000-4000-8000-000000000000/favorite')
+      .expect(404);
+    expect(ghost.body.code).toBe('no_player');
+    await request(app.getHttpServer()).put(`/api/players/${daveMe.player.id}/favorite`).expect(401);
+  });
+
   it('refuses unknown players and bad ids, and anonymous visitors', async () => {
     const alice = await signIn('Alice');
     const { body } = await alice
