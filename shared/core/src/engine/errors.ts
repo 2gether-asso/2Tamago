@@ -19,6 +19,7 @@ export const GAME_ERROR_CODES = [
   'on_vacation',
   'not_on_vacation',
   'vacation_cooldown',
+  'zone_locked',
 ] as const;
 
 export type GameErrorCode = (typeof GAME_ERROR_CODES)[number];
@@ -43,6 +44,7 @@ export const GAME_ERROR_MESSAGES: Record<GameErrorCode, string> = {
   on_vacation: 'Il est en vacances.',
   not_on_vacation: 'Il n’est pas en vacances.',
   vacation_cooldown: 'Il est rentré de vacances il y a trop peu de temps.',
+  zone_locked: 'Il est encore trop jeune pour aller là-bas.',
 };
 
 export class GameError extends Error {

@@ -4,6 +4,8 @@
  * All timestamps are epoch milliseconds (real time).
  */
 
+import type { WalkZoneId } from './zones.js';
+
 export const SPECIES = ['mochi', 'pyon', 'kumo', 'koro', 'nyao', 'toge'] as const;
 export type Species = (typeof SPECIES)[number];
 
@@ -58,6 +60,8 @@ export interface NeedTracker {
 export interface Outing {
   startedAt: number;
   endsAt: number;
+  /** Where it went. Absent on walks that began before zones existed (the meadow). */
+  zone?: WalkZoneId;
 }
 
 export interface PetState {

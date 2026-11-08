@@ -4,6 +4,7 @@ import { alignToGrid, gameHours, type GameRules } from './rules.js';
 import { clamp, endVacation, simulate } from './simulate.js';
 import { isNight } from './night.js';
 import { hashSeed, modOf, rollTraits } from './traits.js';
+import { DEFAULT_ZONE, WALK_ZONES, zoneOpenTo, type WalkZoneId } from './zones.js';
 import { type PetEvent, type PetState, type Species, type TrickId, TRICKS } from './types.js';
 
 export interface NewPetInput {
@@ -73,7 +74,7 @@ export type OwnerAction =
 
 /** Actions triggered by the server: outings, and what other players do. */
 export type SystemAction =
-  | { type: 'startOuting' }
+  | { type: 'startOuting'; zone?: WalkZoneId }
   | { type: 'endOuting' }
   | { type: 'visitorCaress' }
   | { type: 'visitorTreat'; item: ItemId };
@@ -276,19 +277,26 @@ export function applyAction(
     case 'startOuting': {
       requireAwake();
       if (state.stage === 'baby') throw new GameError('too_young');
-      if (s.energy < 20) throw new GameError('too_tired');
-      state.outing = { startedAt: at, endsAt: at + gameHours(rules, rules.outingHours) };
+      const zone = WALK_ZONES[action.zone ?? DEFAULT_ZONE];
+      if (!zoneOpenTo(zone, state.stage)) throw new GameError('zone_locked');
+      if (s.energy < zone.energyCost + 5) throw new GameError('too_tired');
+      state.outing = {
+        startedAt: at,
+        endsAt: at + gameHours(rules, rules.outingHours * zone.durationFactor),
+        zone: zone.id,
+      };
       break;
     }
     case 'endOuting': {
       if (!state.outing) throw new GameError('not_away');
       if (at < state.outing.endsAt) throw new GameError('outing_not_finished');
+      const zone = WALK_ZONES[state.outing.zone ?? DEFAULT_ZONE];
       state.outing = null;
       add('happiness', 15);
-      add('energy', -15);
-      add('satiety', -10);
+      add('energy', -zone.energyCost);
+      add('satiety', -zone.satietyCost);
       state.weight = Math.max(5, state.weight - 2);
-      state.bond = clamp(state.bond + 3);
+      state.bond = clamp(state.bond + zone.bondGain);
       break;
     }
     default: {
