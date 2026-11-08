@@ -5,6 +5,7 @@
 import { z } from 'zod';
 import { ITEM_IDS, type ItemId } from '../engine/catalog.js';
 import type { Alert, Mood } from '../engine/view.js';
+import type { GameRules, RulesOverrides } from '../engine/rules.js';
 import {
   SPECIES,
   TRICKS,
@@ -24,6 +25,60 @@ const petName = z
   .regex(/^[\p{L}\p{N} '’-]+$/u, 'Lettres, chiffres, espaces et tirets uniquement');
 
 // ---------------------------------------------------------------- requests
+
+const nonNegative = z.number().min(0).max(1_000_000);
+const positive = z.number().gt(0).max(1_000_000);
+const perStage = z
+  .object({
+    egg: nonNegative,
+    baby: nonNegative,
+    child: nonNegative,
+    teen: nonNegative,
+    adult: nonNegative,
+    elder: nonNegative,
+  })
+  .partial()
+  .strict();
+
+/** Game tunings editable by an admin (see `RulesOverrides`). Unknown keys are refused. */
+export const rulesOverridesBody = z
+  .object({
+    stageHours: perStage.extend({ elder: nonNegative.nullable().optional() }),
+    stageNeediness: perStage,
+    awakeDecayPerHour: z
+      .object({
+        satiety: nonNegative,
+        happiness: nonNegative,
+        energy: nonNegative,
+        hygiene: nonNegative,
+      })
+      .partial()
+      .strict(),
+    asleepDecayPerHour: z
+      .object({ satiety: nonNegative, happiness: nonNegative, hygiene: nonNegative })
+      .partial()
+      .strict(),
+    energyRecoveryPerHour: nonNegative,
+    disciplineDecayPerHour: nonNegative,
+    hygieneLossPerPoopPerHour: nonNegative,
+    poopIntervalHours: positive,
+    maxPoops: z.number().int().min(0).max(100),
+    sicknessThresholdHours: positive,
+    medicineDoses: z.number().int().min(1).max(100),
+    sickHealthLossPerHour: nonNegative,
+    starvingHealthLossPerHour: nonNegative,
+    healthRegenPerHour: nonNegative,
+    overweightThreshold: nonNegative,
+    mistakeGraceHours: nonNegative,
+    tantrumIntervalHours: positive,
+    tantrumWindowHours: nonNegative,
+    outingHours: nonNegative,
+    caressCooldownSeconds: nonNegative,
+    departureEnabled: z.boolean(),
+  })
+  .partial()
+  .strict() satisfies z.ZodType<RulesOverrides>;
+export type RulesOverridesBody = z.infer<typeof rulesOverridesBody>;
 
 export const devLoginBody = z.object({
   name: z.string().trim().min(2).max(32),
@@ -66,6 +121,13 @@ export type GiftBody = z.infer<typeof giftBody>;
 export const uuidParam = z.uuid();
 
 // --------------------------------------------------------------- responses
+
+/** Admin view of the game rules: what the code and environment give, what is overridden, the result. */
+export interface AdminRulesResponse {
+  base: GameRules;
+  overrides: RulesOverrides;
+  effective: GameRules;
+}
 
 export interface PlayerDto {
   id: string;

@@ -95,6 +95,33 @@ export function withRules(overrides: Partial<GameRules> = {}): GameRules {
   return { ...DEFAULT_RULES, ...overrides };
 }
 
+/** Rules that cannot change while pets live: they would rewrite every pet's timeline. */
+export type FixedRuleKey = 'timeScale' | 'stepMinutes' | 'maxStepsPerSimulation';
+
+/**
+ * Tunings an admin may change at runtime. Object-valued rules are overridden key by key, so
+ * `{ stageHours: { baby: 6 } }` keeps the other stages as they are.
+ */
+export type RulesOverrides = {
+  [K in Exclude<keyof GameRules, FixedRuleKey>]?: GameRules[K] extends object
+    ? Partial<GameRules[K]>
+    : GameRules[K];
+};
+
+/** `base` with the overrides applied (pure: `base` is left untouched). */
+export function applyRulesOverrides(base: GameRules, overrides: RulesOverrides): GameRules {
+  const rules: Record<string, unknown> = { ...base };
+  for (const [key, value] of Object.entries(overrides)) {
+    if (value === undefined) continue;
+    const current = rules[key];
+    rules[key] =
+      typeof value === 'object' && value !== null && typeof current === 'object'
+        ? { ...current, ...value }
+        : value;
+  }
+  return rules as unknown as GameRules;
+}
+
 const HOUR_MS = 3_600_000;
 
 /** Real milliseconds in `hours` game hours. */
