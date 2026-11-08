@@ -137,3 +137,10 @@ export const activity = pgTable(
 
 export type PlayerRow = typeof players.$inferSelect;
 export type PetRow = typeof pets.$inferSelect;
+
+/** Runtime settings edited from the admin screen (one row per setting, JSON value). */
+export const gameSettings = pgTable('game_settings', {
+  key: text().primaryKey(),
+  value: jsonb().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
