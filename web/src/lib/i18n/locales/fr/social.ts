@@ -35,5 +35,6 @@ export const social = {
   'visit.owner': 'Compagnon de {owner} · {stage}',
   'visit.caressed': 'Déjà caressé aujourd’hui 💞',
   'visit.caress': 'Caresser 🤚',
+  'visit.on_vacation': '{name} est en vacances : pas de caresse ni de cadeau pour l’instant.',
   'visit.gift': 'Offrir : {item} ×{count}',
 } as const;

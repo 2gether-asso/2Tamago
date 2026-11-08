@@ -73,7 +73,9 @@
     />
     <p><strong>{moodLabel(visit.pet.mood)}</strong></p>
 
-    {#if !isMine && pet.stage !== 'egg'}
+    {#if !isMine && pet.vacationSince != null}
+      <p class="muted">{t('visit.on_vacation', { name: pet.name })}</p>
+    {:else if !isMine && pet.stage !== 'egg'}
       <div class="actions">
         <button
           class="primary"

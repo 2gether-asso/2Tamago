@@ -23,6 +23,9 @@ export const feed: Record<keyof typeof fr, string> = {
   'event.attention_call': '{name} is throwing a tantrum!',
   'event.trick_level_up': '{name} is getting better at “{trick}”!',
   'event.departed': '{name} has left…',
+  'event.vacation_started': '{name} is off on vacation.',
+  'event.vacation_ended': '{name} is back from vacation.',
+  'event.vacation_ended_auto': '{name} came back from vacation: the longest stay was reached.',
   'event.retired': '{name} is off to enjoy a quiet life.',
 
   'activity.daily_bonus_one': 'Daily bonus: +{count} coin.',

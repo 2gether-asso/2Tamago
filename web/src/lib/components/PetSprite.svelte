@@ -422,6 +422,9 @@
       <text class="zzz" x="150" y="60" font-size="26" fill={line}>z</text>
       <text class="zzz late" x="165" y="40" font-size="20" fill={line}>z</text>
     {/if}
+    {#if mood === 'vacation'}
+      <text x="140" y="62" font-size="34">🏖️</text>
+    {/if}
     {#if mood === 'calling'}
       <text x="150" y="70" font-size="40" font-weight="bold" fill="hsl(0 75% 55%)">!</text>
     {/if}

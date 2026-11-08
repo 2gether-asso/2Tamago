@@ -25,6 +25,7 @@ export const catalog: Record<keyof typeof fr, string> = {
   'mood.egg': 'In its egg',
   'mood.gone': 'Gone',
   'mood.retired': 'Retired',
+  'mood.vacation': 'On vacation',
   'mood.away': 'On a walk',
   'mood.sleeping': 'Asleep',
   'mood.sick': 'Sick',

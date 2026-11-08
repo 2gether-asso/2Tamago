@@ -1,6 +1,7 @@
 <script lang="ts">
   import {
     ageInDays,
+    gameHours,
     bedtimeOf,
     isAccessory,
     isNight,
@@ -17,7 +18,7 @@
   import PlayGame from '#lib/components/PlayGame.svelte';
   import StatBar from '#lib/components/StatBar.svelte';
   import { game } from '#lib/game.svelte.ts';
-  import { t } from '#lib/i18n/index.svelte.ts';
+  import { intlTag, t } from '#lib/i18n/index.svelte.ts';
   import {
     alertLabel,
     formLabel,
@@ -38,7 +39,8 @@
   let now = $derived(game.now + game.clockOffset);
   let alive = $derived(pet?.status === 'alive');
   let hatched = $derived(alive && pet?.stage !== 'egg');
-  let free = $derived(hatched && !pet?.outing);
+  let vacation = $derived(pet?.vacationSince != null);
+  let free = $derived(hatched && !pet?.outing && !vacation);
   let awake = $derived(free && !pet?.asleep);
   let night = $derived(game.rules && pet ? isNight(game.rules, now, pet.stage) : false);
   let bedtime = $derived(game.rules && pet ? bedtimeOf(game.rules, pet.stage) : null);
@@ -52,6 +54,18 @@
     (Object.entries(game.inventory) as [ItemId, number][]).filter(
       ([id, n]) => n > 0 && isAccessory(id),
     ),
+  );
+  let dateFormat = $derived(new Intl.DateTimeFormat(intlTag(), { dateStyle: 'long' }));
+  /** When the pet may go on vacation again, if it came back recently (otherwise `null`). */
+  let vacationAvailableOn = $derived.by(() => {
+    if (!game.rules || pet?.vacationEndedAt == null) return null;
+    const date = pet.vacationEndedAt + gameHours(game.rules, game.rules.vacationCooldownHours);
+    return date > now ? date : null;
+  });
+  let vacationEnds = $derived(
+    game.rules && pet?.vacationSince != null
+      ? pet.vacationSince + gameHours(game.rules, game.rules.vacationMaxHours)
+      : null,
   );
   let walkLeft = $derived(pet?.outing ? Math.max(0, pet.outing.endsAt - now) : 0);
 
@@ -226,6 +240,42 @@
             </button>
           {/each}
         </div>
+      {/if}
+    </section>
+
+    <section class="card">
+      <h3>{t('home.vacation.title')}</h3>
+      {#if vacation && pet.vacationSince != null && vacationEnds !== null}
+        <p>
+          {t('home.vacation.active', {
+            name: pet.name,
+            since: dateFormat.format(pet.vacationSince),
+            until: dateFormat.format(vacationEnds),
+          })}
+        </p>
+        <button
+          class="primary"
+          disabled={game.busy}
+          onclick={() => game.act({ type: 'endVacation' })}>{t('home.vacation.end')}</button
+        >
+      {:else}
+        <p class="muted">
+          {t('home.vacation.intro', {
+            name: pet.name,
+            days: game.rules ? Math.round(game.rules.vacationMaxHours / 24) : 14,
+          })}
+        </p>
+        {#if vacationAvailableOn !== null}
+          <p class="muted">
+            {t('home.vacation.cooldown', { date: dateFormat.format(vacationAvailableOn) })}
+          </p>
+        {/if}
+        <button
+          disabled={!free || game.busy || vacationAvailableOn !== null}
+          onclick={() =>
+            confirm(t('home.vacation.start_confirm', { name: pet.name })) &&
+            game.act({ type: 'startVacation' })}>{t('home.vacation.start')}</button
+        >
       {/if}
     </section>
 

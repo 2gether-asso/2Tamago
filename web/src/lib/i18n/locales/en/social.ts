@@ -36,5 +36,6 @@ export const social: Record<keyof typeof fr, string> = {
   'visit.owner': '{owner}’s companion · {stage}',
   'visit.caressed': 'Already petted today 💞',
   'visit.caress': 'Pet 🤚',
+  'visit.on_vacation': '{name} is on vacation: no pets or gifts for now.',
   'visit.gift': 'Give: {item} ×{count}',
 };

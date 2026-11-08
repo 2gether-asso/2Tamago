@@ -40,6 +40,10 @@ export function eventText(event: PetEvent, name: string): string | null {
       return event.data?.exhausted
         ? t('event.fell_asleep_exhausted', { name })
         : t('event.fell_asleep', { name });
+    case 'vacation_ended':
+      return t(event.data?.automatic ? 'event.vacation_ended_auto' : 'event.vacation_ended', {
+        name,
+      });
     case 'trick_level_up':
       return t('event.trick_level_up', { name, trick: trickLabel(event.data?.trick as TrickId) });
     case 'fell_ill':
@@ -49,6 +53,7 @@ export function eventText(event: PetEvent, name: string): string | null {
     case 'attention_call':
     case 'departed':
     case 'retired':
+    case 'vacation_started':
       return t(`event.${event.type}`, { name });
     default:
       return null;

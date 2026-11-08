@@ -23,6 +23,7 @@ export const catalog = {
   'mood.egg': 'Dans son œuf',
   'mood.gone': 'Parti',
   'mood.retired': 'À la retraite',
+  'mood.vacation': 'En vacances',
   'mood.away': 'En promenade',
   'mood.sleeping': 'Dort',
   'mood.sick': 'Malade',

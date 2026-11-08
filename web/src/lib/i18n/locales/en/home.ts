@@ -6,6 +6,16 @@ export const home: Record<keyof typeof fr, string> = {
   'home.farewell.left': '{name} has left…',
   'home.farewell.left_hint':
     'It did not feel looked after enough. It now lives its own life, somewhere out there.',
+  'home.vacation.title': 'Vacation',
+  'home.vacation.intro':
+    'Go away with peace of mind: on vacation, {name} does not age and needs nothing. It ends by itself after {days} days.',
+  'home.vacation.start': '🏖️ Go on vacation',
+  'home.vacation.start_confirm':
+    'Send {name} on vacation? You will not be able to do anything with it until it is back, and it will get no pets or gifts.',
+  'home.vacation.cooldown': 'You can go on vacation again from {date}.',
+  'home.vacation.active':
+    '{name} has been on vacation since {since}. It comes back by itself on {until}.',
+  'home.vacation.end': '🏠 Bring back from vacation',
   'home.farewell.album': 'It will stay in your album.',
   'home.bedtime': 'Bedtime: {start}:00 to {end}:00',
   'home.bedtime_hint': '🌙 Bedtime: turn off the light',

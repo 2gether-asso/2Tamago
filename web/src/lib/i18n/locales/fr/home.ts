@@ -4,6 +4,16 @@ export const home = {
   'home.farewell.left': '{name} est parti…',
   'home.farewell.left_hint':
     'Il ne se sentait plus assez entouré. Il vit désormais sa vie, quelque part.',
+  'home.vacation.title': 'Vacances',
+  'home.vacation.intro':
+    'Pars tranquille : pendant les vacances, {name} ne vieillit pas et n’a besoin de rien. Elles se terminent d’elles-mêmes au bout de {days} jours.',
+  'home.vacation.start': '🏖️ Partir en vacances',
+  'home.vacation.start_confirm':
+    'Mettre {name} en vacances ? Tu ne pourras rien faire avec lui avant son retour, et il ne recevra ni caresses ni cadeaux.',
+  'home.vacation.cooldown': 'Tu pourras repartir en vacances à partir du {date}.',
+  'home.vacation.active':
+    '{name} est en vacances depuis le {since}. Il rentre tout seul le {until}.',
+  'home.vacation.end': '🏠 Revenir de vacances',
   'home.farewell.album': 'Il restera dans ton album.',
   'home.bedtime': 'Coucher : de {start} h à {end} h',
   'home.bedtime_hint': '🌙 C’est l’heure du coucher : éteins la lumière',
