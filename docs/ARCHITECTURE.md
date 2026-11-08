@@ -88,7 +88,7 @@ SvelteKit garde Svelte (Svelte 5 et ses runes) et apporte un routeur client. Il 
 
 ### 5. Identité : un jeton signé, une seule règle
 
-- **Discord OAuth2** (code d'autorisation, `state` dans un cookie) avec le scope `guilds.members.read`. Seuls les membres de `DISCORD_GUILD_ID` peuvent se connecter.
+- **Discord OAuth2** (code d'autorisation, `state` à usage unique dans un cookie) avec les scopes `identify` et `guilds.members.read`. Seuls les membres de `DISCORD_GUILD_ID` peuvent se connecter ; une panne de Discord n'est jamais prise pour « pas membre ». Détails, erreurs et annonces dans [DISCORD.md](DISCORD.md).
 - L'API émet un **JWT HS256** (`@nestjs/jwt`) dans un cookie `HttpOnly`, `SameSite=Lax`, valable 30 jours. Un en-tête `Authorization: Bearer` est aussi accepté pour les scripts et un futur client WebSocket.
 - Un **garde global** protège toutes les routes ; `@Public()` marque les exceptions. `@CurrentSession()` donne l'identité au contrôleur, et un joueur n'agit que sur ses propres données.
 - Les administrateurs sont listés dans **une seule** variable (`ADMIN_DISCORD_IDS`), ce qui corrige l'éparpillement constaté dans 2Gatcha.
@@ -104,17 +104,18 @@ Les corps de requête sont des schémas **Zod** dans `@2tamago/core/contracts`. 
 
 Un module Nest par domaine :
 
-| Module             | Contenu                                                                                    |
-| ------------------ | ------------------------------------------------------------------------------------------ |
-| `config/`          | `AppConfig` : toutes les variables d'environnement validées une fois au démarrage, `Clock` |
-| `database/`        | Schéma Drizzle, ouverture de la base et migrations, `DrizzleModule`                        |
-| `auth/`            | Garde global, cookie de session, Discord OAuth2, login de dev                              |
-| `players/`         | Joueurs, pièces (bonus quotidien, plafond journalier), inventaire                          |
-| `pets/`            | `GET /me`, adoption, actions du propriétaire, album, et `PetsService.mutate()`             |
-| `social/`          | Village (visites, caresses, cadeaux), promenades et rencontres                             |
-| `shop/`            | Achats                                                                                     |
-| `activity/`        | Journal du joueur, écrit dans la transaction de l'action qui le produit                    |
-| `game/`, `health/` | Règles publiques, sonde de santé                                                           |
+| Module             | Contenu                                                                                                  |
+| ------------------ | -------------------------------------------------------------------------------------------------------- |
+| `config/`          | `AppConfig` : toutes les variables d'environnement validées une fois au démarrage, `Clock`               |
+| `database/`        | Schéma Drizzle, ouverture de la base et migrations, `DrizzleModule`                                      |
+| `auth/`            | Garde global, cookie de session, Discord OAuth2, login de dev                                            |
+| `announcements/`   | Annonces dans un salon Discord (webhook) : nouveaux joueurs, éclosions, croissance, premières rencontres |
+| `players/`         | Joueurs, pièces (bonus quotidien, plafond journalier), inventaire                                        |
+| `pets/`            | `GET /me`, adoption, actions du propriétaire, album, et `PetsService.mutate()`                           |
+| `social/`          | Village (visites, caresses, cadeaux), promenades et rencontres                                           |
+| `shop/`            | Achats                                                                                                   |
+| `activity/`        | Journal du joueur, écrit dans la transaction de l'action qui le produit                                  |
+| `game/`, `health/` | Règles publiques, sonde de santé                                                                         |
 
 `Clock` est injectable, ce qui permet aux tests e2e de **voyager dans le temps** (faire éclore un œuf, laisser partir un compagnon délaissé).
 

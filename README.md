@@ -26,7 +26,7 @@ Ouvrir <http://localhost:4321> et se connecter avec un pseudo (mode dev). Il n'y
 
 - Pour voir le jeu avancer vite, mettre `GAME_TIME_SCALE=60` dans `api/.env` : une journée de jeu dure alors 24 minutes.
 - Pour développer contre un vrai PostgreSQL : `make db-up`, puis `DATABASE_URL=postgres://tamago:tamago@db:5432/tamago` dans `api/.env`.
-- Pour se connecter avec Discord en local, créer une application sur le [portail développeur Discord](https://discord.com/developers/applications), ajouter `http://localhost:4321/api/auth/discord/callback` aux redirections, puis renseigner `DISCORD_*` dans `api/.env`.
+- Pour se connecter avec Discord en local, créer une application sur le [portail développeur Discord](https://discord.com/developers/applications), ajouter `http://localhost:4321/api/auth/discord/callback` aux redirections, puis renseigner `DISCORD_*` dans `api/.env`. Le guide complet (connexion, annonces dans un salon, dépannage) est dans [docs/DISCORD.md](docs/DISCORD.md).
 
 ## Commandes
 
