@@ -126,21 +126,21 @@ Les corps de requête sont des schémas **Zod** dans `@2tamago/core/contracts`. 
 
 Un module Nest par domaine :
 
-| Module             | Contenu                                                                                                                                    |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `config/`          | `AppConfig` : toutes les variables d'environnement validées une fois au démarrage, `Clock`, `GET /config` (réglages publics du front)      |
-| `database/`        | Schéma Drizzle, ouverture de la base et migrations, `DrizzleModule`                                                                        |
-| `auth/`            | Garde global, sessions (DPoP, rotation, contrôle de l'origine), Discord OAuth2, login de dev                                               |
-| `announcements/`   | Annonces dans un salon Discord (webhook) : nouveaux joueurs, éclosions, croissance, premières rencontres                                   |
-| `players/`         | Joueurs, pièces (bonus quotidien, plafond journalier), inventaire                                                                          |
-| `profile/`         | Profil public d'un joueur : statistiques calculées depuis les tables existantes, compagnon vivant                                          |
-| `pets/`            | `GET /me`, adoption, actions du propriétaire, album, et `PetsService.mutate()`                                                             |
-| `social/`          | Village (visites, caresses, cadeaux, tri par favoris et affinité), favoris, objectif communautaire de la semaine, promenades et rencontres |
-| `shop/`            | Achats                                                                                                                                     |
-| `activity/`        | Journal du joueur, écrit dans la transaction de l'action qui le produit                                                                    |
-| `feedback/`        | Avis des joueurs (bug, idée, autre), transmis à Sentry / GlitchTip                                                                         |
-| `game/`, `health/` | Règles publiques et réglages admin, statistiques admin, sonde de santé                                                                     |
-| `common/`          | `Clock`, filtres d'exceptions (moteur, signalement des erreurs)                                                                            |
+| Module             | Contenu                                                                                                                                              |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `config/`          | `AppConfig` : toutes les variables d'environnement validées une fois au démarrage, `Clock`, `GET /config` (réglages publics du front)                |
+| `database/`        | Schéma Drizzle, ouverture de la base et migrations, `DrizzleModule`                                                                                  |
+| `auth/`            | Garde global, sessions (DPoP, rotation, contrôle de l'origine), Discord OAuth2, login de dev                                                         |
+| `announcements/`   | Annonces dans un salon Discord (webhook) : nouveaux joueurs, éclosions, croissance, premières rencontres                                             |
+| `players/`         | Joueurs, pièces (bonus quotidien, plafond journalier), inventaire                                                                                    |
+| `profile/`         | Profil public d'un joueur : statistiques calculées depuis les tables existantes, compagnon vivant                                                    |
+| `pets/`            | `GET /me`, adoption, actions du propriétaire, album, et `PetsService.mutate()`                                                                       |
+| `social/`          | Village (visites, caresses, cadeaux, tri par favoris et affinité), favoris, objectif communautaire de la semaine, garderie, promenades et rencontres |
+| `shop/`            | Achats                                                                                                                                               |
+| `activity/`        | Journal du joueur, écrit dans la transaction de l'action qui le produit                                                                              |
+| `feedback/`        | Avis des joueurs (bug, idée, autre), transmis à Sentry / GlitchTip                                                                                   |
+| `game/`, `health/` | Règles publiques et réglages admin, statistiques admin, sonde de santé                                                                               |
+| `common/`          | `Clock`, filtres d'exceptions (moteur, signalement des erreurs)                                                                                      |
 
 `Clock` est injectable, ce qui permet aux tests e2e de **voyager dans le temps** (faire éclore un œuf, laisser partir un compagnon délaissé).
 
@@ -158,12 +158,13 @@ Un module Nest par domaine :
 | `GET /players/:playerId`                                                                                                                                                                                   | Profil : joueur, statistiques, compagnon vivant                                       |
 | `POST /feedback`                                                                                                                                                                                           | Avis d'un joueur (bug, idée, autre), transmis à Sentry / GlitchTip                    |
 | `PUT` / `DELETE /push/subscription` · `POST /push/test`                                                                                                                                                    | Notifications                                                                         |
+| `GET /daycare` · `POST /daycare` · `POST /daycare/:id/accept` · `/decline` · `DELETE /daycare/:id` · `POST /daycare/:id/care`                                                                              | Garderie                                                                              |
 | `GET /admin/stats`                                                                                                                                                                                         | Admin : chiffres du jeu entier (joueurs, compagnons, économie, activité, équilibrage) |
 | `GET /admin/rules` · `PUT /admin/rules`                                                                                                                                                                    | Admin : réglages du jeu en base                                                       |
 
 ### Modèle de données
 
-`players` · `pets` (état en JSONB, un seul vivant par joueur grâce à un index unique partiel) · `inventory` · `interactions` (caresses et cadeaux, une caresse par jour grâce à un index unique partiel) · `walks` · `encounters` (paires de promenades) · `activity` · `favorites` (joueurs suivis) · `community_goals` et `community_claims` (objectif de la semaine et récompenses prises) · `push_subscriptions` et `push_alerts` (navigateurs abonnés aux notifications, alertes déjà envoyées).
+`players` · `pets` (état en JSONB, un seul vivant par joueur grâce à un index unique partiel) · `inventory` · `interactions` (caresses et cadeaux, une caresse par jour grâce à un index unique partiel) · `walks` · `encounters` (paires de promenades) · `activity` · `favorites` (joueurs suivis) · `community_goals` et `community_claims` (objectif de la semaine et récompenses prises) · `daycares` (compagnon confié : invitation, séjour, historique ; un seul séjour ouvert par compagnon grâce à un index unique partiel) · `push_subscriptions` et `push_alerts` (navigateurs abonnés aux notifications, alertes déjà envoyées).
 
 ## Frontend (`web/src`)
 
