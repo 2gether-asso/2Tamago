@@ -17,9 +17,17 @@ function sprite(species: Species, pattern: Pattern, eyes: (typeof EYES)[number] 
   }).body;
 }
 
-const SHAPE = /<(ellipse|circle|rect|path)\b/g;
-const shapes = (markup: string) => markup.match(SHAPE)?.length ?? 0;
-const maskOf = (body: string) => body.match(/<mask\b[^>]*>([\s\S]*?)<\/mask>/)?.[1] ?? '';
+/** Species with parts behind the body (ears, tail, spikes), which get their own coat. */
+const HAS_BACK = new Set<Species>(['pyon', 'koro', 'nyao', 'toge']);
+
+const SHAPE = /<(?:ellipse|circle|rect|path)\b[^>]*>/g;
+const shapes = (markup: string) => markup.match(SHAPE) ?? [];
+/** The masks of the coat patterns: `{ back, front }`. */
+function masksOf(body: string) {
+  const find = (part: string) =>
+    body.match(new RegExp(`<mask id="coat-${part}-[^"]*"[^>]*>([\\s\\S]*?)</mask>`))?.[1] ?? '';
+  return { back: find('back'), front: find('front') };
+}
 
 describe('pet sprite traits, for every species', () => {
   for (const species of SPECIES) {
@@ -27,12 +35,22 @@ describe('pet sprite traits, for every species', () => {
       it('masks every coat pattern with its own silhouette', () => {
         for (const pattern of PATTERNS.filter((p) => p !== 'plain')) {
           const body = sprite(species, pattern);
-          // The pattern is applied through a mask that really contains the silhouette: an empty
+          const { back, front } = masksOf(body);
+          // The pattern is applied through masks that really contain the silhouette: an empty
           // mask would hide it entirely. Not a clipPath, which silently ignores groups (kumo).
-          expect(shapes(maskOf(body)), `${species} ${pattern}`).toBeGreaterThan(0);
+          expect(shapes(front).length, `${species} ${pattern}`).toBeGreaterThan(0);
+          expect(shapes(back).length > 0, `${species} ${pattern} back`).toBe(HAS_BACK.has(species));
           expect(body).not.toContain('<clipPath');
-          expect(body, `${species} ${pattern}`).toMatch(/<g mask="url\(#coat-/);
+          expect(body).toMatch(/<g mask="url\(#coat-front-/);
         }
+      });
+
+      it('keeps the coat of the back parts away from the body outline', () => {
+        // A stripe over the body must stop at the body outline, not run on to the ears, the tail
+        // or the spikes behind it: the two parts are masked separately.
+        const { back, front } = masksOf(sprite(species, 'stripes'));
+        for (const shape of shapes(back))
+          expect(front, `${species}: ${shape}`).not.toContain(shape);
       });
 
       it('has no pattern when plain', () => {
@@ -48,7 +66,10 @@ describe('pet sprite traits, for every species', () => {
   }
 
   it('gives each species its own silhouette', () => {
-    const silhouettes = SPECIES.map((species) => maskOf(sprite(species, 'spots')));
+    const silhouettes = SPECIES.map((species) => {
+      const { back, front } = masksOf(sprite(species, 'spots'));
+      return back + front;
+    });
     expect(new Set(silhouettes).size).toBe(SPECIES.length);
   });
 

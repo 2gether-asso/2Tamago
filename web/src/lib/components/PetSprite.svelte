@@ -38,6 +38,8 @@
   };
 
   const uid = $props.id();
+  /** Drawn in this order: the parts behind the body first, so the body outline stays on top. */
+  const PARTS = ['back', 'front'] as const;
   let scale = $derived(SCALE[stage]);
   let pattern = $derived(traits?.pattern ?? 'plain');
   let eyes = $derived(traits?.eyes ?? 'round');
@@ -71,115 +73,138 @@
   }
 </script>
 
-{#snippet silhouette()}
+<!--
+  The outline of the species, in two parts: what sits `back` (ears, tail, spikes) and the `front`
+  body that overlaps it. The coat pattern is applied to each part separately, so a stripe never
+  crosses the outline of the body into the parts behind it.
+-->
+{#snippet silhouette(part: 'back' | 'front')}
   {#if species === 'pyon'}
-    <ellipse
-      cx="72"
-      cy="52"
-      rx="14"
-      ry="40"
-      fill={body}
-      stroke={line}
-      stroke-width="4"
-      transform="rotate(-12 72 52)"
-    />
-    <ellipse
-      cx="128"
-      cy="52"
-      rx="14"
-      ry="40"
-      fill={body}
-      stroke={line}
-      stroke-width="4"
-      transform="rotate(12 128 52)"
-    />
-    <ellipse cx="72" cy="56" rx="6" ry="26" fill={shade} transform="rotate(-12 72 56)" />
-    <ellipse cx="128" cy="56" rx="6" ry="26" fill={shade} transform="rotate(12 128 56)" />
-    <ellipse cx="100" cy="125" rx="62" ry="58" fill={body} stroke={line} stroke-width="4" />
+    {#if part === 'back'}
+      <ellipse
+        cx="72"
+        cy="52"
+        rx="14"
+        ry="40"
+        fill={body}
+        stroke={line}
+        stroke-width="4"
+        transform="rotate(-12 72 52)"
+      />
+      <ellipse
+        cx="128"
+        cy="52"
+        rx="14"
+        ry="40"
+        fill={body}
+        stroke={line}
+        stroke-width="4"
+        transform="rotate(12 128 52)"
+      />
+      <ellipse cx="72" cy="56" rx="6" ry="26" fill={shade} transform="rotate(-12 72 56)" />
+      <ellipse cx="128" cy="56" rx="6" ry="26" fill={shade} transform="rotate(12 128 56)" />
+    {/if}
+    {#if part === 'front'}
+      <ellipse cx="100" cy="125" rx="62" ry="58" fill={body} stroke={line} stroke-width="4" />
+    {/if}
   {:else if species === 'kumo'}
-    <g fill={body} stroke={line} stroke-width="4">
-      <circle cx="62" cy="128" r="38" />
-      <circle cx="138" cy="128" r="38" />
-      <circle cx="100" cy="100" r="50" />
-      <rect x="62" y="120" width="76" height="58" rx="10" />
-    </g>
-    <g fill={body}>
-      <circle cx="62" cy="128" r="34" />
-      <circle cx="138" cy="128" r="34" />
-      <circle cx="100" cy="100" r="46" />
-      <rect x="64" y="118" width="72" height="56" />
-    </g>
+    {#if part === 'front'}
+      <g fill={body} stroke={line} stroke-width="4">
+        <circle cx="62" cy="128" r="38" />
+        <circle cx="138" cy="128" r="38" />
+        <circle cx="100" cy="100" r="50" />
+        <rect x="62" y="120" width="76" height="58" rx="10" />
+      </g>
+      <g fill={body}>
+        <circle cx="62" cy="128" r="34" />
+        <circle cx="138" cy="128" r="34" />
+        <circle cx="100" cy="100" r="46" />
+        <rect x="64" y="118" width="72" height="56" />
+      </g>
+    {/if}
   {:else if species === 'koro'}
     <!-- Dog-like: floppy ears and a wagging tail nub -->
-    <ellipse
-      cx="40"
-      cy="112"
-      rx="16"
-      ry="34"
-      fill={shade}
-      stroke={line}
-      stroke-width="4"
-      transform="rotate(14 40 112)"
-    />
-    <ellipse
-      cx="160"
-      cy="112"
-      rx="16"
-      ry="34"
-      fill={shade}
-      stroke={line}
-      stroke-width="4"
-      transform="rotate(-14 160 112)"
-    />
-    <ellipse
-      class="tail"
-      cx="166"
-      cy="150"
-      rx="12"
-      ry="8"
-      fill={body}
-      stroke={line}
-      stroke-width="4"
-      transform="rotate(-35 166 150)"
-    />
-    <ellipse cx="100" cy="125" rx="60" ry="56" fill={body} stroke={line} stroke-width="4" />
+    {#if part === 'back'}
+      <ellipse
+        cx="40"
+        cy="112"
+        rx="16"
+        ry="34"
+        fill={shade}
+        stroke={line}
+        stroke-width="4"
+        transform="rotate(14 40 112)"
+      />
+      <ellipse
+        cx="160"
+        cy="112"
+        rx="16"
+        ry="34"
+        fill={shade}
+        stroke={line}
+        stroke-width="4"
+        transform="rotate(-14 160 112)"
+      />
+      <ellipse
+        class="tail"
+        cx="166"
+        cy="150"
+        rx="12"
+        ry="8"
+        fill={body}
+        stroke={line}
+        stroke-width="4"
+        transform="rotate(-35 166 150)"
+      />
+    {/if}
+    {#if part === 'front'}
+      <ellipse cx="100" cy="125" rx="60" ry="56" fill={body} stroke={line} stroke-width="4" />
+    {/if}
   {:else if species === 'nyao'}
     <!-- Cat-like: pointy ears and a curled tail -->
-    <path
-      class="tail"
-      d="M 150 160 C 192 158, 190 108, 170 104 C 180 118, 176 140, 146 144 Z"
-      fill={shade}
-      stroke={line}
-      stroke-width="4"
-    />
-    <path
-      d="M 42 110 L 52 30 L 98 78 Z"
-      fill={body}
-      stroke={line}
-      stroke-width="4"
-      stroke-linejoin="round"
-    />
-    <path
-      d="M 158 110 L 148 30 L 102 78 Z"
-      fill={body}
-      stroke={line}
-      stroke-width="4"
-      stroke-linejoin="round"
-    />
-    <path d="M 54 92 L 57 46 L 84 72 Z" fill="hsl(350 80% 80%)" />
-    <path d="M 146 92 L 143 46 L 116 72 Z" fill="hsl(350 80% 80%)" />
-    <ellipse cx="100" cy="128" rx="64" ry="54" fill={body} stroke={line} stroke-width="4" />
+    {#if part === 'back'}
+      <path
+        class="tail"
+        d="M 150 160 C 192 158, 190 108, 170 104 C 180 118, 176 140, 146 144 Z"
+        fill={shade}
+        stroke={line}
+        stroke-width="4"
+      />
+      <path
+        d="M 42 110 L 52 30 L 98 78 Z"
+        fill={body}
+        stroke={line}
+        stroke-width="4"
+        stroke-linejoin="round"
+      />
+      <path
+        d="M 158 110 L 148 30 L 102 78 Z"
+        fill={body}
+        stroke={line}
+        stroke-width="4"
+        stroke-linejoin="round"
+      />
+      <path d="M 54 92 L 57 46 L 84 72 Z" fill="hsl(350 80% 80%)" />
+      <path d="M 146 92 L 143 46 L 116 72 Z" fill="hsl(350 80% 80%)" />
+    {/if}
+    {#if part === 'front'}
+      <ellipse cx="100" cy="128" rx="64" ry="54" fill={body} stroke={line} stroke-width="4" />
+    {/if}
   {:else if species === 'toge'}
     <!-- Hedgehog-like: a crest of spikes behind a round body -->
-    <path
-      d="M 36 142 L 24 112 L 44 114 L 38 82 L 58 94 L 62 60 L 80 78 L 100 48 L 120 78 L 138 60 L 142 94 L 162 82 L 156 114 L 176 112 L 164 142 Z"
-      fill={shade}
-      stroke={line}
-      stroke-width="4"
-      stroke-linejoin="round"
-    />
-    <ellipse cx="100" cy="130" rx="58" ry="50" fill={body} stroke={line} stroke-width="4" />
-  {:else}
+    {#if part === 'back'}
+      <path
+        d="M 36 142 L 24 112 L 44 114 L 38 82 L 58 94 L 62 60 L 80 78 L 100 48 L 120 78 L 138 60 L 142 94 L 162 82 L 156 114 L 176 112 L 164 142 Z"
+        fill={shade}
+        stroke={line}
+        stroke-width="4"
+        stroke-linejoin="round"
+      />
+    {/if}
+    {#if part === 'front'}
+      <ellipse cx="100" cy="130" rx="58" ry="50" fill={body} stroke={line} stroke-width="4" />
+    {/if}
+  {:else if part === 'front'}
     <path
       d="M 36 150 C 30 80, 70 58, 100 58 C 130 58, 170 80, 164 150 C 162 176, 38 176, 36 150 Z"
       fill={body}
@@ -187,6 +212,29 @@
       stroke-width="4"
     />
     <ellipse cx="100" cy="66" rx="10" ry="8" fill={body} stroke={line} stroke-width="4" />
+  {/if}
+{/snippet}
+
+{#snippet coat()}
+  {#if pattern === 'spots'}
+    <g fill={shade}>
+      <circle cx="66" cy="142" r="11" />
+      <circle cx="132" cy="96" r="9" />
+      <circle cx="142" cy="150" r="13" />
+      <circle cx="104" cy="84" r="7" />
+      <circle cx="96" cy="164" r="8" />
+    </g>
+  {:else if pattern === 'stripes'}
+    <g stroke={shade} stroke-width="11" stroke-linecap="round" fill="none">
+      <path d="M 24 96 L 60 80" />
+      <path d="M 22 126 L 70 106" />
+      <path d="M 176 96 L 140 80" />
+      <path d="M 178 126 L 130 106" />
+      <path d="M 30 156 L 72 140" />
+      <path d="M 170 156 L 128 140" />
+    </g>
+  {:else}
+    <rect x="0" y="96" width="200" height="100" fill="url(#fade-{uid})" />
   {/if}
 {/snippet}
 
@@ -214,9 +262,18 @@
       <filter id="inset-{uid}" x="0" y="0" width="100%" height="100%">
         <feMorphology operator="erode" radius="1.5" />
       </filter>
-      <mask id="coat-{uid}" maskUnits="userSpaceOnUse" x="0" y="0" width="200" height="200">
-        <g class="coat-shape" filter="url(#inset-{uid})">{@render silhouette()}</g>
-      </mask>
+      {#each PARTS as part (part)}
+        <mask
+          id="coat-{part}-{uid}"
+          maskUnits="userSpaceOnUse"
+          x="0"
+          y="0"
+          width="200"
+          height="200"
+        >
+          <g class="coat-shape" filter="url(#inset-{uid})">{@render silhouette(part)}</g>
+        </mask>
+      {/each}
       <linearGradient id="fade-{uid}" x1="0" y1="0" x2="0" y2="1">
         <stop offset="0" stop-color={deep} stop-opacity="0" />
         <stop offset="1" stop-color={deep} stop-opacity="0.85" />
@@ -236,32 +293,12 @@
         class="body"
         style:transform="translate(100px, 180px) scale({scale}) translate(-100px, -180px)"
       >
-        {@render silhouette()}
-
-        {#if pattern !== 'plain'}
-          <g mask="url(#coat-{uid})">
-            {#if pattern === 'spots'}
-              <g fill={shade}>
-                <circle cx="66" cy="142" r="11" />
-                <circle cx="132" cy="96" r="9" />
-                <circle cx="142" cy="150" r="13" />
-                <circle cx="104" cy="84" r="7" />
-                <circle cx="96" cy="164" r="8" />
-              </g>
-            {:else if pattern === 'stripes'}
-              <g stroke={shade} stroke-width="11" stroke-linecap="round" fill="none">
-                <path d="M 24 96 L 60 80" />
-                <path d="M 22 126 L 70 106" />
-                <path d="M 176 96 L 140 80" />
-                <path d="M 178 126 L 130 106" />
-                <path d="M 30 156 L 72 140" />
-                <path d="M 170 156 L 128 140" />
-              </g>
-            {:else}
-              <rect x="0" y="96" width="200" height="100" fill="url(#fade-{uid})" />
-            {/if}
-          </g>
-        {/if}
+        {#each PARTS as part (part)}
+          {@render silhouette(part)}
+          {#if pattern !== 'plain'}
+            <g mask="url(#coat-{part}-{uid})">{@render coat()}</g>
+          {/if}
+        {/each}
 
         <!-- Feet -->
         <ellipse cx="74" cy="178" rx="14" ry="7" fill={shade} stroke={line} stroke-width="3" />
