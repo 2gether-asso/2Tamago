@@ -8,6 +8,30 @@ describe('AppConfig', () => {
     expect(config.game.timeScale).toBe(1);
   });
 
+  it('builds the database URL from its parts when DATABASE_URL is empty', () => {
+    const config = new AppConfig({
+      DATABASE_URL: '',
+      DATABASE_HOST: 'db.example.org',
+      DATABASE_PORT: '30068',
+      DATABASE_NAME: 'tamago_db',
+      DATABASE_USER: 'tamago user',
+      DATABASE_PASSWORD: 'p@ss/w:rd',
+    });
+    const url = new URL(config.databaseUrl);
+    expect(url.protocol).toBe('postgres:');
+    expect(url.hostname).toBe('db.example.org');
+    expect(url.port).toBe('30068');
+    expect(url.pathname).toBe('/tamago_db');
+    expect(decodeURIComponent(url.username)).toBe('tamago user');
+    expect(decodeURIComponent(url.password)).toBe('p@ss/w:rd');
+    expect(() => new AppConfig({ DATABASE_HOST: 'h' })).toThrow(/DATABASE_NAME/);
+  });
+
+  it('prefers DATABASE_URL over its parts', () => {
+    const config = new AppConfig({ DATABASE_URL: 'postgres://a@b/c', DATABASE_HOST: 'other' });
+    expect(config.databaseUrl).toBe('postgres://a@b/c');
+  });
+
   it('reads the API and browser DSNs separately, both optional', () => {
     expect(new AppConfig({}).sentryWebDsn).toBeUndefined();
     const config = new AppConfig({ SENTRY_DSN: 'https://a@x/1', SENTRY_WEB_DSN: 'https://b@x/2' });

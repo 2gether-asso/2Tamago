@@ -22,7 +22,14 @@ const envSchema = z
   .object({
     NODE_ENV: z.string().default('development'),
     PORT: z.coerce.number().int().default(3000),
-    DATABASE_URL: z.string().default('pglite://.data/pglite'),
+    /** Connection string. Empty or unset: built from `DATABASE_HOST` and friends, else embedded PGlite. */
+    DATABASE_URL: z.string().optional(),
+    /** Components of a PostgreSQL URL, used only when `DATABASE_URL` is empty. */
+    DATABASE_HOST: z.string().optional(),
+    DATABASE_PORT: z.coerce.number().int().positive().default(5432),
+    DATABASE_NAME: z.string().optional(),
+    DATABASE_USER: z.string().optional(),
+    DATABASE_PASSWORD: z.string().optional(),
     /** `false` when migrations are a separate deployment step (`node dist/migrate.js`). */
     DATABASE_AUTO_MIGRATE: z
       .enum(['true', 'false'])
@@ -69,6 +76,20 @@ const envSchema = z
     message: 'AUTH_DEV_LOGIN must not be enabled in production',
   });
 
+/** `DATABASE_URL`, else a PostgreSQL URL from the `DATABASE_*` parts (credentials encoded), else PGlite. */
+function databaseUrl(env: z.infer<typeof envSchema>): string {
+  if (env.DATABASE_URL) return env.DATABASE_URL;
+  if (!env.DATABASE_HOST) return 'pglite://.data/pglite';
+  if (!env.DATABASE_NAME) throw new Error('DATABASE_NAME is required with DATABASE_HOST');
+  const url = new URL('postgres://placeholder');
+  url.hostname = env.DATABASE_HOST;
+  url.port = String(env.DATABASE_PORT);
+  url.pathname = `/${encodeURIComponent(env.DATABASE_NAME)}`;
+  url.username = env.DATABASE_USER ?? '';
+  url.password = env.DATABASE_PASSWORD ?? '';
+  return url.toString();
+}
+
 /**
  * The single source of configuration (environment variables), validated once
  * at startup. Inject `AppConfig` instead of reading `process.env`.
@@ -104,7 +125,7 @@ export class AppConfig {
     const env = envSchema.parse(source);
     this.env = env.NODE_ENV;
     this.port = env.PORT;
-    this.databaseUrl = env.DATABASE_URL;
+    this.databaseUrl = databaseUrl(env);
     this.databaseAutoMigrate = env.DATABASE_AUTO_MIGRATE;
     this.auth = {
       // A missing secret is only accepted outside production (see the schema).
