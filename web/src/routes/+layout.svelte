@@ -77,7 +77,9 @@
   {@render children()}
 {:else}
   <header>
-    <a class="brand" href="/">🥚 2Tamago</a>
+    <a class="brand" href="/"
+      ><span aria-hidden="true">🥚</span> <span class="name">2Tamago</span></a
+    >
     {#if game.player}
       <div class="who">
         <span class="coins" title="Pièces">🪙 {game.player.coins}</span>
@@ -142,6 +144,8 @@
     font-family: var(--font-brand);
     font-size: 1.35rem;
     text-decoration: none;
+  }
+  .brand .name {
     background: linear-gradient(90deg, var(--accent), var(--accent-3));
     background-clip: text;
     -webkit-background-clip: text;
