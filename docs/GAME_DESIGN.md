@@ -42,6 +42,22 @@ Un compagnon bien soigné vit donc environ 16 jours avant de devenir ancien.
 - **Bien portant** (pas malade, satiété > 40, bonheur > 30) : +2 santé/h.
 - **Santé à 0** : le compagnon part (statut `gone`), ou reste à 1 PV si `GAME_DEPARTURE=false`. Un bébé totalement délaissé tient environ deux jours (vérifié par les tests).
 
+## Promenades
+
+Avant de partir, le joueur choisit une **zone** (`WALK_ZONES`, dans `shared/core/src/engine/zones.ts`). Sans choix, c'est la prairie, comme avant l'arrivée des zones.
+
+| Zone    | Dès le stade | Durée (× `outingHours`) | Énergie | Satiété | Lien | Pièces  | Objet trouvé | Ce qu'on y trouve                                                     |
+| ------- | ------------ | ----------------------- | ------- | ------- | ---- | ------- | ------------ | --------------------------------------------------------------------- |
+| Prairie | enfant       | 30 min (×1)             | −15     | −10     | +3   | 5 à 15  | 25 %         | biscuit, fraise, lait chaud, gâteau, rarement une couronne de fleurs  |
+| Forêt   | ado          | 1 h (×2)                | −25     | −15     | +4   | 10 à 22 | 45 %         | mûre, champignon, fraise, lait chaud, rarement une couronne de fleurs |
+| Plage   | adulte       | 2 h (×4)                | −35     | −20     | +5   | 20 à 40 | 30 %         | noix de coco, glace, gâteau, étoile de mer                            |
+
+- **Énergie** : il faut le coût de la zone plus 5 pour partir (`too_tired` sinon). Un compagnon trop jeune se voit refuser la zone (`zone_locked`) ; un bébé ne part pas du tout (`too_young`).
+- **Le hasard est tiré hors du moteur** : `rollFinds(zone, random)` est pure, elle reçoit la fonction de tirage (l'API passe `Math.random`, les tests des valeurs fixes). Les pièces sont tirées dans l'intervalle de la zone, puis une chance de trouver un objet, choisi selon les poids de la zone.
+- **Les accessoires ne se trouvent qu'une fois** : trouver un accessoire qu'on possède déjà ne rapporte rien (les friandises, elles, s'empilent).
+- **Les rencontres** ne dépendent pas de la zone : deux promenades qui se chevauchent dans le temps se croisent, où qu'elles aillent.
+- **Données** : la zone est dans `outing.zone` (absente sur une promenade commencée avant les zones : c'est la prairie) et dans la colonne `walks.zone`. Toutes les valeurs du tableau sont dans `zones.ts` ; seule la durée de base (`outingHours`) se règle depuis l'écran Admin.
+
 ## Vacances
 
 Le propriétaire peut mettre son compagnon en pause (« Partir en vacances » sur l'écran d'accueil), pour ne pas le voir partir pendant un voyage.
@@ -123,31 +139,31 @@ Les valeurs sont la règle `temperaments` de `GameRules` : un admin peut les mod
 
 ## Actions
 
-| Action                 | Effet                                                                                                               |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| Nourrir                | Satiété +35, poids +1. Refusé à partir de 95 de satiété                                                             |
-| Friandise              | Selon l'objet (voir la boutique), lien +1                                                                           |
-| Jouer (score de 0 à 3) | Bonheur +10 + 5 × score, énergie −10, satiété −3, poids −1, lien +2. Il faut au moins 10 d'énergie                  |
-| Nettoyer               | Retire les cacas, propreté +40                                                                                      |
-| Médicament             | Une dose (bonheur −5)                                                                                               |
-| Coucher / Réveiller    | Coucher seulement si énergie < 90. Réveiller coûte −10 bonheur                                                      |
-| Lumière                | Éteindre : seulement la nuit. Rallumer : à tout moment (voir « Jour et nuit »)                                      |
-| Caresser               | Bonheur +3, lien +1, au plus une fois toutes les 15 s                                                               |
-| Dresser                | Énergie −8, satiété −3, progrès de 8 × (1 + discipline/100), divisé par deux si bonheur < 50                        |
-| Vacances / Retour      | Pause complète du compagnon, voir « Vacances ». Refusé pour un œuf ou pendant une promenade                         |
-| Promenade (30 min)     | Au retour : bonheur +15, énergie −15, satiété −10, lien +3, 5 à 15 pièces, 25 % de chances de trouver une friandise |
+| Action                 | Effet                                                                                                                          |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Nourrir                | Satiété +35, poids +1. Refusé à partir de 95 de satiété                                                                        |
+| Friandise              | Selon l'objet (voir la boutique), lien +1                                                                                      |
+| Jouer (score de 0 à 3) | Bonheur +10 + 5 × score, énergie −10, satiété −3, poids −1, lien +2. Il faut au moins 10 d'énergie                             |
+| Nettoyer               | Retire les cacas, propreté +40                                                                                                 |
+| Médicament             | Une dose (bonheur −5)                                                                                                          |
+| Coucher / Réveiller    | Coucher seulement si énergie < 90. Réveiller coûte −10 bonheur                                                                 |
+| Lumière                | Éteindre : seulement la nuit. Rallumer : à tout moment (voir « Jour et nuit »)                                                 |
+| Caresser               | Bonheur +3, lien +1, au plus une fois toutes les 15 s                                                                          |
+| Dresser                | Énergie −8, satiété −3, progrès de 8 × (1 + discipline/100), divisé par deux si bonheur < 50                                   |
+| Vacances / Retour      | Pause complète du compagnon, voir « Vacances ». Refusé pour un œuf ou pendant une promenade                                    |
+| Promenade              | Selon la zone (voir « Promenades »). Au retour : bonheur +15, énergie, satiété et lien selon la zone, pièces et objets trouvés |
 
 ## Économie
 
-| Source                                                                | Pièces                       |
-| --------------------------------------------------------------------- | ---------------------------- |
-| Inscription                                                           | 50                           |
-| Bonus quotidien                                                       | 20                           |
-| Jouer / dresser                                                       | +2 / +1, au plus 30 par jour |
-| Promenade                                                             | 5 à 15                       |
-| Caresser le compagnon d'un autre (une fois par jour et par compagnon) | 3                            |
+| Source                                                                | Pièces                             |
+| --------------------------------------------------------------------- | ---------------------------------- |
+| Inscription                                                           | 50                                 |
+| Bonus quotidien                                                       | 20                                 |
+| Jouer / dresser                                                       | +2 / +1, au plus 30 par jour       |
+| Promenade                                                             | 5 à 15 (prairie) à 20 à 40 (plage) |
+| Caresser le compagnon d'un autre (une fois par jour et par compagnon) | 3                                  |
 
-Prix : biscuit 8, fraise 12, lait chaud 15, gâteau 30, nœud 50, chapeau 80, lunettes 120, couronne 300.
+Prix : biscuit 8, fraise 12, lait chaud 15, gâteau 30, nœud 50, chapeau 80, lunettes 120, couronne 300. Les objets qu'on ne trouve qu'en promenade (mûre, champignon, noix de coco, glace, couronne de fleurs, étoile de mer) ne sont pas vendus : la boutique les refuse (`not_for_sale`).
 
 ## Interactions entre joueurs
 

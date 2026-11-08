@@ -37,18 +37,19 @@ Le jeu s'inspire de trois sources :
 
 ## 2. Lien et dressage (Nintendogs)
 
-|     | Fonctionnalité                                                                       | Notes                                                         |
-| --- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------- |
-| ✅  | Caresser au pointeur ou au doigt (des cœurs apparaissent), avec un temps de recharge |                                                               |
-| ✅  | Jauge de lien qui monte avec les caresses, le jeu, le dressage et les promenades     | Elle baisse à chaque erreur de soin                           |
-| ✅  | Dressage de 4 tours (Assis, Tourne, Saute, Tape-m'en cinq), 3 niveaux chacun         | Progrès plus rapide si le compagnon est discipliné et heureux |
-| ✅  | Promenades : il part un moment, revient avec des pièces et parfois une friandise     |                                                               |
-| ✅  | Boutique : friandises et accessoires (nœud, chapeau, lunettes, couronne)             |                                                               |
-| ✅  | Accessoires visibles sur le compagnon, aussi chez les autres joueurs                 |                                                               |
-| 🔜  | Commandes de tours à la voix ou au geste (dessiner un motif)                         | Le principe des commandes vocales de Nintendogs               |
-| 🔜  | Objets trouvés en promenade plus variés, avec des zones de promenade                 |                                                               |
-| 💡  | Concours (tours, beauté) avec classement hebdomadaire                                |                                                               |
-| 💡  | Décoration de la chambre                                                             |                                                               |
+|     | Fonctionnalité                                                                                                                                                                                         | Notes                                                         |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------- |
+| ✅  | Caresser au pointeur ou au doigt (des cœurs apparaissent), avec un temps de recharge                                                                                                                   |                                                               |
+| ✅  | Jauge de lien qui monte avec les caresses, le jeu, le dressage et les promenades                                                                                                                       | Elle baisse à chaque erreur de soin                           |
+| ✅  | Dressage de 4 tours (Assis, Tourne, Saute, Tape-m'en cinq), 3 niveaux chacun                                                                                                                           | Progrès plus rapide si le compagnon est discipliné et heureux |
+| ✅  | Promenades : il part un moment, revient avec des pièces et parfois une friandise                                                                                                                       |                                                               |
+| ✅  | Boutique : friandises et accessoires (nœud, chapeau, lunettes, couronne)                                                                                                                               |                                                               |
+| ✅  | Accessoires visibles sur le compagnon, aussi chez les autres joueurs                                                                                                                                   |                                                               |
+| 🔜  | Commandes de tours à la voix ou au geste (dessiner un motif)                                                                                                                                           | Le principe des commandes vocales de Nintendogs               |
+| ✅  | Zones de promenade (prairie, forêt, plage), ouvertes au fil de la croissance, avec leur durée, leur coût et leurs objets trouvés ; objets qu'on ne trouve qu'en promenade, dont deux accessoires rares | Voir « Promenades » dans [GAME_DESIGN.md](GAME_DESIGN.md)     |
+| 💡  | Plus de zones et d'objets à collectionner, événements de promenade (météo, trouvailles rares)                                                                                                          |                                                               |
+| 💡  | Concours (tours, beauté) avec classement hebdomadaire                                                                                                                                                  |                                                               |
+| 💡  | Décoration de la chambre                                                                                                                                                                               |                                                               |
 
 ## 3. Multijoueur asynchrone
 
