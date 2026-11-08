@@ -45,8 +45,6 @@
   }
 </script>
 
-<h1>{t('admin.title')}</h1>
-
 {#if !game.player?.isAdmin}
   <p class="card">{t('admin.forbidden')}</p>
 {:else if error && !loaded}

@@ -2,6 +2,7 @@ import type { GameRules } from '@2tamago/core';
 import type {
   ActionResponse,
   AdminRulesResponse,
+  AdminStats,
   ActivityDto,
   AdoptBody,
   AlbumEntry,
@@ -93,6 +94,7 @@ export const api = {
     call<ActionResponse>('POST', `/village/${petId}/gift`, { item }),
 
   activity: () => call<ActivityDto[]>('GET', '/activity'),
+  adminStats: () => call<AdminStats>('GET', '/admin/stats'),
   adminRules: () => call<AdminRulesResponse>('GET', '/admin/rules'),
   saveAdminRules: (overrides: unknown) =>
     call<AdminRulesResponse>('PUT', '/admin/rules', overrides),
