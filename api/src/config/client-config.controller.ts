@@ -14,6 +14,7 @@ export class ClientConfigController {
     return {
       sentryDsn: this.config.sentryWebDsn ?? null,
       feedbackEnabled: this.config.sentryDsn !== undefined,
+      pushPublicKey: this.config.push?.publicKey ?? null,
     };
   }
 }

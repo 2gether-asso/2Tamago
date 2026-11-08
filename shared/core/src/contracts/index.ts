@@ -213,6 +213,32 @@ export type BuyBody = z.infer<typeof buyBody>;
 export const giftBody = z.object({ item: itemId });
 export type GiftBody = z.infer<typeof giftBody>;
 
+/** Languages of the push notifications: the service worker writes the text, in the player's. */
+export const PUSH_LOCALES = ['fr', 'en'] as const;
+export type PushLocale = (typeof PUSH_LOCALES)[number];
+
+/** A browser's push subscription (`PushSubscription.toJSON()`), with the language to write in. */
+export const pushSubscriptionBody = z.object({
+  endpoint: z.url().max(2048),
+  keys: z.object({ p256dh: z.string().min(1).max(256), auth: z.string().min(1).max(256) }),
+  locale: z.enum(PUSH_LOCALES),
+});
+export type PushSubscriptionBody = z.infer<typeof pushSubscriptionBody>;
+
+export const pushUnsubscribeBody = z.object({ endpoint: z.url().max(2048) });
+export type PushUnsubscribeBody = z.infer<typeof pushUnsubscribeBody>;
+
+/** Why a push is sent. The API sends the code, the service worker writes the sentence. */
+export const PUSH_KINDS = ['hungry', 'sick', 'calling', 'walk_done', 'test'] as const;
+export type PushKind = (typeof PUSH_KINDS)[number];
+
+/** The data of a push message, as the service worker receives it. */
+export interface PushPayload {
+  kind: PushKind;
+  petName: string;
+  locale: PushLocale;
+}
+
 export const uuidParam = z.uuid();
 
 // --------------------------------------------------------------- responses
@@ -318,6 +344,8 @@ export interface ClientConfig {
   sentryDsn: string | null;
   /** Whether the feedback form can deliver (the API has a `SENTRY_DSN`). */
   feedbackEnabled: boolean;
+  /** VAPID public key for Web Push, `null` when notifications are off on this server. */
+  pushPublicKey: string | null;
 }
 
 export interface MeResponse {

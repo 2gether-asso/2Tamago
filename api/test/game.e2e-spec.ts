@@ -96,7 +96,7 @@ describe('2Tamago API (e2e)', () => {
 
   it('tells the web app what it cannot know at build time', async () => {
     const { body } = await request(app.getHttpServer()).get('/api/config').expect(200);
-    expect(body).toEqual({ sentryDsn: null, feedbackEnabled: false });
+    expect(body).toEqual({ sentryDsn: null, feedbackEnabled: false, pushPublicKey: null });
   });
 
   it('runs the life of a pet', async () => {
