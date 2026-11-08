@@ -6,7 +6,7 @@ Toutes les valeurs sont dans [`shared/core/src/engine/rules.ts`](../shared/core/
 
 - Le compagnon est simulé **par pas de 5 minutes de jeu**, alignés sur une grille absolue. Le résultat est donc le même qu'on simule en une fois ou en plusieurs appels, ce qui permet au navigateur de prédire l'état sans interroger le serveur.
 - Rien ne tourne en tâche de fond : l'état est rattrapé quand quelqu'un le consulte (le propriétaire, un visiteur, une action).
-- La simulation est déterministe et n'utilise pas de hasard. Le hasard (objets trouvés en promenade) est tiré côté serveur, hors du moteur.
+- La simulation est déterministe et n'utilise pas de hasard. Le hasard (objets trouvés en promenade, graine des traits du compagnon) est tiré côté serveur, hors du moteur.
 
 ## Stades
 
@@ -62,6 +62,31 @@ Une **erreur de soin** est comptée quand l'une de ces situations dure plus d'un
 - **Gronder** sans caprice : bonheur −10, lien −3.
 - **Féliciter** pendant un caprice : discipline −5.
 - **Ignorer** le caprice : discipline −10.
+
+## Espèces, apparence et tempérament
+
+Six espèces, toutes des créatures abstraites qui évoquent un animal : **Mochi** (blob), **Pyon** (lapin), **Kumo** (nuage), **Koro** (chien), **Nyao** (chat) et **Toge** (hérisson). **Les espèces sont purement visuelles** : aucune n'a de règle propre, aucune n'est meilleure qu'une autre.
+
+À l'adoption, le joueur choisit l'espèce, la teinte et le nom. Le serveur tire en plus une **graine aléatoire** dont le moteur déduit (`rollTraits`, `shared/core/src/engine/traits.ts`) :
+
+- un **motif** de pelage : uni, taches, rayures ou dégradé (cosmétique) ;
+- un style d'**yeux** : ronds, endormis, brillants ou rusés (cosmétique) ;
+- un **tempérament**, qui modifie légèrement les règles.
+
+Les traits sont stockés dans l'état du compagnon et révélés à l'éclosion (le journal et la page d'accueil l'annoncent). Un compagnon créé avant l'ajout des traits en reçoit de façon déterministe à partir de son nom et de sa date de naissance.
+
+Le tempérament est tiré **indépendamment de l'espèce**. Chacun a **un avantage et un inconvénient**, avec des multiplicateurs bornés entre ×0,7 et ×1,5 (un test le vérifie pour tout tempérament ajouté) :
+
+| Tempérament | Avantage                           | Inconvénient                 |
+| ----------- | ---------------------------------- | ---------------------------- |
+| Gourmand    | bonheur baisse ×0,85               | satiété baisse ×1,3          |
+| Dormeur     | récupère l'énergie ×1,3 en dormant | énergie baisse ×1,3          |
+| Câlin       | lien gagné par caresse ×1,5        | bonheur baisse ×1,2          |
+| Farceur     | satiété baisse ×0,85               | caprices ×1,4 plus fréquents |
+| Propre      | propreté baisse ×0,7               | énergie baisse ×1,15         |
+| Costaud     | perte de santé malade ×0,7         | satiété baisse ×1,15         |
+
+Les valeurs sont dans `TEMPERAMENT_MODS` (`traits.ts`). Elles ne sont pas encore dans `GameRules`, donc pas modifiables depuis l'écran Admin.
 
 ## Actions
 

@@ -137,13 +137,21 @@ Un module Nest par domaine :
 
 ## Frontend (`web/src`)
 
-| Emplacement                       | Rôle                                                                                                      |
-| --------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| `lib/api.ts`                      | Client `fetch` typé par les contrats, avec une `ApiError` qui porte le `code`                             |
-| `lib/game.svelte.ts`              | Store de jeu en runes : instantané reçu de l'API, prédiction locale avec `simulate()`, actions, minuteurs |
-| `lib/components/PetSprite.svelte` | Rendu SVG du compagnon (espèce, stade, forme, humeur, accessoire) et détection des caresses au pointeur   |
-| `lib/texts.ts`                    | Tous les textes de l'interface, en français                                                               |
-| `routes/`                         | `/` (maison), `/login`, `/village`, `/village/[petId]`, `/shop`, `/journal`, `/album`                     |
+| Emplacement                       | Rôle                                                                                                                              |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `lib/api.ts`                      | Client `fetch` typé par les contrats, avec une `ApiError` qui porte le `code`                                                     |
+| `lib/game.svelte.ts`              | Store de jeu en runes : instantané reçu de l'API, prédiction locale avec `simulate()`, actions, minuteurs                         |
+| `lib/components/PetSprite.svelte` | Rendu SVG du compagnon (espèce, stade, forme, humeur, accessoire, motif et yeux des traits) et détection des caresses au pointeur |
+| `lib/theme.svelte.ts`             | Préférence jour / nuit / automatique, mémorisée dans `localStorage`                                                               |
+| `app.css`                         | Jetons de design et styles de base (voir ci-dessous)                                                                              |
+| `lib/texts.ts`                    | Tous les textes de l'interface, en français                                                                                       |
+| `routes/`                         | `/` (maison), `/login`, `/village`, `/village/[petId]`, `/shop`, `/journal`, `/album`                                             |
+
+### Apparence et thèmes
+
+`app.css` définit les jetons (couleurs, rayons, polices) : la palette violet / cyan / rose et la police de marque Bungee sont celles des autres projets 2GETHER (2Gatcha), avec un thème jour pastel et un thème nuit « nébuleuse ». Inter et Bungee sont auto-hébergées (Fontsource). Le thème suit le système, sauf si `data-theme="light"` ou `"dark"` est posé sur `<html>` ; un petit script dans `app.html` l'applique avant le premier affichage pour éviter un flash. Les composants n'utilisent que des variables (`--surface`, `--accent`, `--scene-top`…), jamais de couleurs en dur, pour suivre le thème.
+
+Le sprite écrit la silhouette de chaque espèce une seule fois (un `snippet` Svelte) et la réutilise comme `clipPath` pour y découper les motifs. Pour ajouter une espèce : l'ajouter à `SPECIES` et `SPECIES_LABELS` dans le moteur, puis dessiner sa silhouette dans `PetSprite.svelte`. Les traits (tirage, tempéraments) sont dans `shared/core/src/engine/traits.ts`.
 
 ### Réglages du jeu en base
 

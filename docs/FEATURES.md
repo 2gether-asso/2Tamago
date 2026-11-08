@@ -10,27 +10,29 @@ Le jeu s'inspire de trois sources :
 
 ## 1. Cœur du jeu (Tamagotchi)
 
-|     | Fonctionnalité                                                                                        | Notes                                                   |
-| --- | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
-| ✅  | Adoption d'un œuf : nom, espèce (Mochi, Pyon, Kumo), couleur                                          | Un seul compagnon vivant à la fois par joueur           |
-| ✅  | Éclosion, puis stades bébé → enfant → ado → adulte → ancien                                           | Durées réglables (`stageHours`)                         |
-| ✅  | Besoins : satiété, bonheur, énergie, propreté, santé, discipline                                      | Ils baissent en temps réel, même quand l'app est fermée |
-| ✅  | Nourrir (repas gratuit, refus quand il n'a plus faim), friandises                                     | Les friandises font prendre du poids                    |
-| ✅  | Cacas à nettoyer, saleté                                                                              |                                                         |
-| ✅  | Sommeil : il s'endort seul quand il est épuisé, on peut le coucher ou le réveiller (il râle)          |                                                         |
-| ✅  | Maladie à partir de facteurs de risque (cacas, saleté, faim, surpoids), médicament en plusieurs doses |                                                         |
-| ✅  | Caprices (fausses alertes) : gronder fait monter la discipline, féliciter un caprice la fait baisser  |                                                         |
-| ✅  | Erreurs de soin : un besoin à zéro trop longtemps compte comme une erreur                             |                                                         |
-| ✅  | Évolution en 3 formes (Rayonnant, Doux, Chenapan) selon les erreurs, la discipline et le lien         |                                                         |
-| ✅  | Départ du compagnon quand sa santé tombe à zéro (désactivable : `GAME_DEPARTURE=false`)               | Il « part vivre sa vie », il ne meurt pas               |
-| ✅  | Retraite volontaire des anciens, et album des anciens compagnons                                      |                                                         |
-| ✅  | Mini-jeu « gauche ou droite ? » pour jouer                                                            |                                                         |
-| 🔜  | Cycle jour/nuit réel : heure du coucher par stade, il faut éteindre la lumière                        | Fuseau déjà configuré (`GAME_TIMEZONE`)                 |
-| 🔜  | Notifications Web Push : faim, maladie, caprice, retour de promenade                                  | Service worker et `web-push`, comme 2Gatcha             |
-| 🔜  | Mode vacances / garderie : on confie son compagnon à un autre membre, ou on met le jeu en pause       | Évite les départs pendant les vacances                  |
-| 💡  | Plus d'espèces et de formes, avec des dessins faits par des membres                                   | Comme les cartes de 2Gatcha                             |
-| 💡  | Héritage : un compagnon retraité laisse un œuf avec un bonus                                          |                                                         |
-| 💡  | D'autres mini-jeux (rythme, attrape)                                                                  |                                                         |
+|     | Fonctionnalité                                                                                                        | Notes                                                                                                           |
+| --- | --------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| ✅  | Adoption d'un œuf : nom, espèce (Mochi, Pyon, Kumo, Koro, Nyao, Toge), couleur                                        | Un seul compagnon vivant à la fois par joueur                                                                   |
+| ✅  | Traits tirés au hasard à l'adoption : motif, yeux et tempérament (gourmand, dormeur, câlin, farceur, propre, costaud) | Révélés à l'éclosion ; chaque tempérament a un avantage et un inconvénient, les espèces sont purement visuelles |
+| ✅  | Éclosion, puis stades bébé → enfant → ado → adulte → ancien                                                           | Durées réglables (`stageHours`)                                                                                 |
+| ✅  | Besoins : satiété, bonheur, énergie, propreté, santé, discipline                                                      | Ils baissent en temps réel, même quand l'app est fermée                                                         |
+| ✅  | Nourrir (repas gratuit, refus quand il n'a plus faim), friandises                                                     | Les friandises font prendre du poids                                                                            |
+| ✅  | Cacas à nettoyer, saleté                                                                                              |                                                                                                                 |
+| ✅  | Sommeil : il s'endort seul quand il est épuisé, on peut le coucher ou le réveiller (il râle)                          |                                                                                                                 |
+| ✅  | Maladie à partir de facteurs de risque (cacas, saleté, faim, surpoids), médicament en plusieurs doses                 |                                                                                                                 |
+| ✅  | Caprices (fausses alertes) : gronder fait monter la discipline, féliciter un caprice la fait baisser                  |                                                                                                                 |
+| ✅  | Erreurs de soin : un besoin à zéro trop longtemps compte comme une erreur                                             |                                                                                                                 |
+| ✅  | Évolution en 3 formes (Rayonnant, Doux, Chenapan) selon les erreurs, la discipline et le lien                         |                                                                                                                 |
+| ✅  | Départ du compagnon quand sa santé tombe à zéro (désactivable : `GAME_DEPARTURE=false`)                               | Il « part vivre sa vie », il ne meurt pas                                                                       |
+| ✅  | Retraite volontaire des anciens, et album des anciens compagnons                                                      |                                                                                                                 |
+| ✅  | Mini-jeu « gauche ou droite ? » pour jouer                                                                            |                                                                                                                 |
+| 🔜  | Cycle jour/nuit réel : heure du coucher par stade, il faut éteindre la lumière                                        | Fuseau déjà configuré (`GAME_TIMEZONE`)                                                                         |
+| 🔜  | Notifications Web Push : faim, maladie, caprice, retour de promenade                                                  | Service worker et `web-push`, comme 2Gatcha                                                                     |
+| 🔜  | Mode vacances / garderie : on confie son compagnon à un autre membre, ou on met le jeu en pause                       | Évite les départs pendant les vacances                                                                          |
+| 💡  | Dinos issus de fossiles, avec des bonus passifs (couche séparée des espèces actuelles)                                |                                                                                                                 |
+| 💡  | Plus d'espèces et de formes, avec des dessins faits par des membres                                                   | Comme les cartes de 2Gatcha                                                                                     |
+| 💡  | Héritage : un compagnon retraité laisse un œuf avec un bonus                                                          |                                                                                                                 |
+| 💡  | D'autres mini-jeux (rythme, attrape)                                                                                  |                                                                                                                 |
 
 ## 2. Lien et dressage (Nintendogs)
 
@@ -75,13 +77,14 @@ Le jeu s'inspire de trois sources :
 
 ## 5. Administration et exploitation
 
-|     | Fonctionnalité                                                                                        | Notes                           |
-| --- | ----------------------------------------------------------------------------------------------------- | ------------------------------- |
-| ✅  | Réglages du jeu par variables d'environnement, dont l'accélération du temps (`GAME_TIME_SCALE`)       |                                 |
-| ✅  | Rôle admin à partir des identifiants Discord (`ADMIN_DISCORD_IDS`), une seule source de configuration | Routes `/api/admin/*` réservées |
-| ✅  | `/api/health`, image Docker, stack compose (Caddy + API + PostgreSQL), CI                             |                                 |
-| ✅  | Réglages du jeu en base, éditables depuis l'écran Admin (JSON), sans redéploiement                    | Durée du temps et pas fixes     |
-| 🔜  | Interface d'admin : événements, codes cadeaux, modération des noms                                    |                                 |
-| 🔜  | Sauvegardes PostgreSQL automatisées (pg_dump vers Azure Blob, comme 2Gatcha)                          |                                 |
-| ✅  | Suivi des erreurs côté API (`SENTRY_DSN`, Sentry ou GlitchTip)                                        | Pas encore côté web             |
-| 💡  | Statistiques d'équilibrage : durée de vie moyenne, causes de départ                                   |                                 |
+|     | Fonctionnalité                                                                                        | Notes                             |
+| --- | ----------------------------------------------------------------------------------------------------- | --------------------------------- |
+| ✅  | Thème jour / nuit de l'interface (automatique, jour ou nuit), aux couleurs de 2GETHER                 | Choix mémorisé dans le navigateur |
+| ✅  | Réglages du jeu par variables d'environnement, dont l'accélération du temps (`GAME_TIME_SCALE`)       |                                   |
+| ✅  | Rôle admin à partir des identifiants Discord (`ADMIN_DISCORD_IDS`), une seule source de configuration | Routes `/api/admin/*` réservées   |
+| ✅  | `/api/health`, image Docker, stack compose (Caddy + API + PostgreSQL), CI                             |                                   |
+| ✅  | Réglages du jeu en base, éditables depuis l'écran Admin (JSON), sans redéploiement                    | Durée du temps et pas fixes       |
+| 🔜  | Interface d'admin : événements, codes cadeaux, modération des noms                                    |                                   |
+| 🔜  | Sauvegardes PostgreSQL automatisées (pg_dump vers Azure Blob, comme 2Gatcha)                          |                                   |
+| ✅  | Suivi des erreurs côté API (`SENTRY_DSN`, Sentry ou GlitchTip)                                        | Pas encore côté web               |
+| 💡  | Statistiques d'équilibrage : durée de vie moyenne, causes de départ                                   |                                   |
