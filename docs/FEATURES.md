@@ -86,7 +86,7 @@ Le jeu s'inspire de trois sources :
 | ✅  | Réglages du jeu par variables d'environnement, dont l'accélération du temps (`GAME_TIME_SCALE`)                              |                                                           |
 | ✅  | Connexion Discord réservée aux membres du serveur, avec lien d'invitation et messages d'erreur clairs                        | Tests du parcours complet ; voir [DISCORD.md](DISCORD.md) |
 | ✅  | Rôle admin à partir des identifiants Discord (`ADMIN_DISCORD_IDS`), une seule source de configuration                        | Routes `/api/admin/*` réservées                           |
-| ✅  | `/api/health`, image Docker, stack compose (Caddy + API + PostgreSQL), CI                                                    |                                                           |
+| ✅  | `/api/health`, image Docker, stack compose (API + PostgreSQL), front sur GitHub Pages, CI                                    |                                                           |
 | ✅  | Réglages du jeu en base, éditables depuis l'écran Admin (JSON), sans redéploiement                                           | Durée du temps et pas fixes                               |
 | 🔜  | Interface d'admin : événements, codes cadeaux, modération des noms                                                           |                                                           |
 | 🔜  | Sauvegardes PostgreSQL automatisées (pg_dump vers Azure Blob, comme 2Gatcha)                                                 |                                                           |

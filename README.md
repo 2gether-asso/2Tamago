@@ -6,13 +6,13 @@ Le jeu reprend la boucle de soins de Tamagotchi, le lien affectif de Nintendogs 
 
 ## Stack
 
-|               |                                                                        |
-| ------------- | ---------------------------------------------------------------------- |
-| Front         | SvelteKit 3 (Svelte 5) en SPA statique, rendu SVG                      |
-| API           | NestJS 12 (ESM), Drizzle ORM, Zod                                      |
-| Base          | PostgreSQL, ou PGlite embarqué en dev et en test                       |
-| Règles du jeu | `@2tamago/core` : moteur TypeScript pur, partagé par le front et l'API |
-| Déploiement   | Docker : Caddy + API + PostgreSQL, CI GitHub Actions                   |
+|               |                                                                                 |
+| ------------- | ------------------------------------------------------------------------------- |
+| Front         | SvelteKit 3 (Svelte 5) en SPA statique, rendu SVG                               |
+| API           | NestJS 12 (ESM), Drizzle ORM, Zod                                               |
+| Base          | PostgreSQL, ou PGlite embarqué en dev et en test                                |
+| Règles du jeu | `@2tamago/core` : moteur TypeScript pur, partagé par le front et l'API          |
+| Déploiement   | Docker : API + PostgreSQL ; front statique sur GitHub Pages ; CI GitHub Actions |
 
 ## Démarrer
 
@@ -37,7 +37,7 @@ Ouvrir <http://localhost:4321> et se connecter avec un pseudo (mode dev). Il n'y
 | `make ci`                                                                                 | Ce que lance la CI                                                              |
 | `make db-generate`                                                                        | Génère une migration SQL après une modification de `api/src/database/schema.ts` |
 | `make db-up` / `make db-down`                                                             | PostgreSQL seul, joignable depuis le devcontainer à l'adresse `db:5432`         |
-| `make up` / `make down` / `make logs`                                                     | Stack complète construite depuis les sources, sur <http://localhost:8080>       |
+| `make up` / `make down` / `make logs`                                                     | PostgreSQL et API construits depuis les sources, sur <http://localhost:3000>    |
 
 ## Structure
 
@@ -45,7 +45,7 @@ Chaque service est à la racine avec son `Dockerfile`, et le code partagé est d
 
 ```
 api/                    API NestJS : auth Discord, joueurs et profils, compagnons, village, boutique, journal, avis, annonces, statistiques admin
-web/                    Front SvelteKit, et le Caddyfile de son image
+web/                    Front SvelteKit (site statique)
 shared/core/            Moteur de jeu (règles, simulation) et contrats d'API partagés
 docs/                   Fonctionnalités, architecture, règles du jeu, traductions, Discord
 docker-compose.yml      Stack locale construite depuis les sources (PostgreSQL + API + web)
@@ -63,11 +63,15 @@ Makefile                Commandes courantes
 
 ## Mettre en production
 
-Le workflow `docker.yml` publie les images `ghcr.io/2gether-asso/2tamago-api` et `2tamago-web` à chaque push sur `main` (tag `latest`) et pour chaque tag `vX.Y.Z` (tags `X.Y.Z`, `X.Y`, `X`). Sur le serveur, seuls `docker-compose.prod.yml`, le `Makefile` (facultatif) et un `.env` sont nécessaires :
+Deux parties, deux workflows :
 
-```bash
-cp .env.example .env   # renseigner SITE_ADDRESS, les secrets et Discord
-make prod-pull prod-up
-```
+- **API** : `docker.yml` publie l'image `ghcr.io/2gether-asso/2tamago-api` à chaque push sur `main` (tag `latest`) et pour chaque tag `vX.Y.Z` (tags `X.Y.Z`, `X.Y`, `X`). Sur le serveur, seuls `docker-compose.prod.yml`, le `Makefile` (facultatif) et un `.env` sont nécessaires. L'API écoute sur `127.0.0.1:3000` : un reverse proxy (non fourni) gère le HTTPS et la publie sur `API_ORIGIN`.
 
-Caddy obtient le certificat HTTPS tout seul pour `SITE_ADDRESS`. Pour mettre à jour, relancer `make prod-pull prod-up`. Pour une préproduction, utiliser un autre dossier avec son propre `.env` et un autre `TAG`.
+  ```bash
+  cp .env.example .env   # renseigner WEB_ORIGIN, API_ORIGIN, les secrets et Discord
+  make prod-pull prod-up
+  ```
+
+- **Front** : `pages.yml` construit le site statique et le déploie sur GitHub Pages. Réglages du dépôt : _Pages → Source : GitHub Actions_, domaine personnalisé (CNAME vers `2gether-asso.github.io`) et variable de dépôt `API_URL` (adresse publique de l'API, par exemple `https://tamago-api.2gether-asso.fr`).
+
+Pour mettre à jour l'API, relancer `make prod-pull prod-up`. Pour une préproduction, utiliser un autre dossier avec son propre `.env` et un autre `TAG`.

@@ -4,10 +4,10 @@
 
 ```
 web/  (SvelteKit 3, SPA statique)              shared/core/  (TypeScript pur)
-   │  fetch /api/*  (cookie de session)          ├─ engine/     règles du jeu : simulate(), applyAction()
+   │  fetch <API>/api/*  (cookie de session)     ├─ engine/     règles du jeu : simulate(), applyAction()
    │  simule localement avec @2tamago/core ◄─────┤              types, catalogue, humeurs
    ▼                                             └─ contracts/  schémas Zod des requêtes, types des réponses
-Caddy  ── /api/* ──►  api/  (NestJS 12) ◄──── utilise les mêmes règles
+reverse proxy (HTTPS) ──►  api/  (NestJS 12) ◄──── utilise les mêmes règles
                           │  Drizzle ORM
                           ▼
                       PostgreSQL  (PGlite embarqué en dev et en test)
@@ -84,7 +84,7 @@ Ce qu'on perd : l'outillage de Prisma (Studio, même si `drizzle-kit studio` exi
 
 Astro + Svelte est très adapté à un site de contenu avec des îlots interactifs. Un jeu, lui, a besoin d'un **état client qui persiste d'une page à l'autre** : compagnon prédit en continu, minuteurs, pièces dans l'en-tête, et plus tard une connexion WebSocket. Avec Astro, chaque navigation recharge les îlots, sauf à tout faire tenir dans un seul îlot, ce qui revient à refaire une SPA.
 
-SvelteKit garde Svelte (Svelte 5 et ses runes) et apporte un routeur client. Il est configuré en **SPA statique** (`ssr = false`, `adapter-static` avec `200.html` comme page de repli). Le front reste donc un ensemble de fichiers statiques, comme celui de 2Gatcha, servis par Caddy. Le rendu du compagnon est fait en **SVG** avec des animations CSS : c'est léger, net à toute taille, facile à teinter et à accessoiriser. Si un jour il faut une scène animée riche (le parc en direct), on pourra ajouter PixiJS dans un composant.
+SvelteKit garde Svelte (Svelte 5 et ses runes) et apporte un routeur client. Il est configuré en **SPA statique** (`ssr = false`, `adapter-static` avec `404.html` comme page de repli, que GitHub Pages sert pour toute route inconnue). Le front reste donc un ensemble de fichiers statiques, comme celui de 2Gatcha, déployés sur GitHub Pages. Le rendu du compagnon est fait en **SVG** avec des animations CSS : c'est léger, net à toute taille, facile à teinter et à accessoiriser. Si un jour il faut une scène animée riche (le parc en direct), on pourra ajouter PixiJS dans un composant.
 
 ### 5. Identité : un jeton signé, une seule règle
 
@@ -94,7 +94,7 @@ SvelteKit garde Svelte (Svelte 5 et ses runes) et apporte un routeur client. Il 
 - Les administrateurs sont listés dans **une seule** variable (`ADMIN_DISCORD_IDS`), ce qui corrige l'éparpillement constaté dans 2Gatcha.
 - En dev, `AUTH_DEV_LOGIN=true` permet de se connecter avec un simple pseudo. La configuration refuse de démarrer en production avec ce mode actif, ou sans `AUTH_SECRET` d'au moins 32 caractères.
 
-Le front et l'API partagent la même origine (proxy Vite en dev, Caddy en prod), donc il n'y a pas de CORS et le cookie fonctionne sans configuration.
+En dev, le front et l'API partagent la même origine (proxy Vite) : pas de CORS. En production, le front (`tamago.2gether-asso.fr`) et l'API (`tamago-api.2gether-asso.fr`) sont sur deux origines du même site : l'adresse de l'API est fixée à la construction du front (`VITE_API_URL`), l'API autorise `WEB_ORIGIN` avec les cookies (CORS), et le cookie de session `SameSite=Lax` est envoyé car les deux domaines ont le même domaine enregistrable. La connexion Discord revient sur l'API (`DISCORD_REDIRECT_URI`), qui pose le cookie puis renvoie le joueur vers `WEB_ORIGIN`.
 
 ### 6. Des contrats partagés
 
@@ -205,13 +205,12 @@ Le titre est tronqué à 80 caractères ; le texte complet, la page et le naviga
 
 ## Docker et environnements
 
-- **Images** : chaque service a son `Dockerfile` (étapes `deps`, `build`, `prod`) et son `Dockerfile.dockerignore`, qui n'envoie au build que le service, `shared/core` et les fichiers de l'espace de travail. Le contexte de build est la racine du dépôt (`docker build -f api/Dockerfile .`), car les services dépendent de `shared/` et du lockfile.
+- **Image** : l'API a son `Dockerfile` (étapes `deps`, `build`, `prod`) et son `Dockerfile.dockerignore`, qui n'envoie au build que le service, `shared/core` et les fichiers de l'espace de travail. Le front n'a pas d'image : c'est un site statique. Le contexte de build est la racine du dépôt (`docker build -f api/Dockerfile .`), car les services dépendent de `shared/` et du lockfile.
   - `api` : Node 24 avec les seules dépendances de production. Les migrations sont une étape à part : le service `migrate` des fichiers compose (même image, `node dist/migrate.js`) s'exécute avant l'API, qui démarre avec `DATABASE_AUTO_MIGRATE=false`. Sans cette variable (dev, PGlite), l'API migre elle-même au démarrage.
-  - `web` : Caddy, qui sert le site statique et relaie `/api/*` vers `API_UPSTREAM` (`api:3000` par défaut).
 - **Dev (devcontainer)** : `make dev`, sans Docker, avec PGlite. Le `Makefile` réunit les commandes courantes.
-- **Stack locale** (`docker-compose.yml`) : PostgreSQL, API et web construits depuis les sources (`make up`, <http://localhost:8080>). Le projet compose porte le même nom que celui du devcontainer : ses services sont donc sur le même réseau, et le devcontainer joint `db:5432` (`make db-up`) ou `web`.
-- **Production et préproduction** (`docker-compose.prod.yml`) : un fichier autonome qui tire les images publiées (`REGISTRY`, `TAG`) et exige les secrets (`AUTH_SECRET`, `POSTGRES_PASSWORD`, Discord). Caddy gère le HTTPS avec `SITE_ADDRESS`.
-- **CI** (GitHub Actions) : `ci.yml` (formatage, lint, build, types et tests), `docker.yml` (build des images à chaque PR ; sur `main` et sur les tags `vX.Y.Z`, publication multi-architecture amd64 et arm64 sur ghcr.io) et `pages.yml` (build du site statique `web/build`, déployé sur GitHub Pages).
+- **Stack locale** (`docker-compose.yml`) : PostgreSQL et API construits depuis les sources (`make up`, API sur <http://localhost:3000>) ; le front se lance à côté avec `pnpm dev`. Le projet compose porte le même nom que celui du devcontainer : ses services sont donc sur le même réseau, et le devcontainer joint `db:5432` (`make db-up`) ou `api:3000`.
+- **Production et préproduction** (`docker-compose.prod.yml`) : un fichier autonome qui tire les images publiées (`REGISTRY`, `TAG`) et exige les secrets (`AUTH_SECRET`, `POSTGRES_PASSWORD`, Discord). Elle ne lance que PostgreSQL et l'API, publiée sur `127.0.0.1:API_PORT` : un reverse proxy placé devant (non fourni) gère le HTTPS pour `API_ORIGIN`.
+- **CI** (GitHub Actions) : `ci.yml` (formatage, lint, build, types et tests), `docker.yml` (build de l'image de l'API à chaque PR ; sur `main` et sur les tags `vX.Y.Z`, publication multi-architecture amd64 et arm64 sur ghcr.io) et `pages.yml` (build du site statique `web/build`, déployé sur GitHub Pages avec la variable `API_URL`).
 - Sauvegardes : à mettre en place avec `pg_dump` (voir la roadmap).
 
 ## Évolutions prévues

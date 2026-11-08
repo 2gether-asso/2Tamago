@@ -5,7 +5,7 @@ Discord sert à deux choses : **se connecter** (seuls les membres du serveur de 
 ## Configurer la connexion
 
 1. Créer une application sur le [portail développeur Discord](https://discord.com/developers/applications). Dans **OAuth2**, noter l'identifiant client et générer le secret.
-2. Ajouter l'adresse de retour exacte dans **OAuth2 → Redirects** : `https://<SITE_ADDRESS>/api/auth/discord/callback` (en local : `http://localhost:4321/api/auth/discord/callback`). Une différence d'un caractère donne l'erreur « redirect_uri invalide » chez Discord.
+2. Ajouter l'adresse de retour exacte dans **OAuth2 → Redirects** : `<API_ORIGIN>/api/auth/discord/callback` (par exemple `https://tamago-api.2gether-asso.fr/api/auth/discord/callback`) (en local : `http://localhost:4321/api/auth/discord/callback`). Une différence d'un caractère donne l'erreur « redirect_uri invalide » chez Discord.
 3. Récupérer l'identifiant du serveur : activer le mode développeur de Discord (Paramètres, Avancés), puis clic droit sur le serveur, « Copier l'identifiant ».
 4. Renseigner les variables :
 
