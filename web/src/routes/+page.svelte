@@ -306,7 +306,8 @@
     padding: 0.1rem 0.6rem;
     border-radius: 999px;
     background: var(--warn);
-    color: #3b2f2a;
+    color: var(--warn-text);
+    font-weight: 600;
   }
   .scene {
     position: relative;
@@ -316,11 +317,12 @@
     display: grid;
     place-items: center;
     border-radius: var(--radius);
-    background: linear-gradient(var(--surface-2), var(--surface));
+    background: linear-gradient(var(--scene-top), var(--scene-bottom));
+    border: 1px solid var(--border);
     transition: background 0.6s;
   }
   .scene.night {
-    background: linear-gradient(#2c2a4a, #4a4470);
+    background: linear-gradient(#141638, #3a2f78);
   }
   .poops {
     position: absolute;

@@ -25,9 +25,9 @@
   .toast {
     padding: 0.7rem 1rem;
     border-radius: var(--radius);
-    background: var(--text);
-    color: var(--bg);
-    border: none;
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
     text-align: left;
     box-shadow: var(--shadow);
     animation: pop 0.25s ease-out;
@@ -35,6 +35,7 @@
   .toast.error {
     background: var(--bad);
     color: white;
+    border-color: transparent;
   }
   @keyframes pop {
     from {
