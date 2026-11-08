@@ -42,6 +42,16 @@ Un compagnon bien soigné vit donc environ 16 jours avant de devenir ancien.
 - **Bien portant** (pas malade, satiété > 40, bonheur > 30) : +2 santé/h.
 - **Santé à 0** : le compagnon part (statut `gone`), ou reste à 1 PV si `GAME_DEPARTURE=false`. Un bébé totalement délaissé tient environ deux jours (vérifié par les tests).
 
+## Garderie
+
+Pour s'absenter sans pause, on peut **confier son compagnon à un autre membre** (bouton « Lui confier mon compagnon » sur son profil). Le temps continue de passer : le gardien s'occupe du compagnon à la place du propriétaire.
+
+- **Invitation** : le gardien la reçoit dans son journal et sur la page du village, et l'accepte ou la refuse. Sans réponse, elle expire au bout de 48 h. Un compagnon n'a qu'une garderie ou invitation à la fois (`daycare_exists`), et un membre ne garde que 2 compagnons à la fois (`daycare_full`).
+- **Ce que le gardien peut faire** : nourrir, nettoyer, soigner, coucher, réveiller, régler la lumière, féliciter, gronder, caresser (`CARETAKER_ACTION_TYPES`). Pas dresser, jouer, offrir des objets, équiper, promener, partir en vacances ni prendre la retraite : ce sont les choix du propriétaire. Les règles du moteur s'appliquent comme pour le propriétaire (`not_hungry`, `asleep`…), qui peut lui aussi continuer de s'occuper de son compagnon.
+- **Récompense** : 2 pièces par soin qui compte (nourrir, nettoyer, soigner), dans la limite de 30 pièces par jour partagée avec le jeu et le dressage. Les caresses ne rapportent rien et n'encombrent pas le journal du propriétaire ; les autres soins y apparaissent.
+- **Fin** : le propriétaire reprend son compagnon (ou annule l'invitation), le gardien le rend, ou le séjour se termine de lui-même après 14 jours. Il se termine aussi si le compagnon part ou prend sa retraite. L'autre personne est prévenue dans son journal.
+- **Pas de nouvelle règle du jeu** : le séjour est de la gestion d'accès (qui peut agir), pas de la simulation. Le moteur ne connaît que la liste des actions permises ; les durées (48 h, 14 jours, 2 compagnons) sont des constantes en temps réel de `api/src/social/daycare.ts`.
+
 ## Promenades
 
 Avant de partir, le joueur choisit une **zone** (`WALK_ZONES`, dans `shared/core/src/engine/zones.ts`). Sans choix, c'est la prairie, comme avant l'arrivée des zones.
@@ -67,7 +77,7 @@ Le propriétaire peut mettre son compagnon en pause (« Partir en vacances » su
 - **Rien d'autre n'est possible** : toute action est refusée (`on_vacation`), sauf « Revenir de vacances ». Les visiteurs ne peuvent ni caresser ni offrir de friandise ; ils voient le compagnon, avec son humeur.
 - **Où et quand** : pas pour un œuf, pas pendant une promenade.
 - **Des limites contre les abus** : les vacances se terminent d'elles-mêmes au bout de `vacationMaxHours` (14 jours), et on ne repart qu'après `vacationCooldownHours` (7 jours) depuis le retour (`vacation_cooldown`). Les deux sont des règles modifiables depuis l'écran Admin, en heures de jeu comme les autres durées. Le retour automatique est calculé par `simulate()` à l'instant exact de la limite, donc il ne dépend pas du moment où quelqu'un ouvre l'application ; il apparaît dans le journal.
-- **Pas de garderie pour l'instant** : confier le compagnon à un autre membre reste à faire (voir [FEATURES.md](FEATURES.md)).
+- **La garderie est l'autre façon de s'absenter** : voir « Garderie » ci-dessous. Les deux ne se cumulent pas (on ne confie pas un compagnon en vacances, qui n'a besoin de personne).
 
 ## Erreurs de soin et évolution
 
