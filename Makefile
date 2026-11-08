@@ -53,7 +53,7 @@ db-up: ## Start only PostgreSQL (reachable from the devcontainer as db:5432)
 db-down: ## Stop PostgreSQL
 	$(COMPOSE) stop db
 
-up: ## Build and start PostgreSQL and the API on http://localhost:3000
+up: ## Build and start the full stack on http://localhost:8080
 	$(COMPOSE) up -d --build
 
 down: ## Stop the full stack (keeps the data)
@@ -65,7 +65,7 @@ logs: ## Follow the logs of the stack
 ps: ## Show the containers of the stack
 	$(COMPOSE) ps
 
-images: ## Build the API image
+images: ## Build the API and web images
 	$(COMPOSE) build
 
 # ---- Production / staging (docker-compose.prod.yml, run on the server) ----

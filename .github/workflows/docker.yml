@@ -1,7 +1,8 @@
 name: Docker images
 
-# Builds the API image (context: repository root). The web app is static: see pages.yml. Pull requests only
-# check that they build; main and version tags publish them to GHCR.
+# Builds the API and web images (context: repository root). Pull requests only
+# check that they build; main and version tags publish them to GHCR. The web image
+# serves the app on the same origin as the API; GitHub Pages is built by pages.yml.
 on:
   push:
     branches: [main]
@@ -19,6 +20,10 @@ jobs:
     permissions:
       contents: read
       packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [api, web]
     env:
       PUBLISH: ${{ github.event_name != 'pull_request' }}
     steps:
@@ -34,7 +39,7 @@ jobs:
       - id: meta
         uses: docker/metadata-action@v6
         with:
-          images: ghcr.io/${{ github.repository_owner }}/2tamago-api
+          images: ghcr.io/${{ github.repository_owner }}/2tamago-${{ matrix.app }}
           # `latest` follows main; a tag vX.Y.Z publishes X.Y.Z, X.Y and X.
           flavor: latest=false
           tags: |
@@ -47,10 +52,10 @@ jobs:
       - uses: docker/build-push-action@v7
         with:
           context: .
-          file: api/Dockerfile
+          file: ${{ matrix.app }}/Dockerfile
           platforms: ${{ env.PUBLISH == 'true' && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
           push: ${{ env.PUBLISH == 'true' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha,scope=api
-          cache-to: type=gha,mode=max,scope=api
+          cache-from: type=gha,scope=${{ matrix.app }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.app }}

@@ -1,0 +1,14 @@
+# Only what the web image needs from the repository.
+*
+!package.json
+!pnpm-lock.yaml
+!pnpm-workspace.yaml
+!tsconfig.base.json
+!shared/core
+!web
+**/node_modules
+**/dist
+**/build
+**/.svelte-kit
+**/.env
+**/*.tsbuildinfo
