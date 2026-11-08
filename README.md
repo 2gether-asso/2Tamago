@@ -44,10 +44,10 @@ Ouvrir <http://localhost:4321> et se connecter avec un pseudo (mode dev). Il n'y
 Chaque service est à la racine avec son `Dockerfile`, et le code partagé est dans `shared/`. Un futur service écrit dans un autre langage se rangera à côté, sans faire partie de l'espace de travail pnpm.
 
 ```
-api/                    API NestJS : auth, joueurs, compagnons, village, boutique, journal
+api/                    API NestJS : auth Discord, joueurs et profils, compagnons, village, boutique, journal, avis, annonces, statistiques admin
 web/                    Front SvelteKit, et le Caddyfile de son image
 shared/core/            Moteur de jeu (règles, simulation) et contrats d'API partagés
-docs/                   Fonctionnalités, architecture, règles du jeu
+docs/                   Fonctionnalités, architecture, règles du jeu, traductions, Discord
 docker-compose.yml      Stack locale construite depuis les sources (PostgreSQL + API + web)
 docker-compose.prod.yml Production ou préproduction, à partir des images publiées
 Makefile                Commandes courantes
@@ -58,6 +58,8 @@ Makefile                Commandes courantes
 - [docs/FEATURES.md](docs/FEATURES.md) : fonctionnalités livrées et roadmap
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) : structure, choix techniques et comment ajouter une fonctionnalité
 - [docs/GAME_DESIGN.md](docs/GAME_DESIGN.md) : règles et équilibrage
+- [docs/I18N.md](docs/I18N.md) : l'interface en français et en anglais, et comment ajouter un texte
+- [docs/DISCORD.md](docs/DISCORD.md) : connexion Discord, annonces dans un salon, dépannage
 
 ## Mettre en production
 

@@ -104,18 +104,21 @@ Les corps de requête sont des schémas **Zod** dans `@2tamago/core/contracts`. 
 
 Un module Nest par domaine :
 
-| Module             | Contenu                                                                                                  |
-| ------------------ | -------------------------------------------------------------------------------------------------------- |
-| `config/`          | `AppConfig` : toutes les variables d'environnement validées une fois au démarrage, `Clock`               |
-| `database/`        | Schéma Drizzle, ouverture de la base et migrations, `DrizzleModule`                                      |
-| `auth/`            | Garde global, cookie de session, Discord OAuth2, login de dev                                            |
-| `announcements/`   | Annonces dans un salon Discord (webhook) : nouveaux joueurs, éclosions, croissance, premières rencontres |
-| `players/`         | Joueurs, pièces (bonus quotidien, plafond journalier), inventaire                                        |
-| `pets/`            | `GET /me`, adoption, actions du propriétaire, album, et `PetsService.mutate()`                           |
-| `social/`          | Village (visites, caresses, cadeaux), promenades et rencontres                                           |
-| `shop/`            | Achats                                                                                                   |
-| `activity/`        | Journal du joueur, écrit dans la transaction de l'action qui le produit                                  |
-| `game/`, `health/` | Règles publiques, sonde de santé                                                                         |
+| Module             | Contenu                                                                                                                               |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `config/`          | `AppConfig` : toutes les variables d'environnement validées une fois au démarrage, `Clock`, `GET /config` (réglages publics du front) |
+| `database/`        | Schéma Drizzle, ouverture de la base et migrations, `DrizzleModule`                                                                   |
+| `auth/`            | Garde global, cookie de session, Discord OAuth2, login de dev                                                                         |
+| `announcements/`   | Annonces dans un salon Discord (webhook) : nouveaux joueurs, éclosions, croissance, premières rencontres                              |
+| `players/`         | Joueurs, pièces (bonus quotidien, plafond journalier), inventaire                                                                     |
+| `profile/`         | Profil public d'un joueur : statistiques calculées depuis les tables existantes, compagnon vivant                                     |
+| `pets/`            | `GET /me`, adoption, actions du propriétaire, album, et `PetsService.mutate()`                                                        |
+| `social/`          | Village (visites, caresses, cadeaux), promenades et rencontres                                                                        |
+| `shop/`            | Achats                                                                                                                                |
+| `activity/`        | Journal du joueur, écrit dans la transaction de l'action qui le produit                                                               |
+| `feedback/`        | Avis des joueurs (bug, idée, autre), transmis à Sentry / GlitchTip                                                                    |
+| `game/`, `health/` | Règles publiques et réglages admin, statistiques admin, sonde de santé                                                                |
+| `common/`          | `Clock`, filtres d'exceptions (moteur, signalement des erreurs)                                                                       |
 
 `Clock` est injectable, ce qui permet aux tests e2e de **voyager dans le temps** (faire éclore un œuf, laisser partir un compagnon délaissé).
 
@@ -156,7 +159,7 @@ Un module Nest par domaine :
 
 `app.css` définit les jetons (couleurs, rayons, polices) : la palette violet / cyan / rose et la police de marque Bungee sont celles des autres projets 2GETHER (2Gatcha), avec un thème jour pastel et un thème nuit « nébuleuse ». Inter et Bungee sont auto-hébergées (Fontsource). Le thème suit le système, sauf si `data-theme="light"` ou `"dark"` est posé sur `<html>` ; un petit script dans `app.html` l'applique avant le premier affichage pour éviter un flash. Les composants n'utilisent que des variables (`--surface`, `--accent`, `--scene-top`…), jamais de couleurs en dur, pour suivre le thème.
 
-Le sprite écrit la silhouette de chaque espèce une seule fois (un `snippet` Svelte) et la réutilise comme `clipPath` pour y découper les motifs. Pour ajouter une espèce : l'ajouter à `SPECIES` et `SPECIES_LABELS` dans le moteur, puis dessiner sa silhouette dans `PetSprite.svelte`. Les traits (tirage, tempéraments) sont dans `shared/core/src/engine/traits.ts`.
+Le sprite écrit la silhouette de chaque espèce une seule fois (un `snippet` Svelte), en **deux parties** : l'arrière (oreilles, queue, épines) et le corps, qui le recouvre. Les motifs du pelage (taches, rayures, dégradé) sont découpés par un `mask` fait de cette silhouette, réduite de 1,5 px (`feMorphology`) pour s'arrêter au bord intérieur du contour au lieu de le recouvrir ; chaque partie a son propre masque, si bien qu'une rayure ne traverse jamais le contour du corps. On utilise un `mask` et non un `clipPath`, qui ignore silencieusement les groupes `<g>` (la silhouette de `kumo` en contient). Pour ajouter une espèce : l'ajouter à `SPECIES` et `SPECIES_LABELS` dans le moteur, puis dessiner sa silhouette (parties `back` et `front`) dans `PetSprite.svelte`; `PetSprite.spec.ts` vérifie que chaque espèce a ses motifs, ses yeux et sa propre forme. Les traits (tirage, tempéraments) sont dans `shared/core/src/engine/traits.ts`.
 
 ### Statistiques admin
 
@@ -193,12 +196,12 @@ Le titre est tronqué à 80 caractères ; le texte complet, la page et le naviga
 
 ## Tests
 
-| Commande                                    | Contenu                                                                                                                                                                                                                                             |
-| ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `pnpm --filter @2tamago/core test`          | Moteur : déterminisme, décroissance, maladie, départ, évolution, actions                                                                                                                                                                            |
-| `pnpm --filter @2tamago/api test`           | Configuration, et scénarios e2e sur une base PGlite en mémoire (ou sur PostgreSQL si `TEST_DATABASE_URL` est défini, comme en CI) avec une horloge simulée (cycle de vie, départ puis nouvelle adoption, village, cadeaux, rencontres en promenade) |
-| `pnpm --filter @2tamago/web test` / `check` | Textes, et vérification de types Svelte                                                                                                                                                                                                             |
-| `pnpm --filter @2tamago/web test:e2e`       | Navigateur (Playwright, Chromium) : deux joueurs adoptent, soignent, se rendent visite ; lance l'API compilée sur PGlite avec un temps accéléré (`make build` d'abord)                                                                              |
+| Commande                                    | Contenu                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm --filter @2tamago/core test`          | Moteur : déterminisme, décroissance, maladie, départ, évolution, actions ; traits et tempéraments (équilibre avantage / inconvénient) ; cycle de nuit et heures de coucher par stade ; surcharges de règles                                                                                                                                                                                                                                                                                                                           |
+| `pnpm --filter @2tamago/api test`           | Tests unitaires (configuration, client Discord avec un `fetch` simulé, annonces et leur plafond, envoi du webhook, assemblage des statistiques admin, rapport d'avis, codes d'erreur, fuseau horaire) et scénarios e2e sur une base PGlite en mémoire (ou sur PostgreSQL si `TEST_DATABASE_URL` est défini, comme en CI) avec une horloge simulée : cycle de vie, départ, village, cadeaux, rencontres, profils, statistiques admin, avis, parcours complet de la connexion Discord avec un faux Discord, annonces avec un faux salon |
+| `pnpm --filter @2tamago/web test` / `check` | Dictionnaires (clés, paramètres, pluriels, clés inutilisées, un message par code d'erreur), mise en phrases, rendu du sprite pour chaque espèce, motif et style d'yeux ; vérification de types Svelte                                                                                                                                                                                                                                                                                                                                 |
+| `pnpm --filter @2tamago/web test:e2e`       | Navigateur (Playwright, Chromium, en français sauf les tests de langue) : deux joueurs adoptent, soignent, se rendent visite ; profils ; avis ; langue ; nuit et lumière ; écran Admin et statistiques ; messages d'erreur de connexion. Lance l'API compilée sur PGlite avec un temps accéléré (`make build` d'abord)                                                                                                                                                                                                                |
 
 ## Docker et environnements
 
