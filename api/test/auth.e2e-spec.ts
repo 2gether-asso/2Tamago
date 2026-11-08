@@ -10,6 +10,11 @@ import { AppConfig } from '../src/config/app-config.js';
 import { setupApp } from '../src/setup-app.js';
 import { TestClient } from './dpop-client.js';
 
+/**
+ * In-memory PGlite by default; set TEST_AUTH_DATABASE_URL to run against a real PostgreSQL (the
+ * row lock of the refresh). A database of its own: specs running in parallel would share the data.
+ */
+const databaseUrl = process.env.TEST_AUTH_DATABASE_URL || 'memory://';
 const WEB = 'https://tamago.example';
 
 /** A Discord that answers from a table instead of the network, keyed by authorization code. */
@@ -67,7 +72,7 @@ describe('sessions (e2e)', () => {
       .overrideProvider(AppConfig)
       .useValue(
         new AppConfig({
-          DATABASE_URL: 'memory://',
+          DATABASE_URL: databaseUrl,
           WEB_ORIGIN: WEB,
           DISCORD_CLIENT_ID: 'client',
           DISCORD_CLIENT_SECRET: 'secret',

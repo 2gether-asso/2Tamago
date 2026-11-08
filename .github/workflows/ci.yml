@@ -39,6 +39,12 @@ jobs:
         run: pnpm --filter @2tamago/api test:e2e
         env:
           TEST_DATABASE_URL: postgres://tamago:tamago@localhost:5432/tamago_test
+      - name: Sessions against PostgreSQL (row locks, migrations), in a database of their own
+        run: |
+          PGPASSWORD=tamago psql -h localhost -U tamago -d tamago_test -c 'create database tamago_auth_test'
+          pnpm --filter @2tamago/api test:e2e test/auth.e2e-spec.ts
+        env:
+          TEST_AUTH_DATABASE_URL: postgres://tamago:tamago@localhost:5432/tamago_auth_test
       - run: pnpm --filter @2tamago/web exec playwright install --with-deps chromium
       - name: Browser tests (Playwright)
         run: pnpm --filter @2tamago/web test:e2e
