@@ -126,39 +126,39 @@ Les corps de requête sont des schémas **Zod** dans `@2tamago/core/contracts`. 
 
 Un module Nest par domaine :
 
-| Module             | Contenu                                                                                                                               |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `config/`          | `AppConfig` : toutes les variables d'environnement validées une fois au démarrage, `Clock`, `GET /config` (réglages publics du front) |
-| `database/`        | Schéma Drizzle, ouverture de la base et migrations, `DrizzleModule`                                                                   |
-| `auth/`            | Garde global, sessions (DPoP, rotation, contrôle de l'origine), Discord OAuth2, login de dev                                          |
-| `announcements/`   | Annonces dans un salon Discord (webhook) : nouveaux joueurs, éclosions, croissance, premières rencontres                              |
-| `players/`         | Joueurs, pièces (bonus quotidien, plafond journalier), inventaire                                                                     |
-| `profile/`         | Profil public d'un joueur : statistiques calculées depuis les tables existantes, compagnon vivant                                     |
-| `pets/`            | `GET /me`, adoption, actions du propriétaire, album, et `PetsService.mutate()`                                                        |
-| `social/`          | Village (visites, caresses, cadeaux, tri par favoris et affinité), favoris, promenades et rencontres                                  |
-| `shop/`            | Achats                                                                                                                                |
-| `activity/`        | Journal du joueur, écrit dans la transaction de l'action qui le produit                                                               |
-| `feedback/`        | Avis des joueurs (bug, idée, autre), transmis à Sentry / GlitchTip                                                                    |
-| `game/`, `health/` | Règles publiques et réglages admin, statistiques admin, sonde de santé                                                                |
-| `common/`          | `Clock`, filtres d'exceptions (moteur, signalement des erreurs)                                                                       |
+| Module             | Contenu                                                                                                                                    |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `config/`          | `AppConfig` : toutes les variables d'environnement validées une fois au démarrage, `Clock`, `GET /config` (réglages publics du front)      |
+| `database/`        | Schéma Drizzle, ouverture de la base et migrations, `DrizzleModule`                                                                        |
+| `auth/`            | Garde global, sessions (DPoP, rotation, contrôle de l'origine), Discord OAuth2, login de dev                                               |
+| `announcements/`   | Annonces dans un salon Discord (webhook) : nouveaux joueurs, éclosions, croissance, premières rencontres                                   |
+| `players/`         | Joueurs, pièces (bonus quotidien, plafond journalier), inventaire                                                                          |
+| `profile/`         | Profil public d'un joueur : statistiques calculées depuis les tables existantes, compagnon vivant                                          |
+| `pets/`            | `GET /me`, adoption, actions du propriétaire, album, et `PetsService.mutate()`                                                             |
+| `social/`          | Village (visites, caresses, cadeaux, tri par favoris et affinité), favoris, objectif communautaire de la semaine, promenades et rencontres |
+| `shop/`            | Achats                                                                                                                                     |
+| `activity/`        | Journal du joueur, écrit dans la transaction de l'action qui le produit                                                                    |
+| `feedback/`        | Avis des joueurs (bug, idée, autre), transmis à Sentry / GlitchTip                                                                         |
+| `game/`, `health/` | Règles publiques et réglages admin, statistiques admin, sonde de santé                                                                     |
+| `common/`          | `Clock`, filtres d'exceptions (moteur, signalement des erreurs)                                                                            |
 
 `Clock` est injectable, ce qui permet aux tests e2e de **voyager dans le temps** (faire éclore un œuf, laisser partir un compagnon délaissé).
 
 ### Routes (`/api/…`)
 
-| Méthode et route                                                                                                                                    | Rôle                                                                                  |
-| --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| `GET /health` · `GET /game/rules` · `GET /auth/config` · `GET /config`                                                                              | Publiques                                                                             |
-| `GET /auth/discord` · `GET /auth/discord/callback` · `POST /auth/dev-login` · `POST /auth/logout`                                                   | Connexion                                                                             |
-| `GET /me`                                                                                                                                           | Joueur, compagnon (rattrapé), inventaire et heure serveur, en un seul appel           |
-| `POST /pet` · `POST /pet/actions` · `GET /album`                                                                                                    | Adoption, actions (`{type: 'feed' \| 'play' \| …}`), album                            |
-| `POST /pet/walk` · `POST /pet/walk/return`                                                                                                          | Promenades                                                                            |
-| `GET /village` · `GET /village/:petId` · `POST /village/:petId/caress` · `POST /village/:petId/gift` · `PUT` / `DELETE /players/:playerId/favorite` | Social                                                                                |
-| `POST /shop/buy` · `GET /activity` · `POST /activity/read`                                                                                          | Boutique, journal                                                                     |
-| `GET /players/:playerId`                                                                                                                            | Profil : joueur, statistiques, compagnon vivant                                       |
-| `POST /feedback`                                                                                                                                    | Avis d'un joueur (bug, idée, autre), transmis à Sentry / GlitchTip                    |
-| `GET /admin/stats`                                                                                                                                  | Admin : chiffres du jeu entier (joueurs, compagnons, économie, activité, équilibrage) |
-| `GET /admin/rules` · `PUT /admin/rules`                                                                                                             | Admin : réglages du jeu en base                                                       |
+| Méthode et route                                                                                                                                                                                           | Rôle                                                                                  |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `GET /health` · `GET /game/rules` · `GET /auth/config` · `GET /config`                                                                                                                                     | Publiques                                                                             |
+| `GET /auth/discord` · `GET /auth/discord/callback` · `POST /auth/dev-login` · `POST /auth/logout`                                                                                                          | Connexion                                                                             |
+| `GET /me`                                                                                                                                                                                                  | Joueur, compagnon (rattrapé), inventaire et heure serveur, en un seul appel           |
+| `POST /pet` · `POST /pet/actions` · `GET /album`                                                                                                                                                           | Adoption, actions (`{type: 'feed' \| 'play' \| …}`), album                            |
+| `POST /pet/walk` · `POST /pet/walk/return`                                                                                                                                                                 | Promenades                                                                            |
+| `GET /village` · `GET /village/:petId` · `POST /village/:petId/caress` · `POST /village/:petId/gift` · `PUT` / `DELETE /players/:playerId/favorite` · `GET /community/goal` · `POST /community/goal/claim` | Social                                                                                |
+| `POST /shop/buy` · `GET /activity` · `POST /activity/read`                                                                                                                                                 | Boutique, journal                                                                     |
+| `GET /players/:playerId`                                                                                                                                                                                   | Profil : joueur, statistiques, compagnon vivant                                       |
+| `POST /feedback`                                                                                                                                                                                           | Avis d'un joueur (bug, idée, autre), transmis à Sentry / GlitchTip                    |
+| `GET /admin/stats`                                                                                                                                                                                         | Admin : chiffres du jeu entier (joueurs, compagnons, économie, activité, équilibrage) |
+| `GET /admin/rules` · `PUT /admin/rules`                                                                                                                                                                    | Admin : réglages du jeu en base                                                       |
 
 ### Modèle de données
 
