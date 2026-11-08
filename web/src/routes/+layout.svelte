@@ -6,6 +6,7 @@
   import Toasts from '#lib/components/Toasts.svelte';
   import { api } from '#lib/api.ts';
   import { game } from '#lib/game.svelte.ts';
+  import { theme } from '#lib/theme.svelte.ts';
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
   import type { LayoutProps } from './$types';
@@ -25,6 +26,15 @@
     game.player?.isAdmin ? [...NAV, { href: '/admin', label: 'Admin', icon: '🛠️' }] : NAV,
   );
   let isLogin = $derived(page.url.pathname.startsWith('/login'));
+
+  const THEME_UI = {
+    system: { icon: '🌗', label: 'Thème automatique' },
+    light: { icon: '☀️', label: 'Thème jour' },
+    dark: { icon: '🌙', label: 'Thème nuit' },
+  } as const;
+  let themeUi = $derived(THEME_UI[theme.choice]);
+
+  $effect(() => theme.init());
 
   $effect(() => {
     if (isLogin || game.loaded) return;
@@ -48,7 +58,19 @@
   <title>2Tamago</title>
 </svelte:head>
 
+{#snippet themeToggle()}
+  <button
+    class="theme-toggle"
+    onclick={() => theme.cycle()}
+    title="{themeUi.label} (cliquer pour changer)"
+    aria-label={themeUi.label}
+  >
+    {themeUi.icon}
+  </button>
+{/snippet}
+
 {#if isLogin}
+  <div class="login-theme">{@render themeToggle()}</div>
   {@render children()}
 {:else}
   <header>
@@ -58,7 +80,10 @@
         <span class="coins" title="Pièces">🪙 {game.player.coins}</span>
         <span class="muted">{game.player.displayName}</span>
         <button class="link" onclick={logout}>Déconnexion</button>
+        {@render themeToggle()}
       </div>
+    {:else}
+      {@render themeToggle()}
     {/if}
   </header>
 
@@ -98,10 +123,13 @@
   }
   .brand {
     white-space: nowrap;
-    font-weight: 800;
-    font-size: 1.3rem;
+    font-family: var(--font-brand);
+    font-size: 1.35rem;
     text-decoration: none;
-    color: var(--text);
+    background: linear-gradient(90deg, var(--accent), var(--accent-3));
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
   }
   .who {
     display: flex;
@@ -111,7 +139,22 @@
     align-items: center;
   }
   .coins {
-    font-weight: bold;
+    font-weight: 700;
+    padding: 0.15rem 0.7rem;
+    border-radius: var(--radius-pill);
+    background: var(--surface);
+    border: 1px solid var(--border);
+  }
+  .theme-toggle {
+    padding: 0.25rem 0.6rem;
+    font-size: 1.05rem;
+    line-height: 1.3;
+  }
+  .login-theme {
+    position: fixed;
+    top: 0.8rem;
+    right: 1rem;
+    z-index: 1;
   }
   main {
     max-width: 56rem;
@@ -126,22 +169,34 @@
     display: flex;
     justify-content: center;
     gap: 0.2rem;
-    padding: 0.4rem;
-    background: var(--surface);
-    box-shadow: 0 -2px 12px rgb(0 0 0 / 0.08);
+    padding: 0.4rem 0.4rem calc(0.4rem + env(safe-area-inset-bottom, 0px));
+    background: color-mix(in srgb, var(--surface) 82%, transparent);
+    backdrop-filter: blur(16px) saturate(140%);
+    border-top: 1px solid var(--border);
   }
   nav a {
     display: flex;
     flex-direction: column;
     align-items: center;
     padding: 0.3rem 0.7rem;
-    border-radius: 12px;
-    font-size: 0.8rem;
+    border-radius: var(--radius-md);
+    font-size: 0.75rem;
+    font-weight: 600;
     color: var(--muted);
     text-decoration: none;
+    transition:
+      color 0.15s,
+      background 0.15s;
+  }
+  nav a span {
+    font-size: 1.25rem;
+    transition: transform 0.15s;
   }
   nav a.active {
     color: var(--accent);
-    background: var(--surface-2);
+    background: rgb(var(--accent-rgb) / 0.14);
+  }
+  nav a.active span {
+    transform: translateY(-2px) scale(1.1);
   }
 </style>
