@@ -25,8 +25,15 @@ jobs:
         with:
           node-version: 24
           cache: pnpm
+      - name: Require the API address
+        run: test -n "$API_URL" || { echo "::error::Set the repository variable API_URL"; exit 1; }
+        env:
+          API_URL: ${{ vars.API_URL }}
       - run: pnpm install --frozen-lockfile --filter @2tamago/web...
       - run: pnpm --filter @2tamago/web build
+        env:
+          # Public address of the API, for example https://tamago-api.2gether-asso.fr
+          VITE_API_URL: ${{ vars.API_URL }}
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with:
