@@ -45,8 +45,10 @@ export class FavoritesService {
   async contacts(viewerId: string): Promise<Map<string, Contacts>> {
     const result = new Map<string, Contacts>();
     const of = (playerId: string): Contacts => {
-      let contacts = result.get(playerId);
-      if (!contacts) result.set(playerId, (contacts = { interactions: 0, encounters: 0 }));
+      const known = result.get(playerId);
+      if (known) return known;
+      const contacts: Contacts = { interactions: 0, encounters: 0 };
+      result.set(playerId, contacts);
       return contacts;
     };
 
