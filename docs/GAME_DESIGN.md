@@ -54,6 +54,16 @@ Une **erreur de soin** est comptée quand l'une de ces situations dure plus d'un
 | Chenapan  | ≥ 4 erreurs, ou discipline < 25 (sauf en sortant du stade bébé)      |
 | Doux      | tous les autres cas                                                  |
 
+## Jour et nuit
+
+Le jeu a un cycle jour/nuit calé sur l'horloge du **fuseau configuré** (`GAME_TIMEZONE`, heure d'été comprise : le décalage est recalculé toutes les 30 s). Par défaut, il fait nuit **de 21 h à 7 h** (règle `night`). Avec une vitesse du temps accélérée, la journée du jeu est accélérée aussi.
+
+- **Lumière allumée la nuit** : un compagnon éveillé est agité, son bonheur baisse **×1,5** plus vite (`awakeHappinessFactor`). Un rappel s'affiche. Ça ne s'applique pas pendant une promenade.
+- **Lumière éteinte** (action réservée à la nuit) : il s'endort tout seul, sans le malus de l'épuisement, et **dort jusqu'au matin** même avec l'énergie pleine.
+- **Le matin**, la lumière se rallume toute seule et il se réveille (s'il a récupéré toute son énergie).
+- **Réveiller** un compagnon rallume la lumière (sinon il se rendormirait aussitôt). Coucher, réveiller et l'épuisement fonctionnent comme avant.
+- Il n'y a pas d'heure de coucher par stade : une seule fenêtre de nuit pour tous. L'heure de début et de fin, le décalage horaire et le facteur sont réglables depuis l'écran Admin (`night`). Si le début et la fin sont égaux, il n'y a pas de nuit.
+
 ## Caprices et discipline
 
 À partir du stade enfant, il réclame de l'attention sans raison environ toutes les 10 h. On a 30 minutes pour réagir :
@@ -98,6 +108,7 @@ Les valeurs sont la règle `temperaments` de `GameRules` : un admin peut les mod
 | Nettoyer               | Retire les cacas, propreté +40                                                                                      |
 | Médicament             | Une dose (bonheur −5)                                                                                               |
 | Coucher / Réveiller    | Coucher seulement si énergie < 90. Réveiller coûte −10 bonheur                                                      |
+| Lumière                | Éteindre : seulement la nuit. Rallumer : à tout moment (voir « Jour et nuit »)                                      |
 | Caresser               | Bonheur +3, lien +1, au plus une fois toutes les 15 s                                                               |
 | Dresser                | Énergie −8, satiété −3, progrès de 8 × (1 + discipline/100), divisé par deux si bonheur < 50                        |
 | Promenade (30 min)     | Au retour : bonheur +15, énergie −15, satiété −10, lien +3, 5 à 15 pièces, 25 % de chances de trouver une friandise |
