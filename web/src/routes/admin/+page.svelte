@@ -2,6 +2,7 @@
   import { api } from '#lib/api.ts';
   import { game } from '#lib/game.svelte.ts';
   import { toasts } from '#lib/toasts.svelte.ts';
+  import { t } from '#lib/i18n/index.svelte.ts';
 
   let json = $state('{}');
   let loaded = $state(false);
@@ -28,14 +29,14 @@
     try {
       overrides = JSON.parse(json);
     } catch {
-      error = 'Ce n’est pas du JSON valide.';
+      error = t('admin.invalid_json');
       return;
     }
     busy = true;
     try {
       const rules = await api.saveAdminRules(overrides);
       json = JSON.stringify(rules.overrides, null, 2);
-      toasts.push('Réglages enregistrés. Les joueurs les reçoivent au prochain chargement.');
+      toasts.push(t('admin.saved'));
     } catch (e) {
       error = (e as Error).message;
     } finally {
@@ -44,32 +45,31 @@
   }
 </script>
 
-<h1>Administration</h1>
+<h1>{t('admin.title')}</h1>
 
 {#if !game.player?.isAdmin}
-  <p class="card">Cette page est réservée aux administrateurs.</p>
+  <p class="card">{t('admin.forbidden')}</p>
 {:else if error && !loaded}
   <p class="card">{error}</p>
 {:else if loaded}
   <p class="muted">
-    Réglages du jeu, modifiables sans redéploiement. Seules les valeurs listées ci-dessous
-    remplacent celles par défaut ; <code>{'{}'}</code> revient aux valeurs par défaut. La vitesse du temps
-    et le pas de simulation ne sont pas modifiables.
+    {t('admin.intro_before')} <code>{'{}'}</code>
+    {t('admin.intro_after')}
   </p>
   <form class="card" onsubmit={save}>
     <label>
-      Modifications (JSON)
+      {t('admin.edit')}
       <textarea bind:value={json} rows="12" spellcheck="false"></textarea>
     </label>
     {#if error}<p class="error">{error}</p>{/if}
-    <button class="primary" disabled={busy}>Enregistrer</button>
+    <button class="primary" disabled={busy}>{t('admin.save')}</button>
   </form>
   <details class="card">
-    <summary>Valeurs par défaut</summary>
+    <summary>{t('admin.defaults')}</summary>
     <pre>{JSON.stringify(base, null, 2)}</pre>
   </details>
 {:else}
-  <p class="muted">Chargement…</p>
+  <p class="muted">{t('common.loading')}</p>
 {/if}
 
 <style>

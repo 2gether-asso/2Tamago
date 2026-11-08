@@ -1,16 +1,19 @@
 <script lang="ts">
   import { api } from '#lib/api.ts';
   import { game } from '#lib/game.svelte.ts';
+  import { t } from '#lib/i18n/index.svelte.ts';
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
 
-  const ERRORS: Record<string, string> = {
-    not_member: 'Il faut être membre du Discord de 2GETHER pour jouer.',
-    state: 'La connexion a expiré, réessaie.',
-  };
+  const ERRORS = { not_member: 'login.error.not_member', state: 'login.error.state' } as const;
+  const errorCode = page.url.searchParams.get('error');
 
   let name = $state('');
-  let message = $state<string | null>(ERRORS[page.url.searchParams.get('error') ?? ''] ?? null);
+  let failure = $state<string | null>(null);
+  let message = $derived(
+    failure ??
+      (errorCode && errorCode in ERRORS ? t(ERRORS[errorCode as keyof typeof ERRORS]) : null),
+  );
   const config = api.authConfig();
 
   async function devLogin(event: SubmitEvent) {
@@ -20,7 +23,7 @@
       await game.load();
       await goto('/');
     } catch (e) {
-      message = (e as Error).message;
+      failure = (e as Error).message;
     }
   }
 </script>
@@ -28,28 +31,32 @@
 <div class="login">
   <div class="card">
     <h1>🥚 2Tamago</h1>
-    <p>
-      Adopte un compagnon, prends-en soin, et rends visite à ceux des autres membres de 2GETHER.
-    </p>
+    <p>{t('login.intro')}</p>
 
     {#if message}<p class="error">{message}</p>{/if}
 
     {#await config then { discord, devLogin: devLoginEnabled }}
       {#if discord}
-        <a class="discord" href={api.discordLoginUrl}>Se connecter avec Discord</a>
+        <a class="discord" href={api.discordLoginUrl}>{t('login.discord')}</a>
       {/if}
       {#if devLoginEnabled}
         <form onsubmit={devLogin}>
-          <p class="muted">Mode développement : connexion par pseudo.</p>
-          <input bind:value={name} placeholder="Pseudo" minlength="2" maxlength="32" required />
-          <button class="primary">Entrer</button>
+          <p class="muted">{t('login.dev_hint')}</p>
+          <input
+            bind:value={name}
+            placeholder={t('login.nickname')}
+            minlength="2"
+            maxlength="32"
+            required
+          />
+          <button class="primary">{t('login.enter')}</button>
         </form>
       {/if}
       {#if !discord && !devLoginEnabled}
-        <p class="muted">Aucune méthode de connexion n’est configurée.</p>
+        <p class="muted">{t('login.none')}</p>
       {/if}
     {:catch}
-      <p class="error">Le serveur est injoignable.</p>
+      <p class="error">{t('login.unreachable')}</p>
     {/await}
   </div>
 </div>

@@ -3,6 +3,8 @@
    * Mini-game, in the spirit of the classic virtual pets: the pet will look
    * left or right, guess where. Three rounds, the score (0-3) goes to the API.
    */
+  import { t } from '#lib/i18n/index.svelte.ts';
+
   interface Props {
     name: string;
     onfinish: (score: number) => void;
@@ -25,23 +27,23 @@
 
 <div class="backdrop">
   <div class="card dialog">
-    <h2>Jeu : où va regarder {name} ?</h2>
+    <h2>{t('minigame.title', { name })}</h2>
     {#if round < ROUNDS}
-      <p>Manche {round + 1} / {ROUNDS} — score : {score}</p>
+      <p>{t('minigame.round', { round: round + 1, total: ROUNDS, score })}</p>
       {#if last}
         <p class="result">
-          {last.guess === last.side ? 'Gagné !' : 'Raté…'}
+          {last.guess === last.side ? t('minigame.won') : t('minigame.lost')}
           ({last.side === 'left' ? '⬅️' : '➡️'})
         </p>
       {/if}
       <div class="row">
-        <button class="big" onclick={() => guess('left')}>⬅️ Gauche</button>
-        <button class="big" onclick={() => guess('right')}>Droite ➡️</button>
+        <button class="big" onclick={() => guess('left')}>{t('minigame.left')}</button>
+        <button class="big" onclick={() => guess('right')}>{t('minigame.right')}</button>
       </div>
-      <button class="link" onclick={oncancel}>Arrêter</button>
+      <button class="link" onclick={oncancel}>{t('minigame.stop')}</button>
     {:else}
-      <p class="result">Score final : {score} / {ROUNDS}</p>
-      <button class="primary" onclick={() => onfinish(score)}>Terminer</button>
+      <p class="result">{t('minigame.final', { score, total: ROUNDS })}</p>
+      <button class="primary" onclick={() => onfinish(score)}>{t('minigame.finish')}</button>
     {/if}
   </div>
 </div>

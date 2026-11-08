@@ -8,6 +8,7 @@
   import { clientConfig } from '#lib/client-config.svelte.ts';
   import { api } from '#lib/api.ts';
   import { game } from '#lib/game.svelte.ts';
+  import { i18n, t, type Locale, type MessageKey } from '#lib/i18n/index.svelte.ts';
   import { theme } from '#lib/theme.svelte.ts';
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
@@ -17,27 +18,31 @@
   let error = $state<string | null>(null);
   let feedbackOpen = $state(false);
 
-  const NAV = [
-    { href: '/', label: 'Maison', icon: '🏠' },
-    { href: '/village', label: 'Village', icon: '🌳' },
-    { href: '/shop', label: 'Boutique', icon: '🛍️' },
-    { href: '/journal', label: 'Journal', icon: '📜' },
-    { href: '/album', label: 'Album', icon: '📔' },
+  const NAV: { href: string; label: MessageKey; icon: string }[] = [
+    { href: '/', label: 'nav.home', icon: '🏠' },
+    { href: '/village', label: 'nav.village', icon: '🌳' },
+    { href: '/shop', label: 'nav.shop', icon: '🛍️' },
+    { href: '/journal', label: 'nav.journal', icon: '📜' },
+    { href: '/album', label: 'nav.album', icon: '📔' },
   ];
 
-  let nav = $derived(
-    game.player?.isAdmin ? [...NAV, { href: '/admin', label: 'Admin', icon: '🛠️' }] : NAV,
+  let nav = $derived<typeof NAV>(
+    game.player?.isAdmin ? [...NAV, { href: '/admin', label: 'nav.admin', icon: '🛠️' }] : NAV,
   );
   let isLogin = $derived(page.url.pathname.startsWith('/login'));
 
-  const THEME_UI = {
-    system: { icon: '🌗', label: 'Thème automatique' },
-    light: { icon: '☀️', label: 'Thème jour' },
-    dark: { icon: '🌙', label: 'Thème nuit' },
-  } as const;
+  const THEME_UI: Record<typeof theme.choice, { icon: string; label: MessageKey }> = {
+    system: { icon: '🌗', label: 'theme.system' },
+    light: { icon: '☀️', label: 'theme.light' },
+    dark: { icon: '🌙', label: 'theme.dark' },
+  };
   let themeUi = $derived(THEME_UI[theme.choice]);
+  let otherLocale = $derived<Locale>(i18n.locale === 'fr' ? 'en' : 'fr');
 
   $effect(() => theme.init());
+  $effect(() => {
+    document.documentElement.lang = i18n.locale;
+  });
 
   $effect(() => {
     if (isLogin || game.loaded) return;
@@ -65,10 +70,19 @@
   <button
     class="icon-button"
     onclick={() => theme.cycle()}
-    title="{themeUi.label} (cliquer pour changer)"
-    aria-label={themeUi.label}
+    title={t('theme.cycle', { label: t(themeUi.label) })}
+    aria-label={t(themeUi.label)}
   >
     {themeUi.icon}
+  </button>
+  <button
+    class="icon-button lang"
+    onclick={() => i18n.set(otherLocale)}
+    title="{t('lang.switch')} : {t(`lang.${otherLocale}`)}"
+    aria-label="{t('lang.switch')} : {t(`lang.${otherLocale}`)}"
+    lang={otherLocale}
+  >
+    {otherLocale.toUpperCase()}
   </button>
 {/snippet}
 
@@ -82,15 +96,15 @@
     >
     {#if game.player}
       <div class="who">
-        <span class="coins" title="Pièces">🪙 {game.player.coins}</span>
+        <span class="coins" title={t('header.coins')}>🪙 {game.player.coins}</span>
         <span class="muted">{game.player.displayName}</span>
-        <button class="link" onclick={logout}>Déconnexion</button>
+        <button class="link" onclick={logout}>{t('header.logout')}</button>
         {#if clientConfig.feedbackEnabled}
           <button
             class="icon-button"
             onclick={() => (feedbackOpen = true)}
-            title="Donner un avis"
-            aria-label="Donner un avis"
+            title={t('feedback.open')}
+            aria-label={t('feedback.open')}
           >
             💬
           </button>
@@ -106,12 +120,12 @@
     {#if error}
       <div class="card">
         <p>{error}</p>
-        <button onclick={() => location.reload()}>Réessayer</button>
+        <button onclick={() => location.reload()}>{t('common.retry')}</button>
       </div>
     {:else if game.loaded}
       {@render children()}
     {:else}
-      <p class="muted">Chargement…</p>
+      <p class="muted">{t('common.loading')}</p>
     {/if}
   </main>
 
@@ -119,7 +133,7 @@
     {#each nav as item (item.href)}
       <a href={item.href} class:active={page.url.pathname === item.href}>
         <span aria-hidden="true">{item.icon}</span>
-        {item.label}
+        {t(item.label)}
       </a>
     {/each}
   </nav>
@@ -169,6 +183,11 @@
     padding: 0.25rem 0.6rem;
     font-size: 1.05rem;
     line-height: 1.3;
+  }
+  .lang {
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
   }
   .login-theme {
     position: fixed;

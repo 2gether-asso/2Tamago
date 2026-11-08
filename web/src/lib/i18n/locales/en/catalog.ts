@@ -1,0 +1,72 @@
+import type { catalog as fr } from '../fr/catalog.ts';
+
+/** Names of game concepts (stages, moods, items, tricks…), reused everywhere. */
+export const catalog: Record<keyof typeof fr, string> = {
+  'item.cookie': 'Cookie',
+  'item.strawberry': 'Strawberry',
+  'item.warm_milk': 'Warm milk',
+  'item.cake': 'Cake',
+  'item.ribbon': 'Bow',
+  'item.hat': 'Hat',
+  'item.glasses': 'Glasses',
+  'item.crown': 'Crown',
+
+  'stage.egg': 'Egg',
+  'stage.baby': 'Baby',
+  'stage.child': 'Child',
+  'stage.teen': 'Teen',
+  'stage.adult': 'Adult',
+  'stage.elder': 'Elder',
+
+  'form.radiant': 'Radiant',
+  'form.gentle': 'Gentle',
+  'form.rascal': 'Rascal',
+
+  'mood.egg': 'In its egg',
+  'mood.gone': 'Gone',
+  'mood.retired': 'Retired',
+  'mood.away': 'On a walk',
+  'mood.sleeping': 'Asleep',
+  'mood.sick': 'Sick',
+  'mood.sad': 'Sad',
+  'mood.calling': 'Wants attention',
+  'mood.ok': 'Doing fine',
+  'mood.happy': 'Happy',
+
+  'alert.hungry': 'Hungry',
+  'alert.bored': 'Bored',
+  'alert.tired': 'Tired',
+  'alert.dirty': 'Dirty',
+  'alert.poop': 'Poop to clean',
+  'alert.sick': 'Sick',
+  'alert.calling': 'Throwing a tantrum',
+
+  'trick.sit': 'Sit',
+  'trick.spin': 'Spin',
+  'trick.jump': 'Jump',
+  'trick.highfive': 'High five',
+
+  'temperament.greedy': 'Greedy',
+  'temperament.greedy.hint': 'Gets hungry quickly, but stays cheerful.',
+  'temperament.sleepy': 'Sleepy',
+  'temperament.sleepy.hint': 'Tires quickly, but recovers quickly too.',
+  'temperament.cuddly': 'Cuddly',
+  'temperament.cuddly.hint': 'Bonds more with every cuddle, but sulks sooner.',
+  'temperament.prankster': 'Prankster',
+  'temperament.prankster.hint': 'Throws more tantrums, but eats less.',
+  'temperament.tidy': 'Tidy',
+  'temperament.tidy.hint': 'Stays clean longer, but wears out faster.',
+  'temperament.sturdy': 'Sturdy',
+  'temperament.sturdy.hint': 'Resists illness better, but has a bigger appetite.',
+
+  'item.unknown': 'a gift',
+
+  'stat.satiety': 'Fullness',
+  'stat.happiness': 'Happiness',
+  'stat.energy': 'Energy',
+  'stat.hygiene': 'Cleanliness',
+  'stat.health': 'Health',
+  'stat.discipline': 'Discipline',
+  'stat.bond': 'Bond',
+  'stat.title': '{label}: {value} / 100',
+};

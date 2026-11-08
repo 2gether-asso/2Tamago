@@ -1,6 +1,7 @@
 <script lang="ts">
   import { SPECIES, SPECIES_LABELS, type Species } from '@2tamago/core';
   import { game } from '../game.svelte.ts';
+  import { t } from '#lib/i18n/index.svelte.ts';
   import PetSprite from './PetSprite.svelte';
 
   let name = $state('');
@@ -14,7 +15,7 @@
 </script>
 
 <form class="card adopt" onsubmit={submit}>
-  <h2>Adopter un compagnon</h2>
+  <h2>{t('adopt.title')}</h2>
   <div class="species">
     {#each SPECIES as option (option)}
       <button
@@ -29,7 +30,7 @@
     {/each}
   </div>
   <label>
-    Couleur
+    {t('adopt.color')}
     <input
       type="range"
       min="0"
@@ -39,10 +40,16 @@
     />
   </label>
   <label>
-    Nom
-    <input bind:value={name} maxlength="20" required placeholder="Pompon" />
+    {t('adopt.name')}
+    <input
+      bind:value={name}
+      maxlength="20"
+      required
+      placeholder="Pompon"
+      title={t('adopt.name_hint')}
+    />
   </label>
-  <button class="primary" disabled={game.busy || !name.trim()}>Recevoir mon œuf 🥚</button>
+  <button class="primary" disabled={game.busy || !name.trim()}>{t('adopt.submit')}</button>
 </form>
 
 <style>
