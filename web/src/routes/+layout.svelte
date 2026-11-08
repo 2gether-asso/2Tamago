@@ -19,6 +19,9 @@
     { href: '/album', label: 'Album', icon: '📔' },
   ];
 
+  let nav = $derived(
+    game.player?.isAdmin ? [...NAV, { href: '/admin', label: 'Admin', icon: '🛠️' }] : NAV,
+  );
   let isLogin = $derived(page.url.pathname.startsWith('/login'));
 
   $effect(() => {
@@ -71,7 +74,7 @@
   </main>
 
   <nav>
-    {#each NAV as item (item.href)}
+    {#each nav as item (item.href)}
       <a href={item.href} class:active={page.url.pathname === item.href}>
         <span aria-hidden="true">{item.icon}</span>
         {item.label}
