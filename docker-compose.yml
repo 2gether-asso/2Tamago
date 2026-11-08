@@ -39,12 +39,21 @@ services:
       dockerfile: api/Dockerfile
     image: 2tamago-api:local
     environment:
+      # Runtime
       NODE_ENV: ${NODE_ENV:-development}
+      # Database
       DATABASE_URL: postgres://tamago:${POSTGRES_PASSWORD:-tamago}@db:5432/tamago
       DATABASE_AUTO_MIGRATE: 'false'
+      # Authentication
       AUTH_SECRET: ${AUTH_SECRET:-local-only-secret-not-for-production-use}
       AUTH_DEV_LOGIN: ${AUTH_DEV_LOGIN:-true}
+      AUTH_ACCESS_TTL_MINUTES: ${AUTH_ACCESS_TTL_MINUTES:-}
+      AUTH_REFRESH_IDLE_DAYS: ${AUTH_REFRESH_IDLE_DAYS:-}
+      AUTH_SESSION_MAX_DAYS: ${AUTH_SESSION_MAX_DAYS:-}
+      AUTH_ROAMING_HOURS: ${AUTH_ROAMING_HOURS:-}
+      # Web app
       WEB_ORIGIN: ${WEB_ORIGIN:-http://localhost:8080}
+      # Discord
       DISCORD_CLIENT_ID: ${DISCORD_CLIENT_ID:-}
       DISCORD_CLIENT_SECRET: ${DISCORD_CLIENT_SECRET:-}
       DISCORD_GUILD_ID: ${DISCORD_GUILD_ID:-}
@@ -52,11 +61,13 @@ services:
       DISCORD_INVITE_URL: ${DISCORD_INVITE_URL:-}
       DISCORD_WEBHOOK_URL: ${DISCORD_WEBHOOK_URL:-}
       ADMIN_DISCORD_IDS: ${ADMIN_DISCORD_IDS:-}
+      # Error tracking
       SENTRY_DSN: ${SENTRY_DSN:-}
       SENTRY_WEB_DSN: ${SENTRY_WEB_DSN:-}
-      GAME_TIME_SCALE: ${GAME_TIME_SCALE:-1}
-      GAME_DEPARTURE: ${GAME_DEPARTURE:-true}
-      GAME_TIMEZONE: ${GAME_TIMEZONE:-Europe/Paris}
+      # Game
+      GAME_TIME_SCALE: ${GAME_TIME_SCALE:-}
+      GAME_DEPARTURE: ${GAME_DEPARTURE:-}
+      GAME_TIMEZONE: ${GAME_TIMEZONE:-}
     ports:
       - '${API_PORT:-3000}:3000'
     depends_on:
