@@ -1,5 +1,5 @@
 import adapter from '@sveltejs/adapter-static';
-import type { Config } from '@sveltejs/kit';
+import type { Config } from '@sveltejs/kit/vite';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defaultClientConditions, defaultServerConditions } from 'vite';
 import { defineConfig } from 'vitest/config';
