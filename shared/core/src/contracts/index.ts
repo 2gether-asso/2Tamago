@@ -93,6 +93,15 @@ export const rulesOverridesBody = z
     outingHours: nonNegative,
     caressCooldownSeconds: nonNegative,
     departureEnabled: z.boolean(),
+    night: z
+      .object({
+        startHour: z.number().int().min(0).max(23),
+        endHour: z.number().int().min(0).max(23),
+        clockOffsetHours: z.number().min(-12).max(14),
+        awakeHappinessFactor: z.number().min(1).max(5),
+      })
+      .partial()
+      .strict(),
     temperaments: z
       .object(
         Object.fromEntries(TEMPERAMENTS.map((t) => [t, temperamentMods])) as Record<
@@ -138,6 +147,7 @@ export const ownerActionBody = z.discriminatedUnion('type', [
   z.object({ type: z.literal('medicine') }),
   z.object({ type: z.literal('sleep') }),
   z.object({ type: z.literal('wake') }),
+  z.object({ type: z.literal('lights'), on: z.boolean() }),
   z.object({ type: z.literal('praise') }),
   z.object({ type: z.literal('scold') }),
   z.object({ type: z.literal('caress') }),

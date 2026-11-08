@@ -6,3 +6,4 @@ export { simulate, pickForm, clamp, type SimulationResult } from './engine/simul
 export * from './engine/actions.js';
 export * from './engine/view.js';
 export * from './engine/traits.js';
+export * from './engine/night.js';

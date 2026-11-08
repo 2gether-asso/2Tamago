@@ -116,6 +116,9 @@ export interface PetState {
   lastCaressAt: number | null;
 
   equipped: string | null;
+
+  /** The owner switched the lights off for the night. Absent (or false) = lights on. */
+  lightsOff?: boolean;
 }
 
 export type PetEventType =

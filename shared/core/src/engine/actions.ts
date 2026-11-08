@@ -2,6 +2,7 @@ import { getItem, isAccessory, isSnack, type ItemId } from './catalog.js';
 import { GameError } from './errors.js';
 import { alignToGrid, gameHours, type GameRules } from './rules.js';
 import { clamp, simulate } from './simulate.js';
+import { isNight } from './night.js';
 import { hashSeed, modOf, rollTraits } from './traits.js';
 import { type PetEvent, type PetState, type Species, type TrickId, TRICKS } from './types.js';
 
@@ -60,6 +61,7 @@ export type OwnerAction =
   | { type: 'medicine' }
   | { type: 'sleep' }
   | { type: 'wake' }
+  | { type: 'lights'; on: boolean }
   | { type: 'praise' }
   | { type: 'scold' }
   | { type: 'caress' }
@@ -167,8 +169,20 @@ export function applyAction(
       requireHome();
       if (!state.asleep) throw new GameError('awake');
       state.asleep = false;
+      // Waking it up means the lights are on again, or it would go straight back to sleep.
+      state.lightsOff = false;
       add('happiness', -10);
       events.push({ type: 'woke_up', at });
+      break;
+    }
+    case 'lights': {
+      requireHome();
+      if (action.on) {
+        state.lightsOff = false;
+      } else {
+        if (!isNight(rules, at)) throw new GameError('not_night');
+        state.lightsOff = true;
+      }
       break;
     }
     case 'praise': {

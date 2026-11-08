@@ -15,6 +15,7 @@ export const GAME_ERROR_CODES = [
   'too_hungry',
   'unknown_item',
   'not_elder',
+  'not_night',
 ] as const;
 
 export type GameErrorCode = (typeof GAME_ERROR_CODES)[number];
@@ -35,6 +36,7 @@ export const GAME_ERROR_MESSAGES: Record<GameErrorCode, string> = {
   too_hungry: 'Il a trop faim pour ça.',
   unknown_item: 'Objet inconnu.',
   not_elder: 'Seul un compagnon âgé peut prendre sa retraite.',
+  not_night: 'Il fait encore jour.',
 };
 
 export class GameError extends Error {

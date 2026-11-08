@@ -1,4 +1,5 @@
 import { alignToGrid, gameHours, stepMs, type GameRules } from './rules.js';
+import { isNight } from './night.js';
 import { modOf, traitsOf } from './traits.js';
 import {
   STAGES,
@@ -54,8 +55,9 @@ function tick(state: PetState, t: number, rules: GameRules, events: PetEvent[]):
     return;
   }
 
-  decay(state, dtH, rules);
-  sleepCycle(state, t, events);
+  const night = isNight(rules, t);
+  decay(state, dtH, rules, night);
+  sleepCycle(state, t, night, events);
   poop(state, t, rules, events);
   sickness(state, t, dtH, rules, events);
   health(state, t, dtH, rules, events);
@@ -81,12 +83,15 @@ function hatch(state: PetState, t: number, rules: GameRules): void {
     t + gameHours(rules, rules.tantrumIntervalHours * modOf(state, rules, 'tantrumInterval'));
 }
 
-function decay(state: PetState, dtH: number, rules: GameRules): void {
+function decay(state: PetState, dtH: number, rules: GameRules, night: boolean): void {
   const s = state.stats;
   const k = rules.stageNeediness[state.stage] * dtH;
   const messLoss = state.poops * rules.hygieneLossPerPoopPerHour * dtH;
   const satietyK = k * modOf(state, rules, 'satietyDecay');
-  const happinessK = k * modOf(state, rules, 'happinessDecay');
+  // Awake at night with the lights on (and not out for a walk): restless.
+  const restless = night && !state.lightsOff && !state.asleep && !state.outing;
+  const happinessK =
+    k * modOf(state, rules, 'happinessDecay') * (restless ? rules.night.awakeHappinessFactor : 1);
   const hygieneK = k * modOf(state, rules, 'hygieneDecay');
   if (state.asleep) {
     const d = rules.asleepDecayPerHour;
@@ -105,15 +110,26 @@ function decay(state: PetState, dtH: number, rules: GameRules): void {
   clampStats(s);
 }
 
-function sleepCycle(state: PetState, t: number, events: PetEvent[]): void {
-  if (state.asleep && state.stats.energy >= 100) {
-    state.asleep = false;
-    events.push({ type: 'woke_up', at: t });
-  } else if (!state.asleep && !state.outing && state.stats.energy <= 0) {
-    // Exhausted: falls asleep on its own, and is not happy about it.
-    state.asleep = true;
-    state.stats.happiness = clamp(state.stats.happiness - 10);
-    events.push({ type: 'fell_asleep', at: t, data: { exhausted: true } });
+function sleepCycle(state: PetState, t: number, night: boolean, events: PetEvent[]): void {
+  // Sunrise: the lights come back on by themselves.
+  if (state.lightsOff && !night) state.lightsOff = false;
+  const bedtime = night && state.lightsOff === true;
+  if (state.asleep) {
+    // With the lights off at night, it sleeps on until morning even with full energy.
+    if (state.stats.energy >= 100 && !bedtime) {
+      state.asleep = false;
+      events.push({ type: 'woke_up', at: t });
+    }
+  } else if (!state.outing) {
+    if (state.stats.energy <= 0) {
+      // Exhausted: falls asleep on its own, and is not happy about it.
+      state.asleep = true;
+      state.stats.happiness = clamp(state.stats.happiness - 10);
+      events.push({ type: 'fell_asleep', at: t, data: { exhausted: true } });
+    } else if (bedtime) {
+      state.asleep = true;
+      events.push({ type: 'fell_asleep', at: t, data: { exhausted: false, bedtime: true } });
+    }
   }
 }
 

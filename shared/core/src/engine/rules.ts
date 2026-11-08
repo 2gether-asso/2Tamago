@@ -74,6 +74,20 @@ export interface GameRules {
    */
   temperaments: Record<Temperament, Partial<TemperamentMods>>;
 
+  /**
+   * The day/night cycle of the game clock (game hours, see `dayHour`). Between `startHour` and
+   * `endHour` it is night; equal hours mean there is no night. A pet awake at night with the
+   * lights on is restless: its happiness falls `awakeHappinessFactor` times faster. With the
+   * lights off it goes to sleep, and stays asleep until morning.
+   */
+  night: {
+    startHour: number;
+    endHour: number;
+    /** Hours added to UTC to get the local hour (the API derives it from `GAME_TIMEZONE`). */
+    clockOffsetHours: number;
+    awakeHappinessFactor: number;
+  };
+
   /** Safety cap on the number of steps simulated in one call. */
   maxStepsPerSimulation: number;
 }
@@ -119,6 +133,8 @@ export const DEFAULT_RULES: GameRules = {
     tidy: { hygieneDecay: 0.7, energyDecay: 1.15 },
     sturdy: { sickHealthLoss: 0.7, satietyDecay: 1.15 },
   },
+
+  night: { startHour: 21, endHour: 7, clockOffsetHours: 0, awakeHappinessFactor: 1.5 },
 
   maxStepsPerSimulation: 200_000,
 };
