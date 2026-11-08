@@ -10,12 +10,14 @@ import {
   Req,
   Res,
 } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { devLoginBody, type DevLoginBody } from '@2tamago/core/contracts';
 import type { CookieOptions, Request, Response } from 'express';
+import { captureError } from '../common/error-reporter.js';
 import { AppConfig } from '../config/app-config.js';
 import { PlayersService } from '../players/players.service.js';
-import { DiscordClient } from './discord.client.js';
+import { DiscordClient, type DiscordIdentity } from './discord.client.js';
 import { OAUTH_STATE_COOKIE, Public, SESSION_COOKIE, readCookie } from './session.js';
 
 const SESSION_DAYS = 30;
@@ -23,6 +25,8 @@ const SESSION_DAYS = 30;
 @Public()
 @Controller('auth')
 export class AuthController {
+  private readonly logger = new Logger(AuthController.name);
+
   constructor(
     private readonly config: AppConfig,
     private readonly jwt: JwtService,
@@ -33,7 +37,11 @@ export class AuthController {
   /** What the login page should offer. */
   @Get('config')
   getConfig() {
-    return { discord: this.discord.enabled, devLogin: this.config.auth.devLogin };
+    return {
+      discord: this.discord.enabled,
+      devLogin: this.config.auth.devLogin,
+      inviteUrl: this.config.discordInviteUrl ?? null,
+    };
   }
 
   @Get('discord')
@@ -47,15 +55,28 @@ export class AuthController {
   async discordCallback(
     @Query('code') code: string | undefined,
     @Query('state') state: string | undefined,
+    @Query('error') providerError: string | undefined,
     @Req() req: Request,
     @Res() res: Response,
   ) {
     const expected = readCookie(req, OAUTH_STATE_COOKIE);
     res.clearCookie(OAUTH_STATE_COOKIE, this.cookieOptions());
-    if (!code || !state || !expected || !safeEqual(state, expected)) {
+    if (!state || !expected || !safeEqual(state, expected)) {
       return res.redirect(`${this.config.webOrigin}/login?error=state`);
     }
-    const identity = await this.discord.identify(code);
+    // The player cancelled on Discord's authorization screen (`error=access_denied`).
+    if (providerError || !code) {
+      return res.redirect(`${this.config.webOrigin}/login?error=denied`);
+    }
+    let identity: DiscordIdentity;
+    try {
+      identity = await this.discord.identify(code);
+    } catch (error) {
+      // Discord is down or refused us: say so, instead of showing a JSON error page.
+      this.logger.warn(`Discord sign-in failed: ${(error as Error).message}`);
+      captureError(error);
+      return res.redirect(`${this.config.webOrigin}/login?error=discord`);
+    }
     if (!identity.isMember) {
       return res.redirect(`${this.config.webOrigin}/login?error=not_member`);
     }

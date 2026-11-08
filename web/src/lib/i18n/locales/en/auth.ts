@@ -11,4 +11,7 @@ export const auth: Record<keyof typeof fr, string> = {
   'login.unreachable': 'The server cannot be reached.',
   'login.error.not_member': 'You need to be a member of the 2GETHER Discord to play.',
   'login.error.state': 'The sign-in expired, please try again.',
+  'login.error.denied': 'Sign-in cancelled.',
+  'login.error.discord': 'Discord is not answering right now, please try again in a moment.',
+  'login.join': 'Join the 2GETHER Discord',
 };

@@ -11,6 +11,11 @@ export function initErrorReporting(options: { dsn?: string; environment: string 
   Sentry.init({ dsn: options.dsn, environment: options.environment });
 }
 
+/** Reports an error that was handled (for example by a redirect), so it is still followed. */
+export function captureError(error: unknown): void {
+  Sentry.captureException(error);
+}
+
 /**
  * Reports unexpected errors (anything but a 4xx), then lets Nest answer as usual. Registered
  * before the more specific filters, which Nest tries first.

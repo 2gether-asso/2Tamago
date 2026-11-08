@@ -46,12 +46,18 @@ export class DiscordClient {
         redirect_uri: discord.redirectUri,
       }),
     });
-    if (!tokenResponse.ok) throw new ServiceUnavailableException('Discord token exchange failed');
+    if (!tokenResponse.ok) {
+      throw new ServiceUnavailableException(
+        `Discord token exchange failed (${tokenResponse.status})`,
+      );
+    }
     const { access_token } = (await tokenResponse.json()) as { access_token: string };
     const headers = { Authorization: `Bearer ${access_token}` };
 
     const userResponse = await fetch(`${API}/users/@me`, { headers });
-    if (!userResponse.ok) throw new ServiceUnavailableException('Discord user lookup failed');
+    if (!userResponse.ok) {
+      throw new ServiceUnavailableException(`Discord user lookup failed (${userResponse.status})`);
+    }
     const user = (await userResponse.json()) as {
       id: string;
       username: string;
@@ -62,6 +68,12 @@ export class DiscordClient {
     const memberResponse = await fetch(`${API}/users/@me/guilds/${discord.guildId}/member`, {
       headers,
     });
+    // 404: not in the server. Anything else (rate limit, outage) must not pass for "not a member".
+    if (!memberResponse.ok && memberResponse.status !== 404) {
+      throw new ServiceUnavailableException(
+        `Discord member lookup failed (${memberResponse.status})`,
+      );
+    }
     const member = memberResponse.ok
       ? ((await memberResponse.json()) as { nick: string | null })
       : null;

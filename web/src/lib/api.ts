@@ -69,7 +69,8 @@ async function call<T>(method: string, path: string, body?: unknown): Promise<T>
 }
 
 export const api = {
-  authConfig: () => call<{ discord: boolean; devLogin: boolean }>('GET', '/auth/config'),
+  authConfig: () =>
+    call<{ discord: boolean; devLogin: boolean; inviteUrl: string | null }>('GET', '/auth/config'),
   devLogin: (name: string) => call<{ token: string }>('POST', '/auth/dev-login', { name }),
   logout: () => call<void>('POST', '/auth/logout'),
   discordLoginUrl: `${BASE}/auth/discord`,

@@ -15,6 +15,9 @@ const csv = z
       .filter(Boolean),
   );
 
+/** A URL, or an empty value (a variable that is set but blank, as docker compose does). */
+const optionalUrl = z.union([z.literal(''), z.url()]).optional();
+
 const envSchema = z
   .object({
     NODE_ENV: z.string().default('development'),
@@ -39,6 +42,10 @@ const envSchema = z
     DISCORD_CLIENT_SECRET: z.string().optional(),
     DISCORD_GUILD_ID: z.string().optional(),
     DISCORD_REDIRECT_URI: z.string().optional(),
+    /** Invitation to the Discord server, offered to people who are not members yet. */
+    DISCORD_INVITE_URL: optionalUrl,
+    /** Channel webhook for the game announcements; announcements are off without it. */
+    DISCORD_WEBHOOK_URL: optionalUrl,
     ADMIN_DISCORD_IDS: csv,
 
     GAME_TIME_SCALE: z.coerce.number().positive().default(1),
@@ -73,6 +80,8 @@ export class AppConfig {
   readonly webOrigin: string;
   readonly sentryDsn: string | undefined;
   readonly sentryWebDsn: string | undefined;
+  readonly discordInviteUrl: string | undefined;
+  readonly discordWebhookUrl: string | undefined;
   readonly discord: {
     clientId: string;
     clientSecret: string;
@@ -97,6 +106,8 @@ export class AppConfig {
     this.webOrigin = env.WEB_ORIGIN;
     this.sentryDsn = env.SENTRY_DSN || undefined;
     this.sentryWebDsn = env.SENTRY_WEB_DSN || undefined;
+    this.discordInviteUrl = env.DISCORD_INVITE_URL || undefined;
+    this.discordWebhookUrl = env.DISCORD_WEBHOOK_URL || undefined;
     this.discord =
       env.DISCORD_CLIENT_ID && env.DISCORD_CLIENT_SECRET && env.DISCORD_GUILD_ID
         ? {

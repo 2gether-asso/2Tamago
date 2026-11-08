@@ -10,4 +10,7 @@ export const auth = {
   'login.unreachable': 'Le serveur est injoignable.',
   'login.error.not_member': 'Il faut être membre du Discord de 2GETHER pour jouer.',
   'login.error.state': 'La connexion a expiré, réessaie.',
+  'login.error.denied': 'Connexion annulée.',
+  'login.error.discord': 'Discord ne répond pas pour le moment, réessaie dans un instant.',
+  'login.join': 'Rejoindre le Discord de 2GETHER',
 } as const;

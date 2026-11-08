@@ -5,7 +5,12 @@
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
 
-  const ERRORS = { not_member: 'login.error.not_member', state: 'login.error.state' } as const;
+  const ERRORS = {
+    not_member: 'login.error.not_member',
+    state: 'login.error.state',
+    denied: 'login.error.denied',
+    discord: 'login.error.discord',
+  } as const;
   const errorCode = page.url.searchParams.get('error');
 
   let name = $state('');
@@ -35,9 +40,12 @@
 
     {#if message}<p class="error">{message}</p>{/if}
 
-    {#await config then { discord, devLogin: devLoginEnabled }}
+    {#await config then { discord, devLogin: devLoginEnabled, inviteUrl }}
       {#if discord}
         <a class="discord" href={api.discordLoginUrl}>{t('login.discord')}</a>
+        {#if inviteUrl}
+          <p><a class="invite" href={inviteUrl} rel="noopener">{t('login.join')}</a></p>
+        {/if}
       {/if}
       {#if devLoginEnabled}
         <form onsubmit={devLogin}>
@@ -71,6 +79,10 @@
   .card {
     width: min(26rem, 100%);
     text-align: center;
+  }
+  .invite {
+    font-size: 0.9rem;
+    color: var(--muted);
   }
   .discord {
     display: inline-block;
