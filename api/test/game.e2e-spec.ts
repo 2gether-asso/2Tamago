@@ -89,6 +89,11 @@ describe('2Tamago API (e2e)', () => {
     expect(rulesResponse.body.stepMinutes).toBe(rules.stepMinutes);
   });
 
+  it('tells the web app what it cannot know at build time', async () => {
+    const { body } = await request(app.getHttpServer()).get('/api/config').expect(200);
+    expect(body).toEqual({ sentryDsn: null, feedbackEnabled: false });
+  });
+
   it('runs the life of a pet', async () => {
     const alice = await signIn('Alice');
     let me: MeResponse = (await alice.get('/api/me').expect(200)).body;

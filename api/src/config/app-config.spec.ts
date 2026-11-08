@@ -8,6 +8,13 @@ describe('AppConfig', () => {
     expect(config.game.timeScale).toBe(1);
   });
 
+  it('reads the API and browser DSNs separately, both optional', () => {
+    expect(new AppConfig({}).sentryWebDsn).toBeUndefined();
+    const config = new AppConfig({ SENTRY_DSN: 'https://a@x/1', SENTRY_WEB_DSN: 'https://b@x/2' });
+    expect(config.sentryDsn).toBe('https://a@x/1');
+    expect(config.sentryWebDsn).toBe('https://b@x/2');
+  });
+
   it('refuses unsafe production settings', () => {
     expect(() => new AppConfig({ NODE_ENV: 'production' })).toThrow(/AUTH_SECRET/);
     const secret = 'x'.repeat(32);

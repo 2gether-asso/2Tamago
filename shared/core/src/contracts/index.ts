@@ -149,6 +149,14 @@ export interface PetDto {
 
 export type Inventory = Partial<Record<ItemId, number>>;
 
+/** Public settings the web app needs before anyone is signed in. */
+export interface ClientConfig {
+  /** DSN for browser error tracking, `null` when it is off. */
+  sentryDsn: string | null;
+  /** Whether the feedback form can deliver (the API has a `SENTRY_DSN`). */
+  feedbackEnabled: boolean;
+}
+
 export interface MeResponse {
   player: PlayerDto;
   pet: PetDto | null;
