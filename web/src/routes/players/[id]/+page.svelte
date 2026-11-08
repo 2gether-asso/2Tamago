@@ -1,6 +1,7 @@
 <script lang="ts">
   import { ageInDays, ITEMS, SPECIES_LABELS, TRICKS, trickLevel, type ItemId } from '@2tamago/core';
   import type { PlayerProfile } from '@2tamago/core/contracts';
+  import PushSettings from '#lib/components/PushSettings.svelte';
   import PetSprite from '#lib/components/PetSprite.svelte';
   import StatBar from '#lib/components/StatBar.svelte';
   import { api } from '#lib/api.ts';
@@ -186,6 +187,7 @@
       <p class="muted center">{t('profile.no_pet')}</p>
     {/if}
   </section>
+  {#if player.isYou}<PushSettings />{/if}
 {:else}
   <p class="muted">{t('common.loading')}</p>
 {/if}

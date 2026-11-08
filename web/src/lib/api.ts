@@ -17,6 +17,7 @@ import type {
   PlayerProfile,
   VillagePet,
   VisitResponse,
+  PushSubscriptionBody,
   ClaimResponse,
   CommunityGoal,
   FavoriteResponse,
@@ -121,6 +122,10 @@ export const api = {
 
   communityGoal: () => call<CommunityGoal>('GET', '/community/goal'),
   claimCommunityGoal: () => call<ClaimResponse>('POST', '/community/goal/claim'),
+
+  pushSubscribe: (body: PushSubscriptionBody) => call<void>('PUT', '/push/subscription', body),
+  pushUnsubscribe: (endpoint: string) => call<void>('DELETE', '/push/subscription', { endpoint }),
+  pushTest: () => call<{ sent: number }>('POST', '/push/test'),
 
   activity: () => call<ActivityDto[]>('GET', '/activity'),
   adminStats: () => call<AdminStats>('GET', '/admin/stats'),

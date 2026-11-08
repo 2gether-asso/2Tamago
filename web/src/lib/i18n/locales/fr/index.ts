@@ -12,6 +12,7 @@ import { auth } from './auth.ts';
 import { admin } from './admin.ts';
 import { errors } from './errors.ts';
 import { feedback } from './feedback.ts';
+import { push } from './push.ts';
 
 /** French: the reference language. */
 export const fr = {
@@ -29,4 +30,5 @@ export const fr = {
   ...admin,
   ...errors,
   ...feedback,
+  ...push,
 } as const;

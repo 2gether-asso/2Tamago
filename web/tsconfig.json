@@ -5,5 +5,7 @@
     "noUncheckedIndexedAccess": true,
     "customConditions": ["@2tamago/source"]
   },
-  "include": ["src", "vite.config.ts"]
+  "include": ["src", "vite.config.ts"],
+  // Checked on its own: it runs in a worker, with other globals (tsconfig.service-worker.json).
+  "exclude": ["src/service-worker.ts"]
 }

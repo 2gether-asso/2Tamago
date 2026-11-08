@@ -9,6 +9,7 @@
   import { api } from '#lib/api.ts';
   import { game } from '#lib/game.svelte.ts';
   import { i18n, t, type Locale, type MessageKey } from '#lib/i18n/index.svelte.ts';
+  import { push } from '#lib/push.svelte.ts';
   import { theme } from '#lib/theme.svelte.ts';
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
@@ -55,6 +56,7 @@
   });
 
   async function logout() {
+    await push.forget();
     await api.logout();
     game.signOut();
     await goto('/login');
