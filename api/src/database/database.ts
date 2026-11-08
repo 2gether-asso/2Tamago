@@ -24,15 +24,19 @@ export type Executor = Database | Transaction;
 const MIGRATIONS = join(import.meta.dirname, '..', '..', 'drizzle');
 
 /**
- * Opens the database from a URL and applies pending migrations:
+ * Opens the database from a URL and applies pending migrations (unless `migrate` is false, which
+ * only applies to PostgreSQL: embedded databases live in the API process and always migrate):
  * - `postgres://…` real PostgreSQL (production),
  * - `pglite://<dir>` embedded PostgreSQL stored in a folder (development),
  * - `memory://` embedded PostgreSQL in memory (tests).
  */
-export async function openDatabase(url: string): Promise<Database> {
+export async function openDatabase(
+  url: string,
+  { migrate = true }: { migrate?: boolean } = {},
+): Promise<Database> {
   if (url.startsWith('postgres://') || url.startsWith('postgresql://')) {
     const db = drizzlePg(url, { schema });
-    await migratePg(db, { migrationsFolder: MIGRATIONS });
+    if (migrate) await migratePg(db, { migrationsFolder: MIGRATIONS });
     return db as unknown as Database;
   }
   let client: PGlite;

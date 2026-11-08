@@ -12,6 +12,7 @@
     "test:unit": "vitest run",
     "test:e2e": "vitest run --config ./vitest.config.e2e.ts",
     "check": "tsc -p tsconfig.json --noEmit",
+    "db:migrate": "node --env-file .env dist/migrate.js",
     "db:generate": "drizzle-kit generate",
     "db:studio": "drizzle-kit studio"
   },

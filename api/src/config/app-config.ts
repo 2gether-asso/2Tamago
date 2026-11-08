@@ -20,6 +20,11 @@ const envSchema = z
     NODE_ENV: z.string().default('development'),
     PORT: z.coerce.number().int().default(3000),
     DATABASE_URL: z.string().default('pglite://.data/pglite'),
+    /** `false` when migrations are a separate deployment step (`node dist/migrate.js`). */
+    DATABASE_AUTO_MIGRATE: z
+      .enum(['true', 'false'])
+      .default('true')
+      .transform((value) => value === 'true'),
 
     AUTH_SECRET: z.string().min(16).optional(),
     AUTH_DEV_LOGIN: bool,
@@ -54,6 +59,7 @@ export class AppConfig {
   readonly env: string;
   readonly port: number;
   readonly databaseUrl: string;
+  readonly databaseAutoMigrate: boolean;
   readonly auth: {
     secret: string;
     devLogin: boolean;
@@ -74,6 +80,7 @@ export class AppConfig {
     this.env = env.NODE_ENV;
     this.port = env.PORT;
     this.databaseUrl = env.DATABASE_URL;
+    this.databaseAutoMigrate = env.DATABASE_AUTO_MIGRATE;
     this.auth = {
       // A missing secret is only accepted outside production (see the schema).
       secret: env.AUTH_SECRET ?? 'dev-only-insecure-secret-do-not-use',

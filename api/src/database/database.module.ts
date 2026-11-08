@@ -7,7 +7,9 @@ import { openDatabase } from './database.js';
   imports: [
     DrizzleModule.forRootAsync({
       inject: [AppConfig],
-      useFactory: async (config: AppConfig) => ({ db: await openDatabase(config.databaseUrl) }),
+      useFactory: async (config: AppConfig) => ({
+        db: await openDatabase(config.databaseUrl, { migrate: config.databaseAutoMigrate }),
+      }),
     }),
   ],
 })

@@ -66,7 +66,7 @@ Le choix inverse, **SQLite partout** (comme 2Gatcha), reste défendable à notre
 
 Côté inconvénients, PGlite n'accepte qu'une connexion à la fois, démarre plus lentement que SQLite et ne s'ouvre pas avec les outils SQLite. Pour inspecter les données avec un client PostgreSQL classique, utiliser `make db-up`.
 
-Les migrations sont générées par `drizzle-kit` (`make db-generate`) dans `api/drizzle/`, versionnées, et appliquées par l'API au démarrage. Contrairement au « schéma automatique » de 2Gatcha, elles sont explicites et relisibles.
+Les migrations sont générées par `drizzle-kit` (`make db-generate`) dans `api/drizzle/`, versionnées, et appliquées soit par l'API au démarrage (dev), soit par une étape de déploiement dédiée (`node dist/migrate.js`, service `migrate` de compose). Contrairement au « schéma automatique » de 2Gatcha, elles sont explicites et relisibles.
 
 ### 3 bis. Pourquoi Drizzle plutôt que Prisma
 
@@ -163,7 +163,7 @@ Un module Nest par domaine :
 ## Docker et environnements
 
 - **Images** : chaque service a son `Dockerfile` (étapes `deps`, `build`, `prod`) et son `Dockerfile.dockerignore`, qui n'envoie au build que le service, `shared/core` et les fichiers de l'espace de travail. Le contexte de build est la racine du dépôt (`docker build -f api/Dockerfile .`), car les services dépendent de `shared/` et du lockfile.
-  - `api` : Node 24 avec les seules dépendances de production. L'API applique les migrations au démarrage.
+  - `api` : Node 24 avec les seules dépendances de production. Les migrations sont une étape à part : le service `migrate` des fichiers compose (même image, `node dist/migrate.js`) s'exécute avant l'API, qui démarre avec `DATABASE_AUTO_MIGRATE=false`. Sans cette variable (dev, PGlite), l'API migre elle-même au démarrage.
   - `web` : Caddy, qui sert le site statique et relaie `/api/*` vers `API_UPSTREAM` (`api:3000` par défaut).
 - **Dev (devcontainer)** : `make dev`, sans Docker, avec PGlite. Le `Makefile` réunit les commandes courantes.
 - **Stack locale** (`docker-compose.yml`) : PostgreSQL, API et web construits depuis les sources (`make up`, <http://localhost:8080>). Le projet compose porte le même nom que celui du devcontainer : ses services sont donc sur le même réseau, et le devcontainer joint `db:5432` (`make db-up`) ou `web`.

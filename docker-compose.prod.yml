@@ -21,12 +21,24 @@ services:
       timeout: 5s
       retries: 10
 
+  # One-shot deployment step: applies the migrations, then the API starts.
+  migrate:
+    image: ${REGISTRY:-ghcr.io/2gether-asso}/2tamago-api:${TAG:-latest}
+    command: ['node', 'dist/migrate.js']
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://tamago:${POSTGRES_PASSWORD}@db:5432/tamago
+    depends_on:
+      db:
+        condition: service_healthy
+
   api:
     image: ${REGISTRY:-ghcr.io/2gether-asso}/2tamago-api:${TAG:-latest}
     restart: unless-stopped
     environment:
       NODE_ENV: production
       DATABASE_URL: postgres://tamago:${POSTGRES_PASSWORD}@db:5432/tamago
+      DATABASE_AUTO_MIGRATE: 'false'
       AUTH_SECRET: ${AUTH_SECRET:?AUTH_SECRET is required (32+ characters)}
       COOKIE_SECURE: 'true'
       WEB_ORIGIN: https://${SITE_ADDRESS:?SITE_ADDRESS is required}
@@ -39,8 +51,8 @@ services:
       GAME_DEPARTURE: ${GAME_DEPARTURE:-true}
       GAME_TIMEZONE: ${GAME_TIMEZONE:-Europe/Paris}
     depends_on:
-      db:
-        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
 
   web:
     image: ${REGISTRY:-ghcr.io/2gether-asso}/2tamago-web:${TAG:-latest}
