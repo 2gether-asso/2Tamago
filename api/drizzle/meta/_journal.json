@@ -36,6 +36,13 @@
       "when": 1794177214403,
       "tag": "0004_minor_kylun",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1794177884899,
+      "tag": "0005_cute_vampiro",
+      "breakpoints": true
     }
   ]
 }

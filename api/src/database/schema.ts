@@ -1,4 +1,4 @@
-import type { ActivityKind } from '@2tamago/core/contracts';
+import type { ActivityKind, PushKind, PushLocale } from '@2tamago/core/contracts';
 import type { PetState } from '@2tamago/core';
 import { sql } from 'drizzle-orm';
 import {
@@ -156,6 +156,40 @@ export const communityClaims = pgTable(
     createdAt: createdAt(),
   },
   (t) => [primaryKey({ columns: [t.week, t.playerId] })],
+);
+
+/** A browser that wants notifications for a player (one row per browser, found by its endpoint). */
+export const pushSubscriptions = pgTable(
+  'push_subscriptions',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    playerId: uuid('player_id')
+      .notNull()
+      .references(() => players.id, { onDelete: 'cascade' }),
+    endpoint: text().notNull().unique(),
+    p256dh: text().notNull(),
+    auth: text().notNull(),
+    /** The language the service worker writes the notification in. */
+    locale: text().$type<PushLocale>().notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [index('push_subscriptions_player_idx').on(t.playerId)],
+);
+
+/**
+ * Alerts already notified and still going on: a row exists from the push until the alert ends,
+ * so a pet that stays hungry is announced once, not at every check.
+ */
+export const pushAlerts = pgTable(
+  'push_alerts',
+  {
+    playerId: uuid('player_id')
+      .notNull()
+      .references(() => players.id, { onDelete: 'cascade' }),
+    kind: text().$type<PushKind>().notNull(),
+    sentAt: timestamp('sent_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.playerId, t.kind] })],
 );
 
 /** What happened to a player: their pet's life events and other players' actions. */
