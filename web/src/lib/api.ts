@@ -21,13 +21,8 @@ import type {
 } from '@2tamago/core/contracts';
 
 import { hasMessage, t, type MessageKey } from './i18n/index.svelte.ts';
-import { clearToken, getToken, setToken } from './session.ts';
-
-/**
- * The API lives on its own origin in production (`VITE_API_URL`, set at build time, for example
- * `https://api.example.org`). Without it the app uses the same origin: Vite proxies `/api` in development.
- */
-const BASE = `${(import.meta.env.VITE_API_URL ?? '').replace(/\/+$/, '')}/api`;
+import { BASE } from './api-base.ts';
+import { auth, SessionEnded } from './auth/index.ts';
 
 /** The message to show for an API error: translated from its `code` when we know it. */
 function errorMessage(status: number, code: string | undefined, serverMessage: string | undefined) {
@@ -46,25 +41,42 @@ export class ApiError extends Error {
   }
 }
 
+async function send(method: string, path: string, body: unknown, token: string | null) {
+  return fetch(BASE + path, {
+    method,
+    // No cookie is involved: the access token travels in a header.
+    credentials: 'omit',
+    headers: {
+      ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+}
+
+/** What a request says when the session is over: a 401 like any other, with the reason as code. */
+function sessionEnded(ended: SessionEnded) {
+  return ended.code === 'network'
+    ? new ApiError(0, t('error.network'))
+    : new ApiError(401, t('error.http', { status: 401 }), ended.code);
+}
+
 async function call<T>(method: string, path: string, body?: unknown): Promise<T> {
   let response: Response;
   try {
-    const token = getToken();
-    response = await fetch(BASE + path, {
-      method,
-      credentials: 'same-origin',
-      headers: {
-        ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-      body: body === undefined ? undefined : JSON.stringify(body),
-    });
-  } catch {
+    let token = await auth.accessToken();
+    response = await send(method, path, body, token);
+    if (response.status === 401 && token) {
+      // The token may have been revoked or expired early: renew once and retry.
+      token = await auth.accessToken(true);
+      if (token) response = await send(method, path, body, token);
+    }
+  } catch (error) {
+    if (error instanceof SessionEnded) throw sessionEnded(error);
     throw new ApiError(0, t('error.network'));
   }
   if (response.status === 204) return undefined as T;
   const data = await response.json().catch(() => null);
-  if (response.status === 401) clearToken();
   if (!response.ok) {
     const error = data as ApiErrorBody | null;
     const message = Array.isArray(error?.message) ? error.message.join(', ') : error?.message;
@@ -80,18 +92,8 @@ async function call<T>(method: string, path: string, body?: unknown): Promise<T>
 export const api = {
   authConfig: () =>
     call<{ discord: boolean; devLogin: boolean; inviteUrl: string | null }>('GET', '/auth/config'),
-  devLogin: async (name: string) => {
-    const { token } = await call<{ token: string }>('POST', '/auth/dev-login', { name });
-    setToken(token);
-  },
-  logout: async () => {
-    try {
-      await call<void>('POST', '/auth/logout');
-    } finally {
-      clearToken();
-    }
-  },
-  discordLoginUrl: `${BASE}/auth/discord`,
+  devLogin: (name: string) => auth.devLogin(name),
+  logout: () => auth.signOut(),
 
   sendFeedback: (body: FeedbackBody) => call<void>('POST', '/feedback', body),
   clientConfig: () => call<ClientConfig>('GET', '/config'),

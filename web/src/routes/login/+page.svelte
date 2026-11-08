@@ -1,18 +1,24 @@
 <script lang="ts">
   import { api } from '#lib/api.ts';
+  import { auth, SessionEnded } from '#lib/auth/index.ts';
   import { game } from '#lib/game.svelte.ts';
   import { t } from '#lib/i18n/index.svelte.ts';
   import { goto, replaceState } from '$app/navigation';
   import { page } from '$app/state';
-  import { setToken } from '#lib/session.ts';
 
+  // Errors the API sends back in the URL (`?error=`), and reasons a session ended.
   const ERRORS = {
     not_member: 'login.error.not_member',
     state: 'login.error.state',
     denied: 'login.error.denied',
     discord: 'login.error.discord',
+    invalid_grant: 'login.error.state',
+    invalid_dpop: 'login.error.state',
+    session_expired: 'login.error.session_expired',
+    session_suspicious: 'login.error.session_suspicious',
+    session_roaming: 'login.error.session_roaming',
   } as const;
-  const errorCode = page.url.searchParams.get('error');
+  const errorCode = page.url.searchParams.get('error') ?? auth.takeEnd();
 
   let name = $state('');
   let failure = $state<string | null>(null);
@@ -22,28 +28,32 @@
   );
   const config = api.authConfig();
 
-  // Back from Discord: the API sends the session token in the URL fragment (never sent to a server).
-  $effect(() => {
-    const token = new URLSearchParams(location.hash.slice(1)).get('token');
-    if (!token) return;
-    setToken(token);
-    replaceState(location.pathname, {});
-    game
-      .load()
-      .then(() => goto('/'))
-      .catch((e: Error) => (failure = e.message));
-  });
-
-  async function devLogin(event: SubmitEvent) {
-    event.preventDefault();
+  /** Starts a sign-in, then comes home. */
+  async function enter(start: () => Promise<void>) {
     try {
-      await api.devLogin(name);
+      await start();
       await game.load();
       await goto('/');
     } catch (e) {
-      failure = (e as Error).message;
+      failure =
+        e instanceof SessionEnded && e.code in ERRORS
+          ? t(ERRORS[e.code as keyof typeof ERRORS])
+          : (e as Error).message;
     }
   }
+
+  function devLogin(event: SubmitEvent) {
+    event.preventDefault();
+    void enter(() => api.devLogin(name));
+  }
+
+  // Back from Discord: the API sends a one-time code, traded for tokens with the PKCE secret.
+  $effect(() => {
+    const code = page.url.searchParams.get('code');
+    if (!code) return;
+    replaceState('/login', {});
+    void enter(() => auth.finishDiscord(code));
+  });
 </script>
 
 <div class="login">
@@ -55,7 +65,7 @@
 
     {#await config then { discord, devLogin: devLoginEnabled, inviteUrl }}
       {#if discord}
-        <a class="discord" href={api.discordLoginUrl}>{t('login.discord')}</a>
+        <button class="discord" onclick={() => auth.beginDiscord()}>{t('login.discord')}</button>
         {#if inviteUrl}
           <p><a class="invite" href={inviteUrl} rel="noopener">{t('login.join')}</a></p>
         {/if}
@@ -100,6 +110,9 @@
   .discord {
     display: inline-block;
     margin: 1rem 0;
+    border: 0;
+    cursor: pointer;
+    font-size: inherit;
     padding: 0.7rem 1.4rem;
     border-radius: 999px;
     background: #5865f2;

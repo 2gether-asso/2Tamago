@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { apiRequest } from './helpers.ts';
 
 test.describe('with an English browser', () => {
   test.use({ locale: 'en-GB' });
@@ -34,7 +35,7 @@ test.describe('with a French browser', () => {
     await page.getByPlaceholder('Pompon').fill('Poly');
     await page.getByRole('button', { name: /Get my egg/ }).click();
     await expect(page.getByRole('heading', { name: 'Poly' })).toBeVisible();
-    const response = await page.request.post('/api/pet/actions', { data: { type: 'feed' } });
+    const response = await apiRequest(page, 'POST', '/api/pet/actions', { type: 'feed' });
     expect((await response.json()).code).toBe('still_an_egg');
     await page.getByRole('link', { name: /Shop/ }).click();
     await expect(page.getByRole('heading', { name: 'Shop' })).toBeVisible();

@@ -30,7 +30,6 @@ export default defineConfig({
         DATABASE_URL: 'memory://',
         AUTH_SECRET: 'e2e-secret-e2e-secret-e2e-secret-e2e',
         AUTH_DEV_LOGIN: 'true',
-        COOKIE_SECURE: 'false',
         // Time runs 120x faster: an egg hatches in ~3 s. Nobody leaves during the test.
         GAME_TIME_SCALE: '120',
         GAME_DEPARTURE: 'false',

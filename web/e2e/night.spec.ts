@@ -1,5 +1,6 @@
 import { dayHour, type GameRules } from '@2tamago/core';
 import { expect, test } from '@playwright/test';
+import { apiRequest } from './helpers.ts';
 
 test('at night the owner switches the lights off and the pet goes to sleep', async ({ page }) => {
   await page.goto('/login');
@@ -9,16 +10,14 @@ test('at night the owner switches the lights off and the pet goes to sleep', asy
 
   // Time runs fast in this stack: open a night window of a few game hours around "now", then
   // restore the previous settings whatever happens.
-  const rules: GameRules = await (await page.request.get('/api/game/rules')).json();
-  const before = (await (await page.request.get('/api/admin/rules')).json()).overrides;
+  const rules: GameRules = await (await apiRequest(page, 'GET', '/api/game/rules')).json();
+  const before = (await (await apiRequest(page, 'GET', '/api/admin/rules')).json()).overrides;
   const hour = Math.floor(dayHour(rules, Date.now()));
-  await page.request.put('/api/admin/rules', {
-    data: {
-      ...before,
-      night: {
-        // The pet is a baby: it follows the bedtime of its stage, not the general one.
-        stages: { baby: { startHour: (hour + 23) % 24, endHour: (hour + 3) % 24 } },
-      },
+  await apiRequest(page, 'PUT', '/api/admin/rules', {
+    ...before,
+    night: {
+      // The pet is a baby: it follows the bedtime of its stage, not the general one.
+      stages: { baby: { startHour: (hour + 23) % 24, endHour: (hour + 3) % 24 } },
     },
   });
 
@@ -34,6 +33,6 @@ test('at night the owner switches the lights off and the pet goes to sleep', asy
     await expect(page.getByRole('button', { name: 'Rallumer la lumière' })).toBeVisible();
     await expect(page.getByText('Dort', { exact: true })).toBeVisible({ timeout: 10_000 });
   } finally {
-    await page.request.put('/api/admin/rules', { data: before });
+    await apiRequest(page, 'PUT', '/api/admin/rules', before);
   }
 });

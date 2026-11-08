@@ -13,5 +13,10 @@ export const auth: Record<keyof typeof fr, string> = {
   'login.error.state': 'The sign-in expired, please try again.',
   'login.error.denied': 'Sign-in cancelled.',
   'login.error.discord': 'Discord is not answering right now, please try again in a moment.',
+  'login.error.session_expired': 'Your session expired, please sign in again.',
+  'login.error.session_suspicious':
+    'Your session was closed for safety: it was used from another browser. Please sign in again.',
+  'login.error.session_roaming':
+    'You have been on another network for a while: please sign in again to continue.',
   'login.join': 'Join the 2GETHER Discord',
 };

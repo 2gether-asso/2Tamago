@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { apiRequest, forgetSession } from './helpers.ts';
 
 async function signIn(page: import('@playwright/test').Page, name: string) {
   await page.goto('/login');
@@ -13,7 +14,7 @@ test('only admins see the admin screen and can save game settings', async ({ pag
   await page.goto('/admin');
   await expect(page.getByText('réservée aux administrateurs')).toBeVisible();
 
-  await page.context().clearCookies();
+  await forgetSession(page);
   await page.goto('/login');
   await signIn(page, 'Root');
   await page.getByRole('link', { name: /Admin/ }).click();
@@ -22,7 +23,7 @@ test('only admins see the admin screen and can save game settings', async ({ pag
   await page.getByRole('button', { name: 'Enregistrer' }).click();
   await expect(page.getByText('Réglages enregistrés')).toBeVisible();
 
-  const rules = await page.request.get('/api/game/rules');
+  const rules = await apiRequest(page, 'GET', '/api/game/rules');
   expect((await rules.json()).caressCooldownSeconds).toBe(3);
 
   await editor.fill('{ "timeScale": 60 }');
