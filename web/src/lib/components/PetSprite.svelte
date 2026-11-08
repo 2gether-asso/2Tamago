@@ -150,21 +150,21 @@
       stroke-width="4"
     />
     <path
-      d="M 46 92 L 54 30 L 96 62 Z"
+      d="M 42 110 L 52 30 L 98 78 Z"
       fill={body}
       stroke={line}
       stroke-width="4"
       stroke-linejoin="round"
     />
     <path
-      d="M 154 92 L 146 30 L 104 62 Z"
+      d="M 158 110 L 148 30 L 102 78 Z"
       fill={body}
       stroke={line}
       stroke-width="4"
       stroke-linejoin="round"
     />
-    <path d="M 56 78 L 58 46 L 80 64 Z" fill="hsl(350 80% 80%)" />
-    <path d="M 144 78 L 142 46 L 120 64 Z" fill="hsl(350 80% 80%)" />
+    <path d="M 54 92 L 57 46 L 84 72 Z" fill="hsl(350 80% 80%)" />
+    <path d="M 146 92 L 143 46 L 116 72 Z" fill="hsl(350 80% 80%)" />
     <ellipse cx="100" cy="128" rx="64" ry="54" fill={body} stroke={line} stroke-width="4" />
   {:else if species === 'toge'}
     <!-- Hedgehog-like: a crest of spikes behind a round body -->
