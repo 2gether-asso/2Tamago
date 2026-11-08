@@ -5,7 +5,7 @@ COMPOSE      := docker compose
 COMPOSE_PROD := docker compose -f docker-compose.prod.yml
 
 .DEFAULT_GOAL := help
-.PHONY: help install dev build test test-e2e check format format-check ci db-generate \
+.PHONY: help install dev build test test-e2e check lint format format-check ci db-generate \
 	db-up db-down up down logs ps images prod-pull prod-up prod-down clean
 
 help: ## List the targets
@@ -37,7 +37,10 @@ format-check: ## Check the formatting
 test-e2e: ## Browser tests (Playwright); needs `make build` and `pnpm --filter @2tamago/web exec playwright install chromium`
 	pnpm --filter @2tamago/web test:e2e
 
-ci: format-check build check test ## What the CI runs
+lint: ## Lint with Biome (formatting stays with Prettier)
+	pnpm lint
+
+ci: format-check lint build check test ## What the CI runs
 
 db-generate: ## Generate a SQL migration after editing api/src/database/schema.ts
 	pnpm --filter @2tamago/api db:generate

@@ -30,14 +30,14 @@ Ouvrir <http://localhost:4321> et se connecter avec un pseudo (mode dev). Il n'y
 
 ## Commandes
 
-| Commande                                                                    | Effet                                                                           |
-| --------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| `make dev`                                                                  | Moteur (watch), API sur :3000 et front sur :4321 (qui relaie `/api`)            |
-| `make build` / `make test` / `make test-e2e` / `make check` / `make format` | Build, tests (moteur, API avec e2e, front), types, Prettier                     |
-| `make ci`                                                                   | Ce que lance la CI                                                              |
-| `make db-generate`                                                          | Génère une migration SQL après une modification de `api/src/database/schema.ts` |
-| `make db-up` / `make db-down`                                               | PostgreSQL seul, joignable depuis le devcontainer à l'adresse `db:5432`         |
-| `make up` / `make down` / `make logs`                                       | Stack complète construite depuis les sources, sur <http://localhost:8080>       |
+| Commande                                                                                  | Effet                                                                           |
+| ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `make dev`                                                                                | Moteur (watch), API sur :3000 et front sur :4321 (qui relaie `/api`)            |
+| `make build` / `make test` / `make test-e2e` / `make check` / `make lint` / `make format` | Build, tests (moteur, API avec e2e, front), types, Biome (lint), Prettier       |
+| `make ci`                                                                                 | Ce que lance la CI                                                              |
+| `make db-generate`                                                                        | Génère une migration SQL après une modification de `api/src/database/schema.ts` |
+| `make db-up` / `make db-down`                                                             | PostgreSQL seul, joignable depuis le devcontainer à l'adresse `db:5432`         |
+| `make up` / `make down` / `make logs`                                                     | Stack complète construite depuis les sources, sur <http://localhost:8080>       |
 
 ## Structure
 
