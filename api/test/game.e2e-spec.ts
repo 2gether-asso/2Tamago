@@ -8,6 +8,7 @@ import type {
   VillagePet,
   WalkResponse,
 } from '@2tamago/core/contracts';
+import pg from 'pg';
 import request from 'supertest';
 import type { App } from 'supertest/types.js';
 import { AppModule } from '../src/app.module.js';
@@ -25,6 +26,10 @@ class FakeClock extends Clock {
   }
 }
 
+/** In-memory PGlite by default; set TEST_DATABASE_URL to run against a real PostgreSQL. */
+const databaseUrl = process.env.TEST_DATABASE_URL || 'memory://';
+const isPostgres = databaseUrl.startsWith('postgres');
+
 const rules = withRules();
 const hours = (h: number) => gameHours(rules, h);
 
@@ -36,13 +41,25 @@ describe('2Tamago API (e2e)', () => {
     clock = new FakeClock();
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
       .overrideProvider(AppConfig)
-      .useValue(new AppConfig({ DATABASE_URL: 'memory://', AUTH_DEV_LOGIN: 'true' }))
+      .useValue(new AppConfig({ DATABASE_URL: databaseUrl, AUTH_DEV_LOGIN: 'true' }))
       .overrideProvider(Clock)
       .useValue(clock)
       .compile();
     app = setupApp(moduleRef.createNestApplication());
     await app.init();
+    if (isPostgres) await resetDatabase();
   });
+
+  /** A real database is shared between tests: empty it (migrations are applied by `app.init()`). */
+  async function resetDatabase() {
+    const client = new pg.Client({ connectionString: databaseUrl });
+    await client.connect();
+    try {
+      await client.query('TRUNCATE players RESTART IDENTITY CASCADE');
+    } finally {
+      await client.end();
+    }
+  }
 
   afterEach(async () => {
     await app.close();
