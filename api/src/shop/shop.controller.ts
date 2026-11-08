@@ -1,6 +1,6 @@
-import { Body, Controller, HttpCode, Inject, Post } from '@nestjs/common';
+import { Body, ConflictException, Controller, HttpCode, Inject, Post } from '@nestjs/common';
 import { InjectDrizzle } from '@nestjs/drizzle';
-import { ITEMS } from '@2tamago/core';
+import { isForSale, ITEMS } from '@2tamago/core';
 import { buyBody, type BuyBody, type Inventory } from '@2tamago/core/contracts';
 import { CurrentSession, type Session } from '../auth/session.js';
 import type { Database } from '../database/database.js';
@@ -19,6 +19,10 @@ export class ShopController {
     @CurrentSession() session: Session,
     @Body({ schema: buyBody }) body: BuyBody,
   ): Promise<{ coins: number; inventory: Inventory }> {
+    // Some items can only be found on walks.
+    if (!isForSale(body.item)) {
+      throw new ConflictException({ statusCode: 409, code: 'not_for_sale' });
+    }
     const price = ITEMS[body.item].price * body.quantity;
     return this.db.transaction(async (tx) => {
       const coins = await this.players.spendCoins(tx, session.playerId, price);

@@ -1,5 +1,12 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put } from '@nestjs/common';
-import { giftBody, uuidParam, type FavoriteResponse, type GiftBody } from '@2tamago/core/contracts';
+import {
+  giftBody,
+  uuidParam,
+  walkBody,
+  type FavoriteResponse,
+  type GiftBody,
+  type WalkBody,
+} from '@2tamago/core/contracts';
 import { CurrentSession, type Session } from '../auth/session.js';
 import { FavoritesService } from './favorites.service.js';
 import { VillageService } from './village.service.js';
@@ -15,8 +22,8 @@ export class SocialController {
 
   @Post('pet/walk')
   @HttpCode(200)
-  startWalk(@CurrentSession() session: Session) {
-    return this.walks.start(session.playerId);
+  startWalk(@CurrentSession() session: Session, @Body({ schema: walkBody }) body: WalkBody) {
+    return this.walks.start(session.playerId, body.zone);
   }
 
   @Post('pet/walk/return')

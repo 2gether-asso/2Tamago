@@ -4,6 +4,7 @@
  */
 import { z } from 'zod';
 import { ITEM_IDS, type ItemId } from '../engine/catalog.js';
+import { WALK_ZONE_IDS, type WalkZoneId } from '../engine/zones.js';
 import type { GameErrorCode } from '../engine/errors.js';
 import type { Alert, Mood } from '../engine/view.js';
 import type { GameRules, RulesOverrides } from '../engine/rules.js';
@@ -208,6 +209,10 @@ export const ownerActionBody = z.discriminatedUnion('type', [
 ]);
 export type OwnerActionBody = z.infer<typeof ownerActionBody>;
 
+/** Where to walk; without a body, the meadow. */
+export const walkBody = z.object({ zone: z.enum(WALK_ZONE_IDS).default('meadow') });
+export type WalkBody = z.infer<typeof walkBody>;
+
 export const buyBody = z.object({
   item: itemId,
   quantity: z.number().int().min(1).max(20).default(1),
@@ -388,6 +393,7 @@ export interface WalkEncounter {
 }
 
 export interface WalkResponse extends ActionResponse {
+  zone: WalkZoneId;
   found: { coins: number; items: ItemId[] };
   encounters: WalkEncounter[];
 }
@@ -514,6 +520,7 @@ export const API_ERROR_CODES = [
   'no_pet',
   'no_player',
   'not_enough_coins',
+  'not_for_sale',
   'not_giftable',
   'own_pet',
   'own_profile',

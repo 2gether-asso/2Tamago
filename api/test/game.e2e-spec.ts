@@ -1,6 +1,6 @@
 import type { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { gameHours, withRules } from '@2tamago/core';
+import { gameHours, WALK_ZONES, withRules } from '@2tamago/core';
 import type {
   ActionResponse,
   AdminStats,
@@ -13,6 +13,7 @@ import type {
   WalkResponse,
 } from '@2tamago/core/contracts';
 import pg from 'pg';
+import { vi } from 'vitest';
 import request from 'supertest';
 import type { App } from 'supertest/types.js';
 import { AppModule } from '../src/app.module.js';
@@ -503,6 +504,99 @@ describe('2Tamago API (e2e)', () => {
     expect(me.pet?.mood).not.toBe('vacation');
     const feed: ActivityDto[] = (await alice.get('/api/activity').expect(200)).body;
     expect(feed.some((entry) => entry.data.event === 'vacation_ended')).toBe(true);
+  });
+
+  describe('walk zones', () => {
+    afterEach(() => vi.restoreAllMocks());
+
+    it('opens the far zones as the pet grows, and brings back what each zone offers', async () => {
+      const alice = await signIn('Alice');
+      const root = await signIn('Root');
+      await adopt(alice, 'Pompon');
+      const act = (body: object) => alice.post('/api/pet/actions').send(body);
+      const walk = (body?: object) => alice.post('/api/pet/walk').send(body ?? {});
+      const finish = async (hoursAway: number): Promise<WalkResponse> => {
+        clock.advance(hours(hoursAway));
+        return (await alice.post('/api/pet/walk/return').expect(200)).body;
+      };
+      const rest = async () => {
+        await act({ type: 'sleep' });
+        clock.advance(hours(3));
+        await act({ type: 'wake' });
+        await act({ type: 'feed' });
+      };
+
+      // A child: the meadow only (and a zone that does not exist is refused).
+      await root
+        .put('/api/admin/rules')
+        .send({ stageHours: { baby: 1, child: 1000 } })
+        .expect(200);
+      clock.advance(hours(1.7));
+      await act({ type: 'feed' });
+      expect((await walk({ zone: 'forest' }).expect(409)).body.code).toBe('zone_locked');
+      expect((await walk({ zone: 'beach' }).expect(409)).body.code).toBe('zone_locked');
+      await walk({ zone: 'nowhere' }).expect(400);
+
+      // Without a body: the meadow, as before.
+      await walk().expect(200);
+      const meadow = await finish(rules.outingHours);
+      expect(meadow.zone).toBe('meadow');
+      expect(meadow.found.coins).toBeGreaterThanOrEqual(WALK_ZONES.meadow.coins.min);
+      expect(meadow.found.coins).toBeLessThanOrEqual(WALK_ZONES.meadow.coins.max);
+
+      // Grown up: the forest takes longer, and brings what the dice give.
+      await root
+        .put('/api/admin/rules')
+        .send({ stageHours: { baby: 1, child: 1, teen: 1, adult: 1000 } })
+        .expect(200);
+      await rest();
+      clock.advance(hours(2.1));
+      await act({ type: 'feed' });
+      // Coins in the middle of the range, an item, then the last item of the table.
+      vi.spyOn(Math, 'random')
+        .mockReturnValueOnce(0.5)
+        .mockReturnValueOnce(0.1)
+        .mockReturnValueOnce(0.99);
+      await walk({ zone: 'forest' }).expect(200);
+      expect((await alice.post('/api/pet/walk/return').expect(409)).body.code).toBe(
+        'outing_not_finished',
+      );
+      const forest = await finish(rules.outingHours * WALK_ZONES.forest.durationFactor);
+      expect(forest.zone).toBe('forest');
+      expect(forest.found.items).toEqual(['flower_crown']);
+      expect(forest.found.coins).toBe(16);
+      const bag: MeResponse = (await alice.get('/api/me').expect(200)).body;
+      expect(bag.inventory.flower_crown).toBe(1);
+
+      // The same find again brings no second accessory.
+      await rest();
+      vi.spyOn(Math, 'random')
+        .mockReturnValueOnce(0.5)
+        .mockReturnValueOnce(0.1)
+        .mockReturnValueOnce(0.99);
+      await walk({ zone: 'forest' }).expect(200);
+      const again = await finish(rules.outingHours * WALK_ZONES.forest.durationFactor);
+      expect(again.found.items).toEqual([]);
+      expect(
+        ((await alice.get('/api/me').expect(200)).body as MeResponse).inventory.flower_crown,
+      ).toBe(1);
+
+      // The beach is further still.
+      await rest();
+      await walk({ zone: 'beach' }).expect(200);
+      const beach = await finish(rules.outingHours * WALK_ZONES.beach.durationFactor);
+      expect(beach.zone).toBe('beach');
+      expect(beach.found.coins).toBeGreaterThanOrEqual(WALK_ZONES.beach.coins.min);
+    });
+
+    it('does not sell what can only be found', async () => {
+      const alice = await signIn('Alice');
+      await alice.post('/api/shop/buy').send({ item: 'mushroom' }).expect(409);
+      expect(
+        (await alice.post('/api/shop/buy').send({ item: 'starfish' }).expect(409)).body.code,
+      ).toBe('not_for_sale');
+      await alice.post('/api/shop/buy').send({ item: 'cookie' }).expect(200);
+    });
   });
 
   it('lets an admin tune the game rules without a restart', async () => {

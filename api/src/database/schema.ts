@@ -1,3 +1,4 @@
+import type { WalkZoneId } from '@2tamago/core';
 import type { ActivityKind, PushKind, PushLocale } from '@2tamago/core/contracts';
 import type { PetState } from '@2tamago/core';
 import { sql } from 'drizzle-orm';
@@ -97,6 +98,7 @@ export const walks = pgTable(
     petId: uuid('pet_id')
       .notNull()
       .references(() => pets.id, { onDelete: 'cascade' }),
+    zone: text().$type<WalkZoneId>().notNull().default('meadow'),
     startedAt: timestamp('started_at', { withTimezone: true }).notNull(),
     endsAt: timestamp('ends_at', { withTimezone: true }).notNull(),
     returnedAt: timestamp('returned_at', { withTimezone: true }),

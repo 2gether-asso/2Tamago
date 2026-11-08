@@ -43,6 +43,13 @@
       "when": 1794177884899,
       "tag": "0005_cute_vampiro",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1794179576507,
+      "tag": "0006_absurd_polaris",
+      "breakpoints": true
     }
   ]
 }

@@ -1,5 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { applyAction, ITEMS, isSnack, type GameRules, type ItemId } from '@2tamago/core';
+import {
+  applyAction,
+  DEFAULT_ZONE,
+  isAccessory,
+  rollFinds,
+  type GameRules,
+  type ItemId,
+  type WalkZoneId,
+} from '@2tamago/core';
 import type { ActionResponse, Notice, WalkEncounter, WalkResponse } from '@2tamago/core/contracts';
 import {
   aliasedTable,
@@ -26,7 +34,6 @@ import { PlayersService } from '../players/players.service.js';
 import { CommunityService } from './community.service.js';
 
 const MAX_ENCOUNTERS = 3;
-const SNACKS = (Object.keys(ITEMS) as ItemId[]).filter(isSnack);
 
 /**
  * Walks: the pet goes out for a while, finds things, and meets the pets of
@@ -48,14 +55,15 @@ export class WalksService {
     return this.gameRules.current;
   }
 
-  async start(playerId: string): Promise<ActionResponse> {
+  async start(playerId: string, zone: WalkZoneId = DEFAULT_ZONE): Promise<ActionResponse> {
     const result = await this.pets.mutate(
       eq(pets.ownerId, playerId),
       async (state, now, tx, row) => {
-        const change = applyAction(state, { type: 'startOuting' }, now, this.rules);
+        const change = applyAction(state, { type: 'startOuting', zone }, now, this.rules);
         const outing = change.state.outing!;
         await tx.insert(walks).values({
           petId: row.id,
+          zone,
           startedAt: new Date(outing.startedAt),
           endsAt: new Date(outing.endsAt),
         });
@@ -74,6 +82,8 @@ export class WalksService {
     const result = await this.pets.mutate(
       eq(pets.ownerId, playerId),
       async (state, now, tx, row) => {
+        // Walks begun before zones existed have none: they were in the meadow.
+        const zone = state.outing?.zone ?? DEFAULT_ZONE;
         const change = applyAction(state, { type: 'endOuting' }, now, this.rules);
         const [walk] = await tx
           .update(walks)
@@ -81,9 +91,15 @@ export class WalksService {
           .where(and(eq(walks.petId, row.id), isNull(walks.returnedAt)))
           .returning();
 
-        const found = { coins: 5 + Math.floor(Math.random() * 11), items: [] as ItemId[] };
-        if (Math.random() < 0.25)
-          found.items.push(SNACKS[Math.floor(Math.random() * SNACKS.length)]!);
+        const rolled = rollFinds(zone, Math.random);
+        // An accessory is kept once: finding one already owned brings nothing.
+        const items: ItemId[] = [];
+        for (const item of rolled.items) {
+          if (!isAccessory(item) || !(await this.players.hasItem(tx, playerId, item))) {
+            items.push(item);
+          }
+        }
+        const found = { coins: rolled.coins, items };
         await this.players.addCoins(tx, playerId, found.coins);
         for (const item of found.items) await this.players.addItem(tx, playerId, item);
 
@@ -91,11 +107,11 @@ export class WalksService {
           ? await this.meet(tx, walk, row.id, state.name, playerId)
           : { met: [], first: new Set<string>() };
         const goalReached = await this.community.walkCompleted(tx);
-        return { ...change, extra: { found, goalReached, ...meetings } };
+        return { ...change, extra: { zone, found, goalReached, ...meetings } };
       },
     );
 
-    const { found, met, first, goalReached } = result.extra!;
+    const { zone, found, met, first, goalReached } = result.extra!;
     if (goalReached !== null) this.announcements.communityGoal(goalReached);
     // Once saved: only the first walk two players ever share is worth the channel's attention.
     for (const encounter of met) {
@@ -115,6 +131,7 @@ export class WalksService {
       events: result.events,
       coins: await this.players.coinsOf(playerId),
       notices,
+      zone,
       found,
       encounters: met,
     };
