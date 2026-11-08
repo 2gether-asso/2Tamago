@@ -12,6 +12,8 @@ const API_TARGET = process.env.API_URL ?? 'http://localhost:3000';
  * exfiltration hard: only our own scripts run, and the page can only talk to the API (plus
  * `CSP_CONNECT_SRC`: extra origins, space-separated, e.g. the Sentry/GlitchTip host of the DSN).
  */
+type Directives = NonNullable<NonNullable<Config['csp']>['directives']>;
+
 function csp(): NonNullable<Config['csp']> {
   const connect = [
     "'self'",
@@ -23,7 +25,7 @@ function csp(): NonNullable<Config['csp']> {
     directives: {
       'default-src': ['none'],
       'script-src': ['self'],
-      'connect-src': connect,
+      'connect-src': connect as Directives['connect-src'],
       'img-src': ['self', 'data:', 'https://cdn.discordapp.com'],
       'style-src': ['self', 'unsafe-inline'],
       'font-src': ['self', 'data:'],
