@@ -29,6 +29,13 @@
       "when": 1794175715592,
       "tag": "0003_silly_bishop",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1794177214403,
+      "tag": "0004_minor_kylun",
+      "breakpoints": true
     }
   ]
 }

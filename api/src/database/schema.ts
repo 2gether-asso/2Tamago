@@ -134,6 +134,30 @@ export const favorites = pgTable(
   (t) => [primaryKey({ columns: [t.playerId, t.favoriteId] })],
 );
 
+/** The village's goal of a week, with the target fixed when the week's first visitor asks. */
+export const communityGoals = pgTable('community_goals', {
+  /** Monday of the week, see `weekOf`. */
+  week: text().primaryKey(),
+  target: integer().notNull(),
+  reachedAt: timestamp('reached_at', { withTimezone: true }),
+  createdAt: createdAt(),
+});
+
+/** A player collecting their reward for a week's goal (once per week). */
+export const communityClaims = pgTable(
+  'community_claims',
+  {
+    week: text()
+      .notNull()
+      .references(() => communityGoals.week, { onDelete: 'cascade' }),
+    playerId: uuid('player_id')
+      .notNull()
+      .references(() => players.id, { onDelete: 'cascade' }),
+    createdAt: createdAt(),
+  },
+  (t) => [primaryKey({ columns: [t.week, t.playerId] })],
+);
+
 /** What happened to a player: their pet's life events and other players' actions. */
 export const activity = pgTable(
   'activity',
