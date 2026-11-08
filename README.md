@@ -63,7 +63,7 @@ Makefile                Commandes courantes
 
 ## Mettre en production
 
-La CI publie les images `ghcr.io/2gether-asso/2tamago-api` et `2tamago-web` à chaque push sur `main`. Sur le serveur, seuls `docker-compose.prod.yml`, le `Makefile` (facultatif) et un `.env` sont nécessaires :
+Le workflow `docker.yml` publie les images `ghcr.io/2gether-asso/2tamago-api` et `2tamago-web` à chaque push sur `main` (tag `latest`) et pour chaque tag `vX.Y.Z` (tags `X.Y.Z`, `X.Y`, `X`). Sur le serveur, seuls `docker-compose.prod.yml`, le `Makefile` (facultatif) et un `.env` sont nécessaires :
 
 ```bash
 cp .env.example .env   # renseigner SITE_ADDRESS, les secrets et Discord

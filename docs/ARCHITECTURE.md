@@ -211,7 +211,7 @@ Le titre est tronqué à 80 caractères ; le texte complet, la page et le naviga
 - **Dev (devcontainer)** : `make dev`, sans Docker, avec PGlite. Le `Makefile` réunit les commandes courantes.
 - **Stack locale** (`docker-compose.yml`) : PostgreSQL, API et web construits depuis les sources (`make up`, <http://localhost:8080>). Le projet compose porte le même nom que celui du devcontainer : ses services sont donc sur le même réseau, et le devcontainer joint `db:5432` (`make db-up`) ou `web`.
 - **Production et préproduction** (`docker-compose.prod.yml`) : un fichier autonome qui tire les images publiées (`REGISTRY`, `TAG`) et exige les secrets (`AUTH_SECRET`, `POSTGRES_PASSWORD`, Discord). Caddy gère le HTTPS avec `SITE_ADDRESS`.
-- **CI** (GitHub Actions) : formatage, build, types et tests, puis publication sur `main` des images multi-architecture (amd64 et arm64) sur ghcr.io.
+- **CI** (GitHub Actions) : `ci.yml` (formatage, lint, build, types et tests), `docker.yml` (build des images à chaque PR ; sur `main` et sur les tags `vX.Y.Z`, publication multi-architecture amd64 et arm64 sur ghcr.io) et `pages.yml` (build du site statique `web/build`, déployé sur GitHub Pages).
 - Sauvegardes : à mettre en place avec `pg_dump` (voir la roadmap).
 
 ## Évolutions prévues
