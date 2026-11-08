@@ -1,6 +1,8 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { GAME_ERROR_CODES } from '@2tamago/core';
+import { API_ERROR_CODES } from '@2tamago/core/contracts';
 import { describe, expect, it } from 'vitest';
 
 /**
@@ -12,7 +14,7 @@ import { describe, expect, it } from 'vitest';
 const NAMESPACES: Record<string, string[]> = {
   common: ['common', 'lang', 'duration'],
   shell: ['nav', 'theme', 'header'],
-  catalog: ['stage', 'form', 'mood', 'alert', 'trick', 'temperament', 'item', 'stat'],
+  catalog: ['pet', 'stage', 'form', 'mood', 'alert', 'trick', 'temperament', 'item', 'stat'],
   feed: ['event', 'activity', 'notice'],
   home: ['home', 'action', 'walk'],
   minigame: ['minigame'],
@@ -70,6 +72,15 @@ describe('locale files', () => {
     for (const { file, key } of entries) {
       expect(seen.get(key), `${key} is in ${seen.get(key)}.ts and ${file}.ts`).toBeUndefined();
       seen.set(key, file);
+    }
+  });
+});
+
+describe('error messages', () => {
+  it('exist for every engine and API error code', () => {
+    const defined = new Set(Object.keys(fr.errors!));
+    for (const code of [...GAME_ERROR_CODES, ...API_ERROR_CODES]) {
+      expect(defined, `error.${code}`).toContain(`error.${code}`);
     }
   });
 });

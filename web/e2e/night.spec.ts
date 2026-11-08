@@ -20,7 +20,7 @@ test('at night the owner switches the lights off and the pet goes to sleep', asy
     await page.reload();
     await page.getByPlaceholder('Pompon').fill('Lune');
     await page.getByRole('button', { name: /Recevoir mon œuf/ }).click();
-    await expect(page.getByText('Il fait nuit : éteins la lumière')).toBeVisible({
+    await expect(page.getByText('C’est l’heure du coucher : éteins la lumière')).toBeVisible({
       timeout: 20_000,
     });
 

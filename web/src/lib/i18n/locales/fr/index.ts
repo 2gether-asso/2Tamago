@@ -9,6 +9,7 @@ import { social } from './social.ts';
 import { shop } from './shop.ts';
 import { auth } from './auth.ts';
 import { admin } from './admin.ts';
+import { errors } from './errors.ts';
 import { feedback } from './feedback.ts';
 
 /** French: the reference language. */
@@ -24,5 +25,6 @@ export const fr = {
   ...shop,
   ...auth,
   ...admin,
+  ...errors,
   ...feedback,
 } as const;

@@ -4,6 +4,7 @@
  */
 import { z } from 'zod';
 import { ITEM_IDS, type ItemId } from '../engine/catalog.js';
+import type { GameErrorCode } from '../engine/errors.js';
 import type { Alert, Mood } from '../engine/view.js';
 import type { GameRules, RulesOverrides } from '../engine/rules.js';
 import {
@@ -288,8 +289,25 @@ export interface AlbumEntry {
   endedAt: number | null;
 }
 
+/**
+ * Codes the API adds to its errors, next to the engine's `GameErrorCode`s. The web app writes a
+ * message for each one (`error.<code>`): add the translation when you add a code.
+ */
+export const API_ERROR_CODES = [
+  'already_caressed',
+  'already_has_pet',
+  'feedback_disabled',
+  'missing_item',
+  'no_pet',
+  'not_enough_coins',
+  'not_giftable',
+  'own_pet',
+] as const;
+export type ApiErrorCode = (typeof API_ERROR_CODES)[number];
+
 export interface ApiErrorBody {
   statusCode: number;
+  /** A French sentence for API clients and logs; the web app translates from `code`. */
   message: string | string[];
-  code?: string;
+  code?: ApiErrorCode | GameErrorCode;
 }

@@ -13,6 +13,8 @@ export default defineConfig({
   reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : 'list',
   use: {
     baseURL: `http://localhost:${WEB_PORT}`,
+    // The existing tests look for French texts; language tests set their own locale.
+    locale: 'fr-FR',
     trace: 'retain-on-failure',
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],

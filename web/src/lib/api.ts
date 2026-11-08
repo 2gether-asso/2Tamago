@@ -18,8 +18,17 @@ import type {
   WalkResponse,
 } from '@2tamago/core/contracts';
 
+import { hasMessage, t, type MessageKey } from './i18n/index.svelte.ts';
+
 /** Same origin: Vite proxies `/api` in development, Caddy in production. */
 const BASE = '/api';
+
+/** The message to show for an API error: translated from its `code` when we know it. */
+function errorMessage(status: number, code: string | undefined, serverMessage: string | undefined) {
+  if (code && hasMessage(`error.${code}`)) return t(`error.${code}` as MessageKey);
+  if (status === 400) return t('error.invalid_input');
+  return serverMessage ?? t('error.http', { status });
+}
 
 export class ApiError extends Error {
   constructor(
@@ -41,14 +50,18 @@ async function call<T>(method: string, path: string, body?: unknown): Promise<T>
       body: body === undefined ? undefined : JSON.stringify(body),
     });
   } catch {
-    throw new ApiError(0, 'Le serveur est injoignable. Réessaie dans un instant.');
+    throw new ApiError(0, t('error.network'));
   }
   if (response.status === 204) return undefined as T;
   const data = await response.json().catch(() => null);
   if (!response.ok) {
     const error = data as ApiErrorBody | null;
     const message = Array.isArray(error?.message) ? error.message.join(', ') : error?.message;
-    throw new ApiError(response.status, message ?? `Erreur ${response.status}`, error?.code);
+    throw new ApiError(
+      response.status,
+      errorMessage(response.status, error?.code, message),
+      error?.code,
+    );
   }
   return data as T;
 }

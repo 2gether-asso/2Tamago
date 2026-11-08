@@ -10,6 +10,7 @@ import { social } from './social.ts';
 import { shop } from './shop.ts';
 import { auth } from './auth.ts';
 import { admin } from './admin.ts';
+import { errors } from './errors.ts';
 import { feedback } from './feedback.ts';
 
 /** English: must have exactly the keys of `fr`. */
@@ -25,5 +26,6 @@ export const en: Record<keyof typeof fr, string> = {
   ...shop,
   ...auth,
   ...admin,
+  ...errors,
   ...feedback,
 };

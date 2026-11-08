@@ -67,4 +67,6 @@ export const catalog = {
   'stat.discipline': 'Discipline',
   'stat.bond': 'Lien',
   'stat.title': '{label} : {value} / 100',
+
+  'pet.label': 'Compagnon',
 } as const;

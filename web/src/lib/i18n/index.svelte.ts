@@ -75,6 +75,11 @@ export function intlTag(): string {
   return INTL_TAGS[i18n.locale];
 }
 
+/** Whether `key` has a message (for keys built from data, such as an error code). */
+export function hasMessage(key: string): boolean {
+  return key in DICTIONARIES.fr;
+}
+
 /** Translates in the current language. Reactive: reading `i18n.locale` tracks changes. */
 export function t(key: MessageKey, params?: Params): string {
   return translate(i18n.locale, key, params);

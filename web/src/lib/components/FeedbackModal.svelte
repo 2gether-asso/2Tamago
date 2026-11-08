@@ -2,6 +2,7 @@
   import { FEEDBACK_TYPES, type FeedbackType } from '@2tamago/core/contracts';
   import { page } from '$app/state';
   import { api, ApiError } from '#lib/api.ts';
+  import { t } from '#lib/i18n/index.svelte.ts';
   import { toasts } from '#lib/toasts.svelte.ts';
 
   interface Props {
@@ -9,11 +10,7 @@
   }
   let { open = $bindable(false) }: Props = $props();
 
-  const TYPES: Record<FeedbackType, { icon: string; label: string; hint: string }> = {
-    bug: { icon: '🐞', label: 'Bug', hint: 'Quelque chose ne marche pas comme prévu.' },
-    idea: { icon: '💡', label: 'Idée', hint: 'Une envie, une amélioration, une créature…' },
-    other: { icon: '💬', label: 'Autre', hint: 'Une question, un mot gentil, autre chose.' },
-  };
+  const ICONS: Record<FeedbackType, string> = { bug: '🐞', idea: '💡', other: '💬' };
   const MIN = 10;
   const MAX = 2000;
 
@@ -35,14 +32,11 @@
     sending = true;
     try {
       await api.sendFeedback({ type, message: message.trim(), page: page.url.pathname });
-      toasts.push('Merci pour ton retour ! 💜');
+      toasts.push(t('feedback.thanks'));
       message = '';
       open = false;
     } catch (e) {
-      toasts.push(
-        e instanceof ApiError ? e.message : 'Impossible d’envoyer ton avis pour le moment.',
-        'error',
-      );
+      toasts.push(e instanceof ApiError ? e.message : t('feedback.failed'), 'error');
     } finally {
       sending = false;
     }
@@ -51,41 +45,43 @@
 
 <dialog bind:this={dialog} class="card" onclose={() => (open = false)} aria-labelledby="fb-title">
   <form onsubmit={submit}>
-    <h2 id="fb-title">Donner un avis</h2>
-    <p class="muted">Ton message part directement à l’équipe de 2Tamago.</p>
+    <h2 id="fb-title">{t('feedback.title')}</h2>
+    <p class="muted">{t('feedback.intro')}</p>
 
     <fieldset>
-      <legend class="sr-only">Type d’avis</legend>
+      <legend class="sr-only">{t('feedback.type_label')}</legend>
       {#each FEEDBACK_TYPES as option (option)}
         <label class:selected={type === option}>
           <input type="radio" name="feedback-type" value={option} bind:group={type} />
-          <span aria-hidden="true">{TYPES[option].icon}</span>
-          {TYPES[option].label}
+          <span aria-hidden="true">{ICONS[option]}</span>
+          {t(`feedback.type.${option}`)}
         </label>
       {/each}
     </fieldset>
-    <p class="muted hint">{TYPES[type].hint}</p>
+    <p class="muted hint">{t(`feedback.type.${type}_hint`)}</p>
 
     <label class="field">
-      <span class="sr-only">Ton message</span>
+      <span class="sr-only">{t('feedback.message_label')}</span>
       <textarea
         bind:value={message}
         maxlength={MAX}
         rows="6"
         required
-        placeholder="Décris ton idée ou ce qui s’est passé…"
+        placeholder={t('feedback.placeholder')}
       ></textarea>
     </label>
     <p class="muted count">
       {message.trim().length < MIN
-        ? `Encore ${MIN - message.trim().length} caractère(s) minimum`
+        ? t('feedback.min_remaining', { count: MIN - message.trim().length })
         : `${message.length} / ${MAX}`}
     </p>
 
     <div class="actions">
-      <button type="button" class="link" onclick={() => (open = false)}>Annuler</button>
+      <button type="button" class="link" onclick={() => (open = false)}
+        >{t('feedback.cancel')}</button
+      >
       <button class="primary" disabled={!valid || sending}>
-        {sending ? 'Envoi…' : 'Envoyer'}
+        {sending ? t('feedback.sending') : t('feedback.send')}
       </button>
     </div>
   </form>

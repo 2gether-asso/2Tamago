@@ -103,8 +103,8 @@
           <button
             class="icon-button"
             onclick={() => (feedbackOpen = true)}
-            title={t('feedback.open')}
-            aria-label={t('feedback.open')}
+            title={t('feedback.title')}
+            aria-label={t('feedback.title')}
           >
             💬
           </button>

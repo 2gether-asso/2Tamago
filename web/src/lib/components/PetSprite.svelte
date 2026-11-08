@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '#lib/i18n/index.svelte.ts';
   import type { Form, Mood, PetTraits, Species, Stage } from '@2tamago/core';
 
   interface Props {
@@ -199,7 +200,7 @@
   onpointermove={onPointerMove}
   onpointerleave={() => (lastPoint = null)}
   role="img"
-  aria-label="Compagnon"
+  aria-label={t('pet.label')}
 >
   <svg viewBox="0 0 200 200" width={size} height={size}>
     <defs>

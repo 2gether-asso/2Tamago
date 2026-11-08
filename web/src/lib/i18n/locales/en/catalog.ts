@@ -69,4 +69,6 @@ export const catalog: Record<keyof typeof fr, string> = {
   'stat.discipline': 'Discipline',
   'stat.bond': 'Bond',
   'stat.title': '{label}: {value} / 100',
+
+  'pet.label': 'Companion',
 };
