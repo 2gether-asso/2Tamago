@@ -2,8 +2,9 @@
   import { api } from '#lib/api.ts';
   import { game } from '#lib/game.svelte.ts';
   import { t } from '#lib/i18n/index.svelte.ts';
-  import { goto } from '$app/navigation';
+  import { goto, replaceState } from '$app/navigation';
   import { page } from '$app/state';
+  import { setToken } from '#lib/session.ts';
 
   const ERRORS = {
     not_member: 'login.error.not_member',
@@ -20,6 +21,18 @@
       (errorCode && errorCode in ERRORS ? t(ERRORS[errorCode as keyof typeof ERRORS]) : null),
   );
   const config = api.authConfig();
+
+  // Back from Discord: the API sends the session token in the URL fragment (never sent to a server).
+  $effect(() => {
+    const token = new URLSearchParams(location.hash.slice(1)).get('token');
+    if (!token) return;
+    setToken(token);
+    replaceState(location.pathname, {});
+    game
+      .load()
+      .then(() => goto('/'))
+      .catch((e: Error) => (failure = e.message));
+  });
 
   async function devLogin(event: SubmitEvent) {
     event.preventDefault();

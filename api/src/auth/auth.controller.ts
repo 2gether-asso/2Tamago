@@ -85,8 +85,14 @@ export class AuthController {
       displayName: identity.displayName,
       avatarUrl: identity.avatarUrl,
     });
-    await this.startSession(res, player.id, this.config.auth.adminDiscordIds.includes(identity.id));
-    return res.redirect(`${this.config.webOrigin}/`);
+    const token = await this.startSession(
+      res,
+      player.id,
+      this.config.auth.adminDiscordIds.includes(identity.id),
+    );
+    // The token travels in the fragment, which browsers never send to a server: the web app
+    // may live on another site than the API, where a cookie would not be sent back.
+    return res.redirect(`${this.config.webOrigin}/login#token=${token}`);
   }
 
   /** Development only: sign in with just a name. */

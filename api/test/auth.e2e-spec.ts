@@ -85,13 +85,22 @@ describe('Discord sign-in (e2e)', () => {
     discord.identities.set('ok', ADA);
     const first = await start();
     const done = await callback(first.agent, { code: 'ok', state: first.state }).expect(302);
-    expect(done.headers.location).toBe(`${WEB}/`);
+    // The token goes to the web app in the fragment, and works as a bearer.
+    const token = new URLSearchParams(new URL(done.headers.location!).hash.slice(1)).get('token')!;
+    expect(done.headers.location).toBe(`${WEB}/login#token=${token}`);
+    const viaBearer: MeResponse = (
+      await request(app.getHttpServer())
+        .get('/api/me')
+        .set('Authorization', `Bearer ${token}`)
+        .expect(200)
+    ).body;
     const me: MeResponse = (await first.agent.get('/api/me').expect(200)).body;
     expect(me.player).toMatchObject({
       displayName: 'Ada',
       avatarUrl: 'https://cdn.example/ada.png',
       isAdmin: true,
     });
+    expect(viaBearer.player.id).toBe(me.player.id);
 
     // Renamed on Discord: the next sign-in updates the same player.
     discord.identities.set('again', { ...ADA, displayName: 'Ada L.' });
@@ -145,14 +154,13 @@ describe('Discord sign-in (e2e)', () => {
     expect(replay.headers.location).toBe(`${WEB}/login?error=state`);
   });
 
-  it('lets the web app, and only it, call the API with its session cookie', async () => {
+  it('lets the web app, and only it, call the API from another origin', async () => {
     const allowed = await request(app.getHttpServer())
       .options('/api/me')
       .set('Origin', WEB)
       .set('Access-Control-Request-Method', 'GET')
       .expect(204);
     expect(allowed.headers['access-control-allow-origin']).toBe(WEB);
-    expect(allowed.headers['access-control-allow-credentials']).toBe('true');
 
     const other = await request(app.getHttpServer())
       .get('/api/auth/config')

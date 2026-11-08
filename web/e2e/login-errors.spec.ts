@@ -14,3 +14,15 @@ test('the sign-in page explains why a Discord sign-in failed', async ({ page }) 
   await page.goto('/login?error=whatever');
   await expect(page.locator('.error')).toHaveCount(0);
 });
+
+test('coming back from Discord, the token in the URL fragment signs the player in without a cookie', async ({
+  page,
+}) => {
+  const { token } = await (
+    await page.request.post('/api/auth/dev-login', { data: { name: 'Fragment' } })
+  ).json();
+  await page.context().clearCookies();
+  await page.goto(`/login#token=${token}`);
+  await expect(page.getByRole('link', { name: /Village/ })).toBeVisible();
+  expect(page.url()).not.toContain('token');
+});

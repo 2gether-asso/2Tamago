@@ -21,6 +21,7 @@ import type {
 } from '@2tamago/core/contracts';
 
 import { hasMessage, t, type MessageKey } from './i18n/index.svelte.ts';
+import { clearToken, getToken, setToken } from './session.ts';
 
 /**
  * The API lives on its own origin in production (`VITE_API_URL`, set at build time, for example
@@ -48,10 +49,14 @@ export class ApiError extends Error {
 async function call<T>(method: string, path: string, body?: unknown): Promise<T> {
   let response: Response;
   try {
+    const token = getToken();
     response = await fetch(BASE + path, {
       method,
-      credentials: 'include',
-      headers: body === undefined ? {} : { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      headers: {
+        ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
       body: body === undefined ? undefined : JSON.stringify(body),
     });
   } catch {
@@ -59,6 +64,7 @@ async function call<T>(method: string, path: string, body?: unknown): Promise<T>
   }
   if (response.status === 204) return undefined as T;
   const data = await response.json().catch(() => null);
+  if (response.status === 401) clearToken();
   if (!response.ok) {
     const error = data as ApiErrorBody | null;
     const message = Array.isArray(error?.message) ? error.message.join(', ') : error?.message;
@@ -74,8 +80,17 @@ async function call<T>(method: string, path: string, body?: unknown): Promise<T>
 export const api = {
   authConfig: () =>
     call<{ discord: boolean; devLogin: boolean; inviteUrl: string | null }>('GET', '/auth/config'),
-  devLogin: (name: string) => call<{ token: string }>('POST', '/auth/dev-login', { name }),
-  logout: () => call<void>('POST', '/auth/logout'),
+  devLogin: async (name: string) => {
+    const { token } = await call<{ token: string }>('POST', '/auth/dev-login', { name });
+    setToken(token);
+  },
+  logout: async () => {
+    try {
+      await call<void>('POST', '/auth/logout');
+    } finally {
+      clearToken();
+    }
+  },
   discordLoginUrl: `${BASE}/auth/discord`,
 
   sendFeedback: (body: FeedbackBody) => call<void>('POST', '/feedback', body),
