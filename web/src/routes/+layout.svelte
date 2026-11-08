@@ -1,4 +1,6 @@
 <script lang="ts">
+  import '@fontsource-variable/inter';
+  import '@fontsource/bungee';
   import '../app.css';
   import favicon from '#lib/assets/favicon.svg';
   import Toasts from '#lib/components/Toasts.svelte';
