@@ -67,8 +67,7 @@
         maxlength={MAX}
         rows="6"
         required
-        placeholder={t('feedback.placeholder')}
-      ></textarea>
+        placeholder={t('feedback.placeholder')}></textarea>
     </label>
     <p class="muted count">
       {message.trim().length < MIN
