@@ -19,6 +19,7 @@ const NAMESPACES: Record<string, string[]> = {
   home: ['home', 'action', 'walk'],
   minigame: ['minigame'],
   adopt: ['adopt'],
+  profile: ['profile'],
   social: ['village', 'visit', 'album', 'journal'],
   shop: ['shop'],
   auth: ['login'],

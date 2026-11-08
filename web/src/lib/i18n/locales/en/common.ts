@@ -6,6 +6,7 @@ export const common: Record<keyof typeof fr, string> = {
   'lang.en': 'English',
   'lang.switch': 'Language',
 
+  'duration.days': '{count} d',
   'duration.min_sec': '{minutes} min {seconds} s',
 
   'common.loading': 'Loading…',

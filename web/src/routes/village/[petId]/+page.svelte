@@ -59,6 +59,9 @@
     <p class="muted">
       {t('visit.owner', { owner: visit.pet.ownerName, stage: stageLabel(pet.stage) })}
     </p>
+    <p>
+      <a href="/players/{visit.pet.ownerId}">{t('profile.view', { name: visit.pet.ownerName })}</a>
+    </p>
     <PetSprite
       species={pet.species}
       stage={pet.stage}

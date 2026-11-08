@@ -1,5 +1,6 @@
 import type { fr } from '../fr/index.ts';
 import { common } from './common.ts';
+import { profile } from './profile.ts';
 import { shell } from './shell.ts';
 import { catalog } from './catalog.ts';
 import { feed } from './feed.ts';
@@ -16,6 +17,7 @@ import { feedback } from './feedback.ts';
 /** English: must have exactly the keys of `fr`. */
 export const en: Record<keyof typeof fr, string> = {
   ...common,
+  ...profile,
   ...shell,
   ...catalog,
   ...feed,

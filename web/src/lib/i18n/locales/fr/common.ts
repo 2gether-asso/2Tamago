@@ -4,6 +4,7 @@ export const common = {
   'lang.en': 'English',
   'lang.switch': 'Langue',
 
+  'duration.days': '{count} j',
   'duration.min_sec': '{minutes} min {seconds} s',
 
   'common.loading': 'Chargement…',

@@ -129,6 +129,7 @@ Un module Nest par domaine :
 | `POST /pet/walk` · `POST /pet/walk/return`                                                           | Promenades                                                                  |
 | `GET /village` · `GET /village/:petId` · `POST /village/:petId/caress` · `POST /village/:petId/gift` | Social                                                                      |
 | `POST /shop/buy` · `GET /activity` · `POST /activity/read`                                           | Boutique, journal                                                           |
+| `GET /players/:playerId`                                                                             | Profil : joueur, statistiques, compagnon vivant                             |
 | `POST /feedback`                                                                                     | Avis d'un joueur (bug, idée, autre), transmis à Sentry / GlitchTip          |
 | `GET /admin/rules` · `PUT /admin/rules`                                                              | Admin : réglages du jeu en base                                             |
 
@@ -147,7 +148,7 @@ Un module Nest par domaine :
 | `app.css`                         | Jetons de design et styles de base (voir ci-dessous)                                                                              |
 | `lib/i18n/`                       | Traductions françaises et anglaises : `t()`, langue courante, un module par domaine dans `locales/` (voir [I18N.md](I18N.md))     |
 | `lib/texts.ts`                    | Mise en phrases des noms du jeu, événements, journal et notices de l'API, dans la langue courante                                 |
-| `routes/`                         | `/` (maison), `/login`, `/village`, `/village/[petId]`, `/shop`, `/journal`, `/album`                                             |
+| `routes/`                         | `/` (maison), `/login`, `/village`, `/village/[petId]`, `/players/[id]` (profil), `/shop`, `/journal`, `/album`                   |
 
 ### Apparence et thèmes
 

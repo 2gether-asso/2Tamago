@@ -1,4 +1,5 @@
 import { common } from './common.ts';
+import { profile } from './profile.ts';
 import { shell } from './shell.ts';
 import { catalog } from './catalog.ts';
 import { feed } from './feed.ts';
@@ -15,6 +16,7 @@ import { feedback } from './feedback.ts';
 /** French: the reference language. */
 export const fr = {
   ...common,
+  ...profile,
   ...shell,
   ...catalog,
   ...feed,

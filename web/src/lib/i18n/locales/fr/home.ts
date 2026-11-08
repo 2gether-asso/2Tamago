@@ -5,7 +5,6 @@ export const home = {
   'home.farewell.left_hint':
     'Il ne se sentait plus assez entouré. Il vit désormais sa vie, quelque part.',
   'home.farewell.album': 'Il restera dans ton album.',
-  'home.age_days': '{count} j',
   'home.bedtime': 'Coucher : de {start} h à {end} h',
   'home.bedtime_hint': '🌙 C’est l’heure du coucher : éteins la lumière',
   'home.away': '🚶 En promenade… retour dans {time}',

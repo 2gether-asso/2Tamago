@@ -13,6 +13,7 @@ import type {
   MeResponse,
   OwnerActionBody,
   PetDto,
+  PlayerProfile,
   VillagePet,
   VisitResponse,
   WalkResponse,
@@ -84,6 +85,7 @@ export const api = {
 
   buy: (body: BuyBody) => call<{ coins: number; inventory: Inventory }>('POST', '/shop/buy', body),
 
+  playerProfile: (playerId: string) => call<PlayerProfile>('GET', `/players/${playerId}`),
   village: () => call<VillagePet[]>('GET', '/village'),
   visit: (petId: string) => call<VisitResponse>('GET', `/village/${petId}`),
   caress: (petId: string) => call<ActionResponse>('POST', `/village/${petId}/caress`),

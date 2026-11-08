@@ -109,7 +109,7 @@
       <p class="muted">
         {SPECIES_LABELS[pet.species]} · {stageLabel(pet.stage)}
         {#if pet.form}· {formLabel(pet.form)}{/if}
-        · {t('home.age_days', { count: game.rules ? ageInDays(pet, now, game.rules) : 0 })}
+        · {t('duration.days', { count: game.rules ? ageInDays(pet, now, game.rules) : 0 })}
       </p>
       {#if pet.traits}
         {@const hint = temperamentHint(pet.traits.temperament)}

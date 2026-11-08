@@ -51,20 +51,21 @@ Le jeu s'inspire de trois sources :
 
 ## 3. Multijoueur asynchrone
 
-|     | Fonctionnalité                                                                                | Notes                                         |
-| --- | --------------------------------------------------------------------------------------------- | --------------------------------------------- |
-| ✅  | Village : les compagnons des autres membres, avec leur humeur                                 |                                               |
-| ✅  | Visite d'un compagnon, une caresse par jour et par compagnon (+3 pièces pour le visiteur)     |                                               |
-| ✅  | Offrir une friandise de son sac au compagnon d'un autre                                       |                                               |
-| ✅  | Rencontres en promenade : deux compagnons sortis en même temps se croisent (façon StreetPass) | Les deux joueurs le voient dans leur journal  |
-| ✅  | Journal : événements de son compagnon, visites, cadeaux, rencontres, bonus du jour            |                                               |
-| ✅  | Bonus de connexion quotidien                                                                  |                                               |
-| 🔜  | Amis / favoris, et un village trié par affinité (rencontres, visites)                         |                                               |
-| 🔜  | Échanges d'objets entre joueurs                                                               |                                               |
-| 🔜  | Objectifs communautaires : « le village a fait 500 promenades cette semaine »                 | Comme les objectifs communautaires de 2Gatcha |
-| 💡  | Garde partagée : co-élever un compagnon à deux                                                |                                               |
-| 💡  | Mariage et œuf commun quand deux adultes ont un lien fort                                     |                                               |
-| 💡  | Intégration Discord : un bot qui annonce éclosions, évolutions et rencontres                  |                                               |
+|     | Fonctionnalité                                                                                                                                               | Notes                                                                                           |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------- |
+| ✅  | Village : les compagnons des autres membres, avec leur humeur                                                                                                |                                                                                                 |
+| ✅  | Profil des joueurs : une fiche joueur (statistiques, membre depuis…) et une fiche compagnon mise en avant, accessibles depuis l'en-tête et la page de visite | Compagnons élevés, plus longue vie, caresses et cadeaux donnés et reçus, promenades, rencontres |
+| ✅  | Visite d'un compagnon, une caresse par jour et par compagnon (+3 pièces pour le visiteur)                                                                    |                                                                                                 |
+| ✅  | Offrir une friandise de son sac au compagnon d'un autre                                                                                                      |                                                                                                 |
+| ✅  | Rencontres en promenade : deux compagnons sortis en même temps se croisent (façon StreetPass)                                                                | Les deux joueurs le voient dans leur journal                                                    |
+| ✅  | Journal : événements de son compagnon, visites, cadeaux, rencontres, bonus du jour                                                                           |                                                                                                 |
+| ✅  | Bonus de connexion quotidien                                                                                                                                 |                                                                                                 |
+| 🔜  | Amis / favoris, et un village trié par affinité (rencontres, visites)                                                                                        |                                                                                                 |
+| 🔜  | Échanges d'objets entre joueurs                                                                                                                              |                                                                                                 |
+| 🔜  | Objectifs communautaires : « le village a fait 500 promenades cette semaine »                                                                                | Comme les objectifs communautaires de 2Gatcha                                                   |
+| 💡  | Garde partagée : co-élever un compagnon à deux                                                                                                               |                                                                                                 |
+| 💡  | Mariage et œuf commun quand deux adultes ont un lien fort                                                                                                    |                                                                                                 |
+| 💡  | Intégration Discord : un bot qui annonce éclosions, évolutions et rencontres                                                                                 |                                                                                                 |
 
 ## 4. Multijoueur synchrone (plus tard)
 

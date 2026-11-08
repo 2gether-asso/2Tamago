@@ -97,7 +97,9 @@
     {#if game.player}
       <div class="who">
         <span class="coins" title={t('header.coins')}>🪙 {game.player.coins}</span>
-        <span class="muted">{game.player.displayName}</span>
+        <a class="who-name" href="/players/{game.player.id}" title={t('profile.mine')}
+          >{game.player.displayName}</a
+        >
         <button class="link" onclick={logout}>{t('header.logout')}</button>
         {#if clientConfig.feedbackEnabled}
           <button
@@ -171,6 +173,14 @@
     justify-content: flex-end;
     gap: 0.2rem 0.8rem;
     align-items: center;
+  }
+  .who-name {
+    color: var(--muted);
+    text-decoration: none;
+  }
+  .who-name:hover {
+    color: var(--accent);
+    text-decoration: underline;
   }
   .coins {
     font-weight: 700;
