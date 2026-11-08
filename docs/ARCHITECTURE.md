@@ -153,11 +153,11 @@ Un module Nest par domaine :
 
 ## Tests
 
-| Commande                                    | Contenu                                                                                                                                                                                |
-| ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `pnpm --filter @2tamago/core test`          | Moteur : déterminisme, décroissance, maladie, départ, évolution, actions                                                                                                               |
-| `pnpm --filter @2tamago/api test`           | Configuration, et scénarios e2e sur une vraie base PGlite en mémoire avec une horloge simulée (cycle de vie, départ puis nouvelle adoption, village, cadeaux, rencontres en promenade) |
-| `pnpm --filter @2tamago/web test` / `check` | Textes, et vérification de types Svelte                                                                                                                                                |
+| Commande                                    | Contenu                                                                                                                                                                                                                                             |
+| ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm --filter @2tamago/core test`          | Moteur : déterminisme, décroissance, maladie, départ, évolution, actions                                                                                                                                                                            |
+| `pnpm --filter @2tamago/api test`           | Configuration, et scénarios e2e sur une base PGlite en mémoire (ou sur PostgreSQL si `TEST_DATABASE_URL` est défini, comme en CI) avec une horloge simulée (cycle de vie, départ puis nouvelle adoption, village, cadeaux, rencontres en promenade) |
+| `pnpm --filter @2tamago/web test` / `check` | Textes, et vérification de types Svelte                                                                                                                                                                                                             |
 
 ## Docker et environnements
 

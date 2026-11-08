@@ -8,6 +8,20 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: tamago
+          POSTGRES_PASSWORD: tamago
+          POSTGRES_DB: tamago_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U tamago"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -20,6 +34,10 @@ jobs:
       - run: pnpm build
       - run: pnpm check
       - run: pnpm test
+      - name: API e2e tests against PostgreSQL
+        run: pnpm --filter @2tamago/api test:e2e
+        env:
+          TEST_DATABASE_URL: postgres://tamago:tamago@localhost:5432/tamago_test
 
   images:
     needs: test
