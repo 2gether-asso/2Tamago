@@ -72,6 +72,23 @@ export type OwnerAction =
   | { type: 'startVacation' }
   | { type: 'endVacation' };
 
+/**
+ * What a caretaker may do while a pet is in daycare: the day-to-day care, not what only its owner
+ * decides (training, walks, items, vacations, retiring). The API enforces the list.
+ */
+export const CARETAKER_ACTION_TYPES = [
+  'feed',
+  'clean',
+  'medicine',
+  'sleep',
+  'wake',
+  'lights',
+  'praise',
+  'scold',
+  'caress',
+] as const satisfies readonly OwnerAction['type'][];
+export type CaretakerActionType = (typeof CARETAKER_ACTION_TYPES)[number];
+
 /** Actions triggered by the server: outings, and what other players do. */
 export type SystemAction =
   | { type: 'startOuting'; zone?: WalkZoneId }

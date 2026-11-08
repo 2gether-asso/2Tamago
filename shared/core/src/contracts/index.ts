@@ -209,6 +209,24 @@ export const ownerActionBody = z.discriminatedUnion('type', [
 ]);
 export type OwnerActionBody = z.infer<typeof ownerActionBody>;
 
+/** What a caretaker may do (see `CARETAKER_ACTION_TYPES`): the same shapes as the owner's. */
+export const careActionBody = z.discriminatedUnion('type', [
+  z.object({ type: z.literal('feed') }),
+  z.object({ type: z.literal('clean') }),
+  z.object({ type: z.literal('medicine') }),
+  z.object({ type: z.literal('sleep') }),
+  z.object({ type: z.literal('wake') }),
+  z.object({ type: z.literal('lights'), on: z.boolean() }),
+  z.object({ type: z.literal('praise') }),
+  z.object({ type: z.literal('scold') }),
+  z.object({ type: z.literal('caress') }),
+]);
+export type CareActionBody = z.infer<typeof careActionBody>;
+
+/** Entrusting one's companion to another member. */
+export const daycareBody = z.object({ caretakerId: z.uuid() });
+export type DaycareBody = z.infer<typeof daycareBody>;
+
 /** Where to walk; without a body, the meadow. */
 export const walkBody = z
   .object({ zone: z.enum(WALK_ZONE_IDS).default('meadow') })
@@ -481,10 +499,47 @@ export interface ClaimResponse {
 export interface VisitResponse {
   pet: PetDto;
   caressedToday: boolean;
+  /** Set when the viewer looks after this companion right now: the way to the care actions. */
+  daycareId: string | null;
+}
+
+/** `pending`: waiting for the caretaker's answer. `active`: the caretaker looks after the pet. */
+export type DaycareStatus = 'pending' | 'active';
+
+export interface DaycareDto {
+  id: string;
+  status: DaycareStatus;
+  petId: string;
+  petName: string;
+  ownerId: string;
+  ownerName: string;
+  caretakerId: string;
+  caretakerName: string;
+  /** When the invitation lapses (pending) or the stay ends by itself (active), epoch ms. */
+  expiresAt: number;
+}
+
+export interface DaycareOverview {
+  /** The viewer's own companion, entrusted to someone (or an invitation waiting for an answer). */
+  entrusted: DaycareDto | null;
+  /** Companions the viewer looks after. */
+  caring: DaycareDto[];
+  /** Invitations the viewer can accept or decline. */
+  invitations: DaycareDto[];
 }
 
 export type ActivityKind =
-  'pet_event' | 'visit_caress' | 'visit_gift' | 'encounter' | 'daily_bonus' | 'community_reward';
+  | 'pet_event'
+  | 'visit_caress'
+  | 'visit_gift'
+  | 'encounter'
+  | 'daily_bonus'
+  | 'community_reward'
+  | 'daycare_invite'
+  | 'daycare_accepted'
+  | 'daycare_declined'
+  | 'daycare_ended'
+  | 'daycare_care';
 
 export interface ActivityDto {
   id: string;
@@ -515,10 +570,13 @@ export const API_ERROR_CODES = [
   'already_caressed',
   'already_claimed',
   'already_has_pet',
+  'daycare_exists',
+  'daycare_full',
   'feedback_disabled',
   'goal_not_reached',
   'missing_item',
   'no_contribution',
+  'no_daycare',
   'no_pet',
   'no_player',
   'not_enough_coins',

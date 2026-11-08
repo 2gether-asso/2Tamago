@@ -34,5 +34,18 @@ export const feed = {
     'Objectif du village atteint : +{count} pièces pour ta participation.',
   'activity.visit_caress': '{visitorName} est passé caresser {petName}.',
   'activity.visit_gift': '{visitorName} a offert {item} à {petName}.',
+  'activity.daycare_invite':
+    '{ownerName} aimerait te confier {petName} : réponds depuis le village.',
+  'activity.daycare_accepted': '{caretakerName} s’occupe de {petName}.',
+  'activity.daycare_declined': '{caretakerName} ne peut pas garder {petName}.',
+  'activity.daycare_ended': 'La garderie de {petName} est terminée.',
+  'activity.daycare_care.feed': '{caretakerName} a nourri {petName}.',
+  'activity.daycare_care.clean': '{caretakerName} a nettoyé {petName}.',
+  'activity.daycare_care.medicine': '{caretakerName} a soigné {petName}.',
+  'activity.daycare_care.sleep': '{caretakerName} a couché {petName}.',
+  'activity.daycare_care.wake': '{caretakerName} a réveillé {petName}.',
+  'activity.daycare_care.lights': '{caretakerName} a réglé la lumière de {petName}.',
+  'activity.daycare_care.praise': '{caretakerName} a félicité {petName}.',
+  'activity.daycare_care.scold': '{caretakerName} a grondé {petName}.',
   'activity.encounter': 'Rencontre en promenade avec {otherPetName} ({otherOwnerName}).',
 } as const;

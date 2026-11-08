@@ -97,7 +97,11 @@ export class VillageService {
     const pet = await this.pets.sync(eq(pets.id, petId));
     if (!pet) throw notFound();
     const caressed = await this.caressedToday(this.db, viewerId);
-    return { pet: toPetDto(pet.row, pet.ownerName), caressedToday: caressed.has(petId) };
+    return {
+      pet: toPetDto(pet.row, pet.ownerName),
+      caressedToday: caressed.has(petId),
+      daycareId: null,
+    };
   }
 
   async caress(viewerId: string, petId: string): Promise<ActionResponse> {

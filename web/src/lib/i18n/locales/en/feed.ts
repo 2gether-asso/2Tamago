@@ -34,5 +34,18 @@ export const feed: Record<keyof typeof fr, string> = {
   'activity.community_reward_other': 'Village goal reached: +{count} coins for taking part.',
   'activity.visit_caress': '{visitorName} stopped by to pet {petName}.',
   'activity.visit_gift': '{visitorName} gave {item} to {petName}.',
+  'activity.daycare_invite':
+    '{ownerName} would like to entrust you with {petName}: answer from the village.',
+  'activity.daycare_accepted': '{caretakerName} is looking after {petName}.',
+  'activity.daycare_declined': '{caretakerName} cannot look after {petName}.',
+  'activity.daycare_ended': '{petName}’s daycare is over.',
+  'activity.daycare_care.feed': '{caretakerName} fed {petName}.',
+  'activity.daycare_care.clean': '{caretakerName} cleaned {petName}.',
+  'activity.daycare_care.medicine': '{caretakerName} gave {petName} medicine.',
+  'activity.daycare_care.sleep': '{caretakerName} put {petName} to bed.',
+  'activity.daycare_care.wake': '{caretakerName} woke {petName} up.',
+  'activity.daycare_care.lights': '{caretakerName} adjusted {petName}’s light.',
+  'activity.daycare_care.praise': '{caretakerName} praised {petName}.',
+  'activity.daycare_care.scold': '{caretakerName} scolded {petName}.',
   'activity.encounter': 'Met {otherPetName} ({otherOwnerName}) on a walk.',
 };

@@ -11,7 +11,7 @@ import {
   type WalkZoneId,
 } from '@2tamago/core';
 import type { ActivityDto, Notice } from '@2tamago/core/contracts';
-import { t } from './i18n/index.svelte.ts';
+import { t, type MessageKey } from './i18n/index.svelte.ts';
 
 /** Texts of the game, in the current language (see `lib/i18n`). */
 
@@ -81,6 +81,24 @@ export function activityText(entry: ActivityDto): string {
       });
     case 'community_reward':
       return t('activity.community_reward', { count: Number(d.coins) });
+    case 'daycare_invite':
+      return t('activity.daycare_invite', {
+        ownerName: String(d.ownerName),
+        petName: String(d.petName),
+      });
+    case 'daycare_accepted':
+    case 'daycare_declined':
+      return t(`activity.${entry.kind}`, {
+        caretakerName: String(d.caretakerName),
+        petName: String(d.petName),
+      });
+    case 'daycare_ended':
+      return t('activity.daycare_ended', { petName: String(d.petName) });
+    case 'daycare_care':
+      return t(`activity.daycare_care.${String(d.action)}` as MessageKey, {
+        caretakerName: String(d.caretakerName),
+        petName: String(d.petName),
+      });
     case 'encounter':
       return t('activity.encounter', {
         otherPetName: String(d.otherPetName),

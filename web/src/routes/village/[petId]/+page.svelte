@@ -37,7 +37,7 @@
     busy = true;
     try {
       const response = await task();
-      visit = { pet: response.pet, caressedToday: visit.caressedToday };
+      visit = { ...visit, pet: response.pet };
       game.applyResponse(response);
       after?.();
     } catch (e) {
