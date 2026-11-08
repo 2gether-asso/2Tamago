@@ -194,6 +194,38 @@ export const pushAlerts = pgTable(
   (t) => [primaryKey({ columns: [t.playerId, t.kind] })],
 );
 
+/**
+ * A companion entrusted to another player: invited (`pending`), then looked after (`active`), then
+ * `ended`. Ended rows stay (history); at most one open row per pet.
+ */
+export const daycares = pgTable(
+  'daycares',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    petId: uuid('pet_id')
+      .notNull()
+      .references(() => pets.id, { onDelete: 'cascade' }),
+    ownerId: uuid('owner_id')
+      .notNull()
+      .references(() => players.id, { onDelete: 'cascade' }),
+    caretakerId: uuid('caretaker_id')
+      .notNull()
+      .references(() => players.id, { onDelete: 'cascade' }),
+    status: text().$type<'pending' | 'active' | 'ended'>().notNull(),
+    /** The invitation lapses, or the stay ends by itself, at this time. */
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    createdAt: createdAt(),
+    endedAt: timestamp('ended_at', { withTimezone: true }),
+  },
+  (t) => [
+    uniqueIndex('daycares_one_open_per_pet')
+      .on(t.petId)
+      .where(sql`${t.status} <> 'ended'`),
+    index('daycares_caretaker_idx').on(t.caretakerId, t.status),
+    index('daycares_owner_idx').on(t.ownerId, t.status),
+  ],
+);
+
 /** What happened to a player: their pet's life events and other players' actions. */
 export const activity = pgTable(
   'activity',

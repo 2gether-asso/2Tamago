@@ -50,6 +50,13 @@
       "when": 1794179576507,
       "tag": "0006_absurd_polaris",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1794180229201,
+      "tag": "0007_white_madelyne_pryor",
+      "breakpoints": true
     }
   ]
 }
