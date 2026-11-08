@@ -185,6 +185,20 @@ export class AuthSessionService {
     throw outcome.error;
   }
 
+  /** Whether a session still stands: a revoked or expired one cuts its access tokens short. */
+  async isLive(sessionId: string): Promise<boolean> {
+    const [row] = await this.db
+      .select({
+        idleExpiresAt: authSessions.idleExpiresAt,
+        absoluteExpiresAt: authSessions.absoluteExpiresAt,
+      })
+      .from(authSessions)
+      .where(eq(authSessions.id, sessionId));
+    if (!row) return false;
+    const now = this.clock.now();
+    return row.idleExpiresAt.getTime() > now && row.absoluteExpiresAt.getTime() > now;
+  }
+
   async revoke(sessionId: string): Promise<void> {
     await this.db.delete(authSessions).where(eq(authSessions.id, sessionId));
   }

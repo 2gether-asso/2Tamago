@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
-import type { AccessClaims } from './auth-session.service.js';
+import { AuthSessionService, type AccessClaims } from './auth-session.service.js';
 import { IS_PUBLIC, type AuthenticatedRequest, type Session } from './session.js';
 
 /**
@@ -19,6 +19,7 @@ export class AuthGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
     private readonly jwt: JwtService,
+    private readonly sessions: AuthSessionService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -35,6 +36,10 @@ export class AuthGuard implements CanActivate {
       const payload = await this.jwt.verifyAsync<AccessClaims>(token);
       // Other tokens signed with the same secret (the Discord sign-in state) are not sessions.
       if (payload.typ !== 'access') throw new UnauthorizedException();
+      // A revoked session (logout, suspected theft) stops working now, not when the token expires.
+      if (payload.sid && !(await this.sessions.isLive(payload.sid))) {
+        throw new UnauthorizedException();
+      }
       req.session = {
         playerId: payload.sub,
         isAdmin: payload.adm === true,

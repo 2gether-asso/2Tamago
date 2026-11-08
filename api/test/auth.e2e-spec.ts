@@ -353,6 +353,14 @@ describe('sessions (e2e)', () => {
       expect(after.body.code).toBe('invalid_grant');
     });
 
+    it('cuts the access token short once the session is revoked', async () => {
+      const { tokens } = await signIn();
+      const bearer = `Bearer ${tokens.access_token}`;
+      await http().get('/api/me').set('Authorization', bearer).expect(200);
+      await http().post('/api/auth/logout').set('Authorization', bearer).expect(204);
+      await http().get('/api/me').set('Authorization', bearer).expect(401);
+    });
+
     it('needs a session to log out', async () => {
       await http().post('/api/auth/logout').expect(401);
     });
