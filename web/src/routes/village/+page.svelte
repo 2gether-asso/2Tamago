@@ -29,7 +29,9 @@
             equipped={pet.equipped}
             size={110}
           />
-          <strong>{pet.name}</strong>
+          <strong
+            >{pet.name}{#if pet.favorite}<span title={t('village.favorite')}> ★</span>{/if}</strong
+          >
           <small class="muted">{pet.ownerName} · {stageLabel(pet.stage)}</small>
           <small>{moodLabel(pet.mood)}{pet.caressedToday ? ' · 💞' : ''}</small>
         </a>

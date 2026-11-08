@@ -5,6 +5,7 @@
   import StatBar from '#lib/components/StatBar.svelte';
   import { api } from '#lib/api.ts';
   import { game } from '#lib/game.svelte.ts';
+  import { toasts } from '#lib/toasts.svelte.ts';
   import { intlTag, t } from '#lib/i18n/index.svelte.ts';
   import {
     formLabel,
@@ -29,6 +30,20 @@
       .then((p) => (profile = p))
       .catch((e: Error) => (error = e.message));
   });
+
+  let toggling = $state(false);
+  async function toggleFavorite() {
+    if (!profile || toggling) return;
+    toggling = true;
+    try {
+      const { favorite } = await api.setFavorite(profile.player.id, !profile.player.favorite);
+      profile = { ...profile, player: { ...profile.player, favorite } };
+    } catch (e) {
+      toasts.push((e as Error).message, 'error');
+    } finally {
+      toggling = false;
+    }
+  }
 
   let date = $derived(new Intl.DateTimeFormat(intlTag(), { dateStyle: 'long' }));
   let now = $derived(game.now + game.clockOffset);
@@ -90,7 +105,17 @@
         </div>
       {/each}
     </dl>
-    {#if player.isYou}<a class="link-button" href="/album">{t('profile.album')}</a>{/if}
+    {#if player.isYou}<a class="link-button" href="/album">{t('profile.album')}</a>{:else}
+      <button
+        class="link-button"
+        type="button"
+        aria-pressed={player.favorite}
+        disabled={toggling}
+        onclick={toggleFavorite}
+      >
+        {player.favorite ? t('profile.unfollow') : t('profile.follow')}
+      </button>
+    {/if}
   </section>
 
   <section class="card pet" aria-labelledby="pet-title">

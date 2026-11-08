@@ -2,7 +2,8 @@
 export const social = {
   'village.title': 'Le village',
   'village.intro':
-    'Les compagnons des autres membres. Passe leur dire bonjour : une caresse par jour fait plaisir (et rapporte quelques pièces).',
+    'Les compagnons des autres membres. Passe leur dire bonjour : une caresse par jour fait plaisir (et rapporte quelques pièces). Tes favoris et les membres que tu croises le plus souvent viennent en premier.',
+  'village.favorite': 'Favori',
   'village.empty':
     'Personne au village pour l’instant. Invite d’autres membres à adopter un compagnon !',
 

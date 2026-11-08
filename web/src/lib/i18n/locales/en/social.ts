@@ -4,7 +4,8 @@ import type { social as fr } from '../fr/social.ts';
 export const social: Record<keyof typeof fr, string> = {
   'village.title': 'The village',
   'village.intro':
-    'Other members’ companions. Drop by and say hello: a daily pet makes them happy (and earns you a few coins).',
+    'Other members’ companions. Drop by and say hello: a daily pet makes them happy (and earns you a few coins). Your favorites and the members you meet most often come first.',
+  'village.favorite': 'Favorite',
   'village.empty': 'Nobody in the village yet. Invite other members to adopt a companion!',
 
   'album.title': 'Album',

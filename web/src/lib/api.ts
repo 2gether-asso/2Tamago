@@ -17,6 +17,7 @@ import type {
   PlayerProfile,
   VillagePet,
   VisitResponse,
+  FavoriteResponse,
   WalkResponse,
 } from '@2tamago/core/contracts';
 
@@ -108,6 +109,8 @@ export const api = {
   buy: (body: BuyBody) => call<{ coins: number; inventory: Inventory }>('POST', '/shop/buy', body),
 
   playerProfile: (playerId: string) => call<PlayerProfile>('GET', `/players/${playerId}`),
+  setFavorite: (playerId: string, favorite: boolean) =>
+    call<FavoriteResponse>(favorite ? 'PUT' : 'DELETE', `/players/${playerId}/favorite`),
   village: () => call<VillagePet[]>('GET', '/village'),
   visit: (petId: string) => call<VisitResponse>('GET', `/village/${petId}`),
   caress: (petId: string) => call<ActionResponse>('POST', `/village/${petId}/caress`),
