@@ -210,7 +210,9 @@ export const ownerActionBody = z.discriminatedUnion('type', [
 export type OwnerActionBody = z.infer<typeof ownerActionBody>;
 
 /** Where to walk; without a body, the meadow. */
-export const walkBody = z.object({ zone: z.enum(WALK_ZONE_IDS).default('meadow') });
+export const walkBody = z
+  .object({ zone: z.enum(WALK_ZONE_IDS).default('meadow') })
+  .default({ zone: 'meadow' });
 export type WalkBody = z.infer<typeof walkBody>;
 
 export const buyBody = z.object({
