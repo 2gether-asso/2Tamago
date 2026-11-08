@@ -40,7 +40,8 @@ for (const [path, exports] of Object.entries(modules)) {
   locales[locale][name] = exports[name]!;
 }
 const fr = locales.fr!;
-const en = locales.en!;
+/** Every language but the reference one: each must mirror French exactly. */
+const others = Object.entries(locales).filter(([locale]) => locale !== 'fr');
 
 const placeholders = (text: string) => [...text.matchAll(/\{(\w+)\}/g)].map((m) => m[1]!).sort();
 const baseKey = (key: string) => key.replace(/_(one|other)$/, '');
@@ -50,14 +51,21 @@ const entries = Object.entries(fr).flatMap(([file, messages]) =>
 
 describe('locale files', () => {
   it('have the same modules in every language, all registered', () => {
-    expect(Object.keys(en).sort()).toEqual(Object.keys(fr).sort());
+    expect(others.length).toBeGreaterThan(0);
+    for (const [locale, files] of others) {
+      expect(Object.keys(files).sort(), locale).toEqual(Object.keys(fr).sort());
+    }
     for (const file of Object.keys(fr))
       expect(NAMESPACES[file], `${file} is registered`).toBeDefined();
   });
 
   it('have the same keys in every language, module by module', () => {
-    for (const file of Object.keys(fr)) {
-      expect(Object.keys(en[file]!).sort(), file).toEqual(Object.keys(fr[file]!).sort());
+    for (const [locale, files] of others) {
+      for (const file of Object.keys(fr)) {
+        expect(Object.keys(files[file]!).sort(), `${locale}/${file}`).toEqual(
+          Object.keys(fr[file]!).sort(),
+        );
+      }
     }
   });
 
@@ -93,13 +101,15 @@ describe('keys and messages', () => {
   });
 
   it('use the same placeholders in every language', () => {
-    for (const { file, key, text } of entries) {
-      expect(placeholders(en[file]![key]!), key).toEqual(placeholders(text));
+    for (const [locale, files] of others) {
+      for (const { file, key, text } of entries) {
+        expect(placeholders(files[file]![key]!), `${locale}: ${key}`).toEqual(placeholders(text));
+      }
     }
   });
 
   it('give every plural both forms, with a count', () => {
-    for (const messages of [fr, en].flatMap((locale) => Object.values(locale))) {
+    for (const messages of Object.values(locales).flatMap((files) => Object.values(files))) {
       for (const key of Object.keys(messages)) {
         const base = baseKey(key);
         if (base === key) continue;
@@ -112,7 +122,7 @@ describe('keys and messages', () => {
 
   it('are not empty and have no stray whitespace', () => {
     for (const { file, key, text } of entries) {
-      for (const value of [text, en[file]![key]!]) {
+      for (const value of [text, ...others.map(([, files]) => files[file]![key]!)]) {
         expect(value.trim(), key).toBe(value);
         expect(value, key).not.toBe('');
       }

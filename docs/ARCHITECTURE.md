@@ -145,7 +145,8 @@ Un module Nest par domaine :
 | `lib/components/PetSprite.svelte` | Rendu SVG du compagnon (espèce, stade, forme, humeur, accessoire, motif et yeux des traits) et détection des caresses au pointeur |
 | `lib/theme.svelte.ts`             | Préférence jour / nuit / automatique, mémorisée dans `localStorage`                                                               |
 | `app.css`                         | Jetons de design et styles de base (voir ci-dessous)                                                                              |
-| `lib/texts.ts`                    | Tous les textes de l'interface, en français                                                                                       |
+| `lib/i18n/`                       | Traductions françaises et anglaises : `t()`, langue courante, un module par domaine dans `locales/` (voir [I18N.md](I18N.md))     |
+| `lib/texts.ts`                    | Mise en phrases des noms du jeu, événements, journal et notices de l'API, dans la langue courante                                 |
 | `routes/`                         | `/` (maison), `/login`, `/village`, `/village/[petId]`, `/shop`, `/journal`, `/album`                                             |
 
 ### Apparence et thèmes
