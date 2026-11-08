@@ -1,4 +1,4 @@
-import { createPublicKey, verify, type JsonWebKey } from 'node:crypto';
+import { createPublicKey, verify, webcrypto } from 'node:crypto';
 import { AuthError } from './auth-error.js';
 import { base64url, sha256 } from './crypto.js';
 
@@ -73,7 +73,7 @@ export function verifyDpopProof(
       'sha256',
       Buffer.from(`${parts[0]}.${parts[1]}`),
       {
-        key: createPublicKey({ key: jwk as JsonWebKey, format: 'jwk' }),
+        key: createPublicKey({ key: jwk as webcrypto.JsonWebKey, format: 'jwk' }),
         dsaEncoding: 'ieee-p1363',
       },
       Buffer.from(parts[2]!, 'base64url'),
