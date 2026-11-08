@@ -45,6 +45,8 @@
   let body = $derived(`hsl(${color} ${sat}% 78%)`);
   let shade = $derived(`hsl(${color} ${sat}% 66%)`);
   let line = $derived(`hsl(${color} 35% 30%)`);
+  /** The darker end of the belly gradient, which has to read against the plain body. */
+  let deep = $derived(`hsl(${color} ${sat}% 52%)`);
   let closedEyes = $derived(mood === 'sleeping');
   let happyEyes = $derived(mood === 'happy');
 
@@ -204,10 +206,20 @@
 >
   <svg viewBox="0 0 200 200" width={size} height={size}>
     <defs>
-      <clipPath id="clip-{uid}">{@render silhouette()}</clipPath>
+      <!--
+        The coat pattern is masked by the silhouette, shrunk by the outline half-width so it
+        stops at the inner edge of the outline instead of painting over it. A mask (unlike a
+        clipPath) accepts any structure, such as the groups of the kumo silhouette.
+      -->
+      <filter id="inset-{uid}" x="0" y="0" width="100%" height="100%">
+        <feMorphology operator="erode" radius="1.5" />
+      </filter>
+      <mask id="coat-{uid}" maskUnits="userSpaceOnUse" x="0" y="0" width="200" height="200">
+        <g class="coat-shape" filter="url(#inset-{uid})">{@render silhouette()}</g>
+      </mask>
       <linearGradient id="fade-{uid}" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color={shade} stop-opacity="0" />
-        <stop offset="1" stop-color={shade} stop-opacity="1" />
+        <stop offset="0" stop-color={deep} stop-opacity="0" />
+        <stop offset="1" stop-color={deep} stop-opacity="0.85" />
       </linearGradient>
     </defs>
     <ellipse cx="100" cy="182" rx={60 * scale} ry="8" fill="rgb(0 0 0 / 0.12)" />
@@ -227,7 +239,7 @@
         {@render silhouette()}
 
         {#if pattern !== 'plain'}
-          <g clip-path="url(#clip-{uid})">
+          <g mask="url(#coat-{uid})">
             {#if pattern === 'spots'}
               <g fill={shade}>
                 <circle cx="66" cy="142" r="11" />
@@ -410,6 +422,11 @@
   .egg .wobble {
     transform-origin: 100px 180px;
     animation: wobble 3s ease-in-out infinite;
+  }
+  /* Whatever the colors of the silhouette, in the mask it is a plain white shape. */
+  .coat-shape :global(*) {
+    fill: #fff;
+    stroke: none;
   }
   .tail {
     transform-box: fill-box;
