@@ -1,11 +1,41 @@
 import adapter from '@sveltejs/adapter-static';
+import type { Config } from '@sveltejs/kit';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defaultClientConditions, defaultServerConditions } from 'vite';
 import { defineConfig } from 'vitest/config';
 
 const API_TARGET = process.env.API_URL ?? 'http://localhost:3000';
 
-export default defineConfig({
+/**
+ * Content-Security-Policy of the built app (a <meta> tag: static hosting sets no headers).
+ * The session token lives in localStorage, so the aim is to make script injection and token
+ * exfiltration hard: only our own scripts run, and the page can only talk to the API (plus
+ * `CSP_CONNECT_SRC`: extra origins, space-separated, e.g. the Sentry/GlitchTip host of the DSN).
+ */
+function csp(): NonNullable<Config['csp']> {
+  const connect = [
+    "'self'",
+    ...(process.env.VITE_API_URL ? [new URL(process.env.VITE_API_URL).origin] : []),
+    ...(process.env.CSP_CONNECT_SRC ?? '').split(/\s+/).filter(Boolean),
+  ];
+  return {
+    mode: 'hash',
+    directives: {
+      'default-src': ['none'],
+      'script-src': ['self'],
+      'connect-src': connect,
+      'img-src': ['self', 'data:', 'https://cdn.discordapp.com'],
+      'style-src': ['self', 'unsafe-inline'],
+      'font-src': ['self', 'data:'],
+      'manifest-src': ['self'],
+      'object-src': ['none'],
+      'base-uri': ['self'],
+      'form-action': ['self'],
+    },
+  };
+}
+
+export default defineConfig(({ command }) => ({
   plugins: [
     sveltekit({
       compilerOptions: {
@@ -14,6 +44,8 @@ export default defineConfig({
       },
       // Single-page app: GitHub Pages serves 404.html for every unknown route, which lets the router take over.
       adapter: adapter({ fallback: '404.html' }),
+      // Not in development: Vite's hot reload needs inline scripts and a websocket.
+      ...(command === 'build' ? { csp: csp() } : {}),
     }),
   ],
   resolve: {
@@ -35,4 +67,4 @@ export default defineConfig({
   test: {
     include: ['src/**/*.spec.ts'],
   },
-});
+}));

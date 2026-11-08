@@ -20,7 +20,9 @@ FROM deps AS build
 # Public address of the API when it is on another origin (for example
 # https://api.example.org). Empty: same origin, through the /api proxy below.
 ARG VITE_API_URL=
-ENV VITE_API_URL=${VITE_API_URL}
+# Extra origins the page may call (the host of SENTRY_WEB_DSN), space-separated.
+ARG CSP_CONNECT_SRC=
+ENV VITE_API_URL=${VITE_API_URL} CSP_CONNECT_SRC=${CSP_CONNECT_SRC}
 COPY shared/core shared/core
 COPY web web
 RUN pnpm --filter @2tamago/web build
