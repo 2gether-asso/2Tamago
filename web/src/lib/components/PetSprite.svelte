@@ -407,6 +407,29 @@
             <circle cx="122" cy="117" r="15" />
             <path d="M 93 117 h 14" />
           </g>
+        {:else if equipped === 'flower_crown'}
+          <path
+            d="M 62 74 Q 100 50 138 74"
+            fill="none"
+            stroke="hsl(125 40% 38%)"
+            stroke-width="5"
+            stroke-linecap="round"
+          />
+          <g stroke={line} stroke-width="2">
+            <circle cx="70" cy="68" r="8" fill="hsl(340 80% 72%)" />
+            <circle cx="100" cy="56" r="9" fill="hsl(48 95% 62%)" />
+            <circle cx="130" cy="68" r="8" fill="hsl(270 70% 72%)" />
+            <circle cx="85" cy="59" r="6" fill="hsl(200 80% 72%)" />
+            <circle cx="115" cy="59" r="6" fill="hsl(340 80% 72%)" />
+          </g>
+        {:else if equipped === 'starfish'}
+          <path
+            d="M 100 30 L 107 50 L 128 50 L 111 62 L 118 82 L 100 70 L 82 82 L 89 62 L 72 50 L 93 50 Z"
+            fill="hsl(22 90% 62%)"
+            stroke={line}
+            stroke-width="3"
+            stroke-linejoin="round"
+          />
         {:else if equipped === 'crown'}
           <path
             d="M 70 70 l 6 -34 l 14 18 l 10 -24 l 10 24 l 14 -18 l 6 34 z"

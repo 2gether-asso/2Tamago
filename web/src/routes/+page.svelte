@@ -8,6 +8,9 @@
     isSnack,
     SPECIES_LABELS,
     TRICKS,
+    WALK_ZONE_IDS,
+    WALK_ZONES,
+    zoneOpenTo,
     trickLevel,
     type ItemId,
     type TrickId,
@@ -28,7 +31,11 @@
     temperamentHint,
     temperamentLabel,
     trickLabel,
+    zoneHint,
+    zoneLabel,
   } from '#lib/texts.ts';
+
+  const ZONE_ICONS = { meadow: '🌼', forest: '🌲', beach: '🏖️' } as const;
 
   let playing = $state(false);
   let walkResult = $state<WalkResponse | null>(null);
@@ -145,7 +152,12 @@
 
     <div class="scene" class:night={night || pet.asleep}>
       {#if pet.outing}
-        <p class="away">{t('home.away', { time: formatDuration(walkLeft) })}</p>
+        <p class="away">
+          {t('home.away', {
+            zone: zoneLabel(pet.outing.zone ?? 'meadow'),
+            time: formatDuration(walkLeft),
+          })}
+        </p>
       {:else}
         <PetSprite
           species={pet.species}
@@ -279,6 +291,42 @@
       {/if}
     </section>
 
+    {#if pet.stage !== 'baby' && !pet.outing && game.rules}
+      {@const rules = game.rules}
+      <section class="card">
+        <h3>{t('home.zones')}</h3>
+        <div class="zones">
+          {#each WALK_ZONE_IDS as id (id)}
+            {@const zone = WALK_ZONES[id]}
+            {@const open = zoneOpenTo(zone, pet.stage)}
+            {@const tired = pet.stats.energy < zone.energyCost + 5}
+            <div class="zone" class:locked={!open}>
+              <span class="zone-icon" aria-hidden="true">{ZONE_ICONS[id]}</span>
+              <div class="zone-text">
+                <strong>{zoneLabel(id)}</strong>
+                <small class="muted">{zoneHint(id)}</small>
+                <small class="muted">
+                  {#if open}
+                    {t('home.zone_duration', {
+                      minutes: Math.round(rules.outingHours * zone.durationFactor * 60),
+                    })}
+                    · {t('home.zone_cost', { energy: zone.energyCost })}
+                    · 🪙 {zone.coins.min}–{zone.coins.max}
+                  {:else}
+                    🔒 {t('home.zone_locked', { stage: stageLabel(zone.minStage) })}
+                  {/if}
+                </small>
+              </div>
+              <button
+                disabled={!awake || !open || tired || game.busy}
+                onclick={() => game.startWalk(id)}>{t('home.zone_go')}</button
+              >
+            </div>
+          {/each}
+        </div>
+      </section>
+    {/if}
+
     {#if pet.stage !== 'baby'}
       <section class="card">
         <h3>{t('home.training')}</h3>
@@ -298,10 +346,6 @@
           {#if pet.outing}
             <button class="primary" disabled={walkLeft > 0 || game.busy} onclick={returnFromWalk}
               >{t('action.return')}</button
-            >
-          {:else}
-            <button disabled={!awake || game.busy} onclick={() => game.startWalk()}
-              >{t('action.walk')}</button
             >
           {/if}
           {#if pet.stage === 'elder'}
@@ -340,6 +384,10 @@
   <div class="backdrop">
     <div class="card dialog">
       <h2>{t('walk.title')}</h2>
+      <p class="muted">
+        {ZONE_ICONS[walkResult.zone]}
+        {t('walk.zone', { zone: zoneLabel(walkResult.zone) })}
+      </p>
       <p>{t('walk.coins_found', { count: walkResult.found.coins })}</p>
       {#each walkResult.found.items as item, i (i)}<p>🎁 {itemLabel(item)}</p>{/each}
       {#if walkResult.encounters.length > 0}
@@ -368,6 +416,30 @@
 {/if}
 
 <style>
+  .zones {
+    display: grid;
+    gap: 0.6rem;
+  }
+  .zone {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.6rem 0.8rem;
+    border-radius: var(--radius-md);
+    background: var(--surface-2);
+  }
+  .zone.locked {
+    opacity: 0.65;
+  }
+  .zone-icon {
+    font-size: 1.8rem;
+  }
+  .zone-text {
+    display: grid;
+    gap: 0.1rem;
+    flex: 1;
+  }
+
   section {
     margin-bottom: 1rem;
   }

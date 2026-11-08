@@ -24,6 +24,8 @@ export const errors: Record<keyof typeof fr, string> = {
   'error.on_vacation': 'It is on vacation: bring it back first.',
   'error.not_on_vacation': 'It is not on vacation.',
   'error.vacation_cooldown': 'It came back from vacation too recently.',
+  'error.zone_locked': 'It is too young to go there yet.',
+  'error.not_for_sale': 'This item can only be found on walks.',
   'error.already_caressed': 'You already petted this companion today.',
   'error.already_claimed': 'You already collected this week’s reward.',
   'error.goal_not_reached': 'The village has not reached its goal yet.',

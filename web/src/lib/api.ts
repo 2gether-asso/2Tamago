@@ -1,4 +1,4 @@
-import type { GameRules } from '@2tamago/core';
+import type { GameRules, WalkZoneId } from '@2tamago/core';
 import type {
   ActionResponse,
   AdminRulesResponse,
@@ -105,7 +105,7 @@ export const api = {
   me: () => call<MeResponse>('GET', '/me'),
   adopt: (body: AdoptBody) => call<PetDto>('POST', '/pet', body),
   act: (body: OwnerActionBody) => call<ActionResponse>('POST', '/pet/actions', body),
-  startWalk: () => call<ActionResponse>('POST', '/pet/walk'),
+  startWalk: (zone: WalkZoneId) => call<ActionResponse>('POST', '/pet/walk', { zone }),
   returnFromWalk: () => call<WalkResponse>('POST', '/pet/walk/return'),
   album: () => call<AlbumEntry[]>('GET', '/album'),
 

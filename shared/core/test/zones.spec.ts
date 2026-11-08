@@ -202,7 +202,7 @@ describe('items found on walks', () => {
   it('every item found can be found somewhere', () => {
     const found = new Set(Object.values(WALK_ZONES).flatMap((z) => z.items.map((i) => i.id)));
     for (const item of Object.values(ITEMS)) {
-      if (item.forSale === false) expect(found.has(item.id as never), item.id).toBe(true);
+      if (!isForSale(item.id)) expect(found.has(item.id as never), item.id).toBe(true);
     }
   });
 });

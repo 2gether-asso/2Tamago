@@ -4,6 +4,12 @@ export const catalog = {
   'item.strawberry': 'Fraise',
   'item.warm_milk': 'Lait chaud',
   'item.cake': 'Gâteau',
+  'item.blackberry': 'Mûre',
+  'item.mushroom': 'Champignon',
+  'item.coconut': 'Noix de coco',
+  'item.ice_cream': 'Glace',
+  'item.flower_crown': 'Couronne de fleurs',
+  'item.starfish': 'Étoile de mer',
   'item.ribbon': 'Nœud',
   'item.hat': 'Chapeau',
   'item.glasses': 'Lunettes',
@@ -58,6 +64,14 @@ export const catalog = {
   'temperament.sturdy': 'Costaud',
   'temperament.sturdy.hint': 'Résiste mieux à la maladie, mais a plus d’appétit.',
 
+  'zone.meadow': 'La prairie',
+  'zone.meadow.hint':
+    'Une balade tranquille près du village : biscuits, fraises et parfois une couronne de fleurs.',
+  'zone.forest': 'La forêt',
+  'zone.forest.hint': 'Plus longue, plus fatigante, mais on y trouve mûres et champignons.',
+  'zone.beach': 'La plage',
+  'zone.beach.hint':
+    'Une grande sortie : beaucoup de pièces, noix de coco, glaces et étoiles de mer.',
   'item.unknown': 'un cadeau',
 
   'stat.satiety': 'Satiété',

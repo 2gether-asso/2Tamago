@@ -22,6 +22,8 @@ export const errors = {
   'error.on_vacation': 'Il est en vacances : il faut d’abord le faire revenir.',
   'error.not_on_vacation': 'Il n’est pas en vacances.',
   'error.vacation_cooldown': 'Il est rentré de vacances il y a trop peu de temps.',
+  'error.zone_locked': 'Il est encore trop jeune pour aller là-bas.',
+  'error.not_for_sale': 'Cet objet ne se trouve qu’en promenade.',
   'error.already_caressed': 'Tu as déjà caressé ce compagnon aujourd’hui.',
   'error.already_claimed': 'Tu as déjà récupéré la récompense de cette semaine.',
   'error.goal_not_reached': 'Le village n’a pas encore atteint son objectif.',

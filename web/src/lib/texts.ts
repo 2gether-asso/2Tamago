@@ -8,6 +8,7 @@ import {
   type Stage,
   type Temperament,
   type TrickId,
+  type WalkZoneId,
 } from '@2tamago/core';
 import type { ActivityDto, Notice } from '@2tamago/core/contracts';
 import { t } from './i18n/index.svelte.ts';
@@ -21,6 +22,8 @@ export const alertLabel = (alert: Alert) => t(`alert.${alert}`);
 export const trickLabel = (trick: TrickId) => t(`trick.${trick}`);
 export const temperamentLabel = (temperament: Temperament) => t(`temperament.${temperament}`);
 export const temperamentHint = (temperament: Temperament) => t(`temperament.${temperament}.hint`);
+export const zoneLabel = (zone: WalkZoneId) => t(`zone.${zone}`);
+export const zoneHint = (zone: WalkZoneId) => t(`zone.${zone}.hint`);
 export const itemLabel = (id: ItemId) => t(`item.${id}`);
 
 export function eventText(event: PetEvent, name: string): string | null {

@@ -1,10 +1,11 @@
 <script lang="ts">
-  import { ITEMS, type ItemId } from '@2tamago/core';
+  import { isForSale, ITEMS, type ItemId } from '@2tamago/core';
   import { game } from '#lib/game.svelte.ts';
   import { t } from '#lib/i18n/index.svelte.ts';
   import { itemLabel } from '#lib/texts.ts';
 
-  const items = Object.values(ITEMS);
+  // Some items can only be found on walks.
+  const items = Object.values(ITEMS).filter((item) => isForSale(item.id));
   const snacks = items.filter((item) => item.kind === 'snack');
   const accessories = items.filter((item) => item.kind === 'accessory');
 
