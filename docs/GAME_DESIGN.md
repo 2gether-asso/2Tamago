@@ -42,6 +42,17 @@ Un compagnon bien soigné vit donc environ 16 jours avant de devenir ancien.
 - **Bien portant** (pas malade, satiété > 40, bonheur > 30) : +2 santé/h.
 - **Santé à 0** : le compagnon part (statut `gone`), ou reste à 1 PV si `GAME_DEPARTURE=false`. Un bébé totalement délaissé tient environ deux jours (vérifié par les tests).
 
+## Vacances
+
+Le propriétaire peut mettre son compagnon en pause (« Partir en vacances » sur l'écran d'accueil), pour ne pas le voir partir pendant un voyage.
+
+- **La simulation s'arrête** : besoins, cacas, maladie, caprices, sommeil et croissance ne bougent plus (`simulate()` rend l'état tel quel). Aucune alerte, aucune notification, et l'humeur est « En vacances ».
+- **Le temps d'absence ne compte pas** : au retour, toutes les dates que le compagnon attendait (naissance, début du stade, prochain caca, prochain caprice, début de la maladie, besoins en cours) sont repoussées d'autant. Il ne vieillit donc pas, et rien n'est dû à l'instant du retour. Un test vérifie qu'une vie avec une pause au milieu donne le même compagnon qu'une vie sans.
+- **Rien d'autre n'est possible** : toute action est refusée (`on_vacation`), sauf « Revenir de vacances ». Les visiteurs ne peuvent ni caresser ni offrir de friandise ; ils voient le compagnon, avec son humeur.
+- **Où et quand** : pas pour un œuf, pas pendant une promenade.
+- **Des limites contre les abus** : les vacances se terminent d'elles-mêmes au bout de `vacationMaxHours` (14 jours), et on ne repart qu'après `vacationCooldownHours` (7 jours) depuis le retour (`vacation_cooldown`). Les deux sont des règles modifiables depuis l'écran Admin, en heures de jeu comme les autres durées. Le retour automatique est calculé par `simulate()` à l'instant exact de la limite, donc il ne dépend pas du moment où quelqu'un ouvre l'application ; il apparaît dans le journal.
+- **Pas de garderie pour l'instant** : confier le compagnon à un autre membre reste à faire (voir [FEATURES.md](FEATURES.md)).
+
 ## Erreurs de soin et évolution
 
 Une **erreur de soin** est comptée quand l'une de ces situations dure plus d'une heure : satiété à 0, bonheur à 0, 4 cacas, maladie. Chaque erreur coûte aussi −5 de lien.
@@ -123,6 +134,7 @@ Les valeurs sont la règle `temperaments` de `GameRules` : un admin peut les mod
 | Lumière                | Éteindre : seulement la nuit. Rallumer : à tout moment (voir « Jour et nuit »)                                      |
 | Caresser               | Bonheur +3, lien +1, au plus une fois toutes les 15 s                                                               |
 | Dresser                | Énergie −8, satiété −3, progrès de 8 × (1 + discipline/100), divisé par deux si bonheur < 50                        |
+| Vacances / Retour      | Pause complète du compagnon, voir « Vacances ». Refusé pour un œuf ou pendant une promenade                         |
 | Promenade (30 min)     | Au retour : bonheur +15, énergie −15, satiété −10, lien +3, 5 à 15 pièces, 25 % de chances de trouver une friandise |
 
 ## Économie
