@@ -1,0 +1,33 @@
+import { dayHour, type GameRules } from '@2tamago/core';
+import { expect, test } from '@playwright/test';
+
+test('at night the owner switches the lights off and the pet goes to sleep', async ({ page }) => {
+  await page.goto('/login');
+  await page.getByPlaceholder('Pseudo').fill('Root');
+  await page.getByRole('button', { name: 'Entrer' }).click();
+  await expect(page.getByRole('heading', { name: 'Adopter un compagnon' })).toBeVisible();
+
+  // Time runs fast in this stack: open a night window of a few game hours around "now", then
+  // restore the previous settings whatever happens.
+  const rules: GameRules = await (await page.request.get('/api/game/rules')).json();
+  const before = (await (await page.request.get('/api/admin/rules')).json()).overrides;
+  const hour = Math.floor(dayHour(rules, Date.now()));
+  await page.request.put('/api/admin/rules', {
+    data: { ...before, night: { startHour: (hour + 23) % 24, endHour: (hour + 3) % 24 } },
+  });
+
+  try {
+    await page.reload();
+    await page.getByPlaceholder('Pompon').fill('Lune');
+    await page.getByRole('button', { name: /Recevoir mon œuf/ }).click();
+    await expect(page.getByText('Il fait nuit : éteins la lumière')).toBeVisible({
+      timeout: 20_000,
+    });
+
+    await page.getByRole('button', { name: 'Éteindre la lumière' }).click();
+    await expect(page.getByRole('button', { name: 'Rallumer la lumière' })).toBeVisible();
+    await expect(page.getByText('Dort', { exact: true })).toBeVisible({ timeout: 10_000 });
+  } finally {
+    await page.request.put('/api/admin/rules', { data: before });
+  }
+});

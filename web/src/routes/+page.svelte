@@ -3,6 +3,7 @@
     ageInDays,
     ITEMS,
     isAccessory,
+    isNight,
     isSnack,
     SPECIES_LABELS,
     TEMPERAMENT_LABELS,
@@ -31,6 +32,8 @@
   let hatched = $derived(alive && pet?.stage !== 'egg');
   let free = $derived(hatched && !pet?.outing);
   let awake = $derived(free && !pet?.asleep);
+  let night = $derived(game.rules ? isNight(game.rules, now) : false);
+  let needsLightsOff = $derived(awake && night && !pet?.lightsOff);
   let snacks = $derived(
     (Object.entries(game.inventory) as [ItemId, number][]).filter(
       ([id, n]) => n > 0 && isSnack(id),
@@ -107,10 +110,11 @@
       <p class="mood">{MOOD_LABELS[game.mood ?? 'ok']}</p>
       <div class="alerts">
         {#each game.alerts as alert (alert)}<span class="chip">{ALERT_LABELS[alert]}</span>{/each}
+        {#if needsLightsOff}<span class="chip">🌙 Il fait nuit : éteins la lumière</span>{/if}
       </div>
     </div>
 
-    <div class="scene" class:night={pet.asleep}>
+    <div class="scene" class:night={night || pet.asleep}>
       {#if pet.outing}
         <p class="away">🚶 En promenade… retour dans {formatDuration(walkLeft)}</p>
       {:else}
@@ -174,6 +178,17 @@
         {:else}
           <button disabled={!awake || game.busy} onclick={() => game.act({ type: 'sleep' })}
             >🌙 Coucher</button
+          >
+        {/if}
+        {#if pet.lightsOff}
+          <button
+            disabled={!free || game.busy}
+            onclick={() => game.act({ type: 'lights', on: true })}>💡 Rallumer la lumière</button
+          >
+        {:else if night}
+          <button
+            disabled={!free || game.busy}
+            onclick={() => game.act({ type: 'lights', on: false })}>🕯️ Éteindre la lumière</button
           >
         {/if}
         <button disabled={!awake || game.busy} onclick={() => game.act({ type: 'praise' })}
