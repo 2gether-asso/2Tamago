@@ -20,13 +20,13 @@ Discord sert à deux choses : **se connecter** (seuls les membres du serveur de 
 
 ## Comment se passe la connexion
 
-1. Le bouton « Se connecter avec Discord » ouvre `/api/auth/discord`, qui pose un cookie `state` à usage unique et renvoie vers Discord (scopes `identify` et `guilds.members.read`).
-2. Discord renvoie sur `/api/auth/discord/callback` avec un `code`. L'API vérifie le `state`, échange le code, lit le profil et **l'appartenance au serveur**.
-3. Si la personne est membre, l'API crée ou met à jour le joueur, ouvre une session de 30 jours (cookie `HttpOnly`) et renvoie vers le jeu.
+1. Le bouton « Se connecter avec Discord » génère un secret PKCE puis ouvre `/api/auth/discord?code_challenge=…`, qui renvoie vers Discord (scopes `identify` et `guilds.members.read`) avec un `state` signé, sans cookie.
+2. Discord renvoie sur `/api/auth/discord/callback` avec un `code`. L'API vérifie la signature du `state`, échange le code, lit le profil et **l'appartenance au serveur**.
+3. Si la personne est membre, l'API crée ou met à jour le joueur et renvoie vers le jeu avec un code à usage unique, que le navigateur échange contre une session (voir [ARCHITECTURE.md](ARCHITECTURE.md), partie Identité).
 
 Le pseudo affiché est le **surnom sur le serveur**, à défaut le nom global Discord, à défaut le nom d'utilisateur. Le pseudo et l'avatar sont **resynchronisés à chaque connexion**.
 
-Limite connue : l'appartenance au serveur n'est vérifiée qu'à la connexion. Quelqu'un qui quitte le serveur garde sa session en cours jusqu'à 30 jours, mais ne peut plus se reconnecter.
+Limite connue : l'appartenance au serveur n'est vérifiée qu'à la connexion. Quelqu'un qui quitte le serveur garde sa session tant qu'elle se renouvelle (30 jours au plus), mais ne peut plus se reconnecter.
 
 ## Erreurs de connexion
 
@@ -35,9 +35,11 @@ L'écran de connexion affiche un message pour chaque cas :
 | Code dans l'adresse | Cause                                                                       | Message                                                                      |
 | ------------------- | --------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
 | `not_member`        | Le compte n'est pas dans le serveur (Discord répond 404 pour le membre)     | Il faut être membre du Discord, avec le lien d'invitation s'il est configuré |
-| `state`             | Cookie `state` absent, expiré (10 min), déjà utilisé ou différent           | La connexion a expiré, réessaie                                              |
+| `state`             | `state` absent, falsifié ou expiré (10 min), ou challenge PKCE invalide     | La connexion a expiré, réessaie                                              |
 | `denied`            | La personne a refusé ou annulé sur l'écran de Discord                       | Connexion annulée                                                            |
 | `discord`           | Discord ne répond pas, ou refuse (échange du code, profil, limite de débit) | Discord ne répond pas, réessaie                                              |
+
+Une session qui se termine ensuite (pas à la connexion) montre aussi un message sur cet écran : `session_expired` (inactive trop longtemps), `session_roaming` (trop longtemps sur un autre réseau que celui de la connexion) ou `session_suspicious` (utilisée depuis un autre navigateur ou système). Il suffit de se reconnecter.
 
 Une panne ou une limite de débit de Discord n'est jamais prise pour « pas membre » : le joueur voit `discord`, l'API écrit un avertissement dans ses journaux et signale l'erreur à GlitchTip si `SENTRY_DSN` est défini.
 

@@ -41,7 +41,10 @@ services:
       DATABASE_URL: postgres://tamago:${POSTGRES_PASSWORD:?}@db:5432/tamago
       AUTH_SECRET: ${AUTH_SECRET:?AUTH_SECRET is required (32+ characters)}
       AUTH_DEV_LOGIN: 'false'
-      COOKIE_SECURE: 'true'
+      AUTH_ACCESS_TTL_MINUTES: ${AUTH_ACCESS_TTL_MINUTES:-30}
+      AUTH_REFRESH_IDLE_DAYS: ${AUTH_REFRESH_IDLE_DAYS:-7}
+      AUTH_SESSION_MAX_DAYS: ${AUTH_SESSION_MAX_DAYS:-30}
+      AUTH_ROAMING_HOURS: ${AUTH_ROAMING_HOURS:-6}
       # Where the web app is served (CORS, and where sign-in sends players back).
       WEB_ORIGIN: ${WEB_ORIGIN:?WEB_ORIGIN is required, for example https://tamago.example.org}
       DISCORD_CLIENT_ID: ${DISCORD_CLIENT_ID:?}
