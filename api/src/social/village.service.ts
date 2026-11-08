@@ -26,6 +26,7 @@ import { toPetDto } from '../pets/pet-mapper.js';
 import { PetsService } from '../pets/pets.service.js';
 import { PlayersService } from '../players/players.service.js';
 import { affinityScore, compareVillage } from './affinity.js';
+import { DaycareService } from './daycare.service.js';
 import { FavoritesService } from './favorites.service.js';
 
 export const CARESS_REWARD = 3;
@@ -47,6 +48,7 @@ export class VillageService {
     private readonly players: PlayersService,
     private readonly activity: ActivityService,
     private readonly favorites: FavoritesService,
+    private readonly daycare: DaycareService,
   ) {}
 
   private get rules(): GameRules {
@@ -100,7 +102,7 @@ export class VillageService {
     return {
       pet: toPetDto(pet.row, pet.ownerName),
       caressedToday: caressed.has(petId),
-      daycareId: null,
+      daycareId: await this.daycare.activeFor(viewerId, petId),
     };
   }
 
