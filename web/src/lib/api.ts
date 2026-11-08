@@ -6,6 +6,7 @@ import type {
   AdoptBody,
   AlbumEntry,
   ApiErrorBody,
+  ClientConfig,
   BuyBody,
   Inventory,
   MeResponse,
@@ -57,6 +58,7 @@ export const api = {
   logout: () => call<void>('POST', '/auth/logout'),
   discordLoginUrl: `${BASE}/auth/discord`,
 
+  clientConfig: () => call<ClientConfig>('GET', '/config'),
   rules: () => call<GameRules>('GET', '/game/rules'),
   me: () => call<MeResponse>('GET', '/me'),
   adopt: (body: AdoptBody) => call<PetDto>('POST', '/pet', body),
