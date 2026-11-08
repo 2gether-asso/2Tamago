@@ -152,7 +152,7 @@ export const DEFAULT_RULES: GameRules = {
       child: { startHour: 20, endHour: 7 },
       teen: { startHour: 21, endHour: 7 },
       adult: { startHour: 22, endHour: 7 },
-      elder: { startHour: 20, endHour: 8 },
+      elder: { startHour: 21, endHour: 8 },
     },
     clockOffsetHours: 0,
     awakeHappinessFactor: 1.5,

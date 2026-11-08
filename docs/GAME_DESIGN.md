@@ -66,7 +66,7 @@ Le jeu a un cycle jour/nuit calé sur l'horloge du **fuseau configuré** (`GAME_
 | Enfant | 20 h    | 7 h   |
 | Ado    | 21 h    | 7 h   |
 | Adulte | 22 h    | 7 h   |
-| Ancien | 20 h    | 8 h   |
+| Ancien | 21 h    | 8 h   |
 
 L'œuf n'a pas de nuit. Les heures générales de la règle `night` (`startHour` 21, `endHour` 7) servent aux stades qui n'ont pas la leur. L'écran d'accueil affiche l'heure de coucher du compagnon. Quand il change de stade, il adopte la nuit du nouveau stade.
 
