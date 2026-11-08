@@ -444,6 +444,67 @@ describe('2Tamago API (e2e)', () => {
     await request(app.getHttpServer()).get('/api/community/goal').expect(401);
   });
 
+  it('pauses a companion on vacation, and brings it back as it was', async () => {
+    const alice = await signIn('Alice');
+    const bob = await signIn('Bob');
+    await adopt(alice, 'Pompon');
+    await adopt(bob, 'Caillou');
+    clock.advance(hours(0.5)); // hatched
+    const act = (agent: typeof alice, body: object) => agent.post('/api/pet/actions').send(body);
+    const me = async (agent: typeof alice): Promise<MeResponse> =>
+      (await agent.get('/api/me').expect(200)).body;
+
+    await act(alice, { type: 'startVacation' }).expect(201);
+    const before = (await me(alice)).pet!;
+    expect(before.mood).toBe('vacation');
+    expect(before.state.vacationSince).toBe(clock.time);
+
+    // Days pass: nothing happens to it, and nothing can be done to it.
+    clock.advance(hours(24 * 5));
+    const during = (await me(alice)).pet!;
+    expect(during.state.status).toBe('alive');
+    expect(during.state.stats).toEqual(before.state.stats);
+    expect((await act(alice, { type: 'feed' }).expect(409)).body.code).toBe('on_vacation');
+    expect((await act(alice, { type: 'startVacation' }).expect(409)).body.code).toBe('on_vacation');
+    const bobsView: VillagePet[] = (await bob.get('/api/village').expect(200)).body;
+    expect(bobsView.find((pet) => pet.name === 'Pompon')?.mood).toBe('vacation');
+    const visit = (await bob.get(`/api/village/${during.id}`).expect(200)).body;
+    expect(visit.pet.state.vacationSince).not.toBeNull();
+    expect((await bob.post(`/api/village/${during.id}/caress`).expect(409)).body.code).toBe(
+      'on_vacation',
+    );
+
+    // Bob's companion, left alone the same five days, is gone: the vacation is what saved Pompon.
+    expect((await me(bob)).pet!.state.status).toBe('gone');
+
+    const back = (await act(alice, { type: 'endVacation' }).expect(201)).body as ActionResponse;
+    expect(back.pet.state.vacationSince).toBeNull();
+    expect(back.pet.state.stats).toEqual(before.state.stats);
+    expect(back.events.map((event) => event.type)).toContain('vacation_ended');
+    expect((await act(alice, { type: 'endVacation' }).expect(409)).body.code).toBe(
+      'not_on_vacation',
+    );
+
+    // Not again right away.
+    expect((await act(alice, { type: 'startVacation' }).expect(409)).body.code).toBe(
+      'vacation_cooldown',
+    );
+  });
+
+  it('brings a companion back from vacation by itself, and says so in the journal', async () => {
+    const alice = await signIn('Alice');
+    await adopt(alice, 'Pompon');
+    clock.advance(hours(0.5));
+    await alice.post('/api/pet/actions').send({ type: 'startVacation' }).expect(201);
+    clock.advance(hours(rules.vacationMaxHours + 1));
+    const me: MeResponse = (await alice.get('/api/me').expect(200)).body;
+    expect(me.pet?.state.vacationSince).toBeNull();
+    expect(me.pet?.state.vacationEndedAt).not.toBeNull();
+    expect(me.pet?.mood).not.toBe('vacation');
+    const feed: ActivityDto[] = (await alice.get('/api/activity').expect(200)).body;
+    expect(feed.some((entry) => entry.data.event === 'vacation_ended')).toBe(true);
+  });
+
   it('lets an admin tune the game rules without a restart', async () => {
     const alice = await signIn('Alice');
     const root = await signIn('Root');

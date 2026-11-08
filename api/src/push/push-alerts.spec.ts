@@ -43,6 +43,10 @@ describe('pushKindsOf', () => {
     expect(pushKindsOf(pet({ asleep: true, sickSince: T0 }, { satiety: 5 }), NOW)).toEqual([]);
   });
 
+  it('says nothing while the pet is on vacation', () => {
+    expect(pushKindsOf(pet({ vacationSince: T0, sickSince: T0 }, { satiety: 0 }), NOW)).toEqual([]);
+  });
+
   it('tells when a walk is over, not before', () => {
     const outing = { startedAt: T0, endsAt: NOW };
     expect(pushKindsOf(pet({ outing }), NOW - 1)).toEqual([]);
