@@ -28,6 +28,7 @@
             stage={pet.stage}
             form={pet.form}
             color={pet.color}
+            traits={pet.traits}
             mood={pet.mood}
             equipped={pet.equipped}
             size={110}

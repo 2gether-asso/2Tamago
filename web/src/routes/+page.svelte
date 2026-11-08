@@ -6,6 +6,7 @@
     isSnack,
     SPECIES_LABELS,
     TRICK_LABELS,
+    traitsOf,
     TRICKS,
     trickLevel,
     type ItemId,
@@ -73,6 +74,7 @@
       stage={pet.stage}
       form={pet.form}
       color={pet.color}
+      traits={traitsOf(pet)}
       mood={game.mood ?? 'gone'}
       size={160}
     />
@@ -111,6 +113,7 @@
           stage={pet.stage}
           form={pet.form}
           color={pet.color}
+          traits={traitsOf(pet)}
           mood={game.mood ?? 'ok'}
           equipped={pet.equipped}
           oncaress={awake ? caress : undefined}

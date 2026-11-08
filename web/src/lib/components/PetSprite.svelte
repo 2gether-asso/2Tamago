@@ -1,11 +1,13 @@
 <script lang="ts">
-  import type { Form, Mood, Species, Stage } from '@2tamago/core';
+  import type { Form, Mood, PetTraits, Species, Stage } from '@2tamago/core';
 
   interface Props {
     species: Species;
     stage: Stage;
     form: Form | null;
     color: number;
+    /** Coat and eyes; revealed at hatching, so ignored while an egg. */
+    traits?: PetTraits | null;
     mood: Mood;
     equipped?: string | null;
     size?: number;
@@ -18,6 +20,7 @@
     stage,
     form,
     color,
+    traits = null,
     mood,
     equipped = null,
     size = 220,
@@ -33,7 +36,10 @@
     elder: 0.95,
   };
 
+  const uid = $props.id();
   let scale = $derived(SCALE[stage]);
+  let pattern = $derived(traits?.pattern ?? 'plain');
+  let eyes = $derived(traits?.eyes ?? 'round');
   let sat = $derived(stage === 'elder' ? 35 : mood === 'sick' ? 25 : 70);
   let body = $derived(`hsl(${color} ${sat}% 78%)`);
   let shade = $derived(`hsl(${color} ${sat}% 66%)`);
@@ -62,6 +68,55 @@
   }
 </script>
 
+{#snippet silhouette()}
+  {#if species === 'pyon'}
+    <ellipse
+      cx="72"
+      cy="52"
+      rx="14"
+      ry="40"
+      fill={body}
+      stroke={line}
+      stroke-width="4"
+      transform="rotate(-12 72 52)"
+    />
+    <ellipse
+      cx="128"
+      cy="52"
+      rx="14"
+      ry="40"
+      fill={body}
+      stroke={line}
+      stroke-width="4"
+      transform="rotate(12 128 52)"
+    />
+    <ellipse cx="72" cy="56" rx="6" ry="26" fill={shade} transform="rotate(-12 72 56)" />
+    <ellipse cx="128" cy="56" rx="6" ry="26" fill={shade} transform="rotate(12 128 56)" />
+    <ellipse cx="100" cy="125" rx="62" ry="58" fill={body} stroke={line} stroke-width="4" />
+  {:else if species === 'kumo'}
+    <g fill={body} stroke={line} stroke-width="4">
+      <circle cx="62" cy="128" r="38" />
+      <circle cx="138" cy="128" r="38" />
+      <circle cx="100" cy="100" r="50" />
+      <rect x="62" y="120" width="76" height="58" rx="10" />
+    </g>
+    <g fill={body}>
+      <circle cx="62" cy="128" r="34" />
+      <circle cx="138" cy="128" r="34" />
+      <circle cx="100" cy="100" r="46" />
+      <rect x="64" y="118" width="72" height="56" />
+    </g>
+  {:else}
+    <path
+      d="M 36 150 C 30 80, 70 58, 100 58 C 130 58, 170 80, 164 150 C 162 176, 38 176, 36 150 Z"
+      fill={body}
+      stroke={line}
+      stroke-width="4"
+    />
+    <ellipse cx="100" cy="66" rx="10" ry="8" fill={body} stroke={line} stroke-width="4" />
+  {/if}
+{/snippet}
+
 <div
   class="sprite"
   class:asleep={mood === 'sleeping'}
@@ -77,6 +132,13 @@
   aria-label="Compagnon"
 >
   <svg viewBox="0 0 200 200" width={size} height={size}>
+    <defs>
+      <clipPath id="clip-{uid}">{@render silhouette()}</clipPath>
+      <linearGradient id="fade-{uid}" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color={shade} stop-opacity="0" />
+        <stop offset="1" stop-color={shade} stop-opacity="1" />
+      </linearGradient>
+    </defs>
     <ellipse cx="100" cy="182" rx={60 * scale} ry="8" fill="rgb(0 0 0 / 0.12)" />
 
     {#if stage === 'egg'}
@@ -91,52 +153,31 @@
         class="body"
         style:transform="translate(100px, 180px) scale({scale}) translate(-100px, -180px)"
       >
-        <!-- Silhouette per species -->
-        {#if species === 'pyon'}
-          <ellipse
-            cx="72"
-            cy="52"
-            rx="14"
-            ry="40"
-            fill={body}
-            stroke={line}
-            stroke-width="4"
-            transform="rotate(-12 72 52)"
-          />
-          <ellipse
-            cx="128"
-            cy="52"
-            rx="14"
-            ry="40"
-            fill={body}
-            stroke={line}
-            stroke-width="4"
-            transform="rotate(12 128 52)"
-          />
-          <ellipse cx="72" cy="56" rx="6" ry="26" fill={shade} transform="rotate(-12 72 56)" />
-          <ellipse cx="128" cy="56" rx="6" ry="26" fill={shade} transform="rotate(12 128 56)" />
-          <ellipse cx="100" cy="125" rx="62" ry="58" fill={body} stroke={line} stroke-width="4" />
-        {:else if species === 'kumo'}
-          <g fill={body} stroke={line} stroke-width="4">
-            <circle cx="62" cy="128" r="38" />
-            <circle cx="138" cy="128" r="38" />
-            <circle cx="100" cy="100" r="50" />
-            <rect x="62" y="120" width="76" height="58" rx="10" />
+        {@render silhouette()}
+
+        {#if pattern !== 'plain'}
+          <g clip-path="url(#clip-{uid})">
+            {#if pattern === 'spots'}
+              <g fill={shade}>
+                <circle cx="66" cy="142" r="11" />
+                <circle cx="132" cy="96" r="9" />
+                <circle cx="142" cy="150" r="13" />
+                <circle cx="104" cy="84" r="7" />
+                <circle cx="96" cy="164" r="8" />
+              </g>
+            {:else if pattern === 'stripes'}
+              <g stroke={shade} stroke-width="11" stroke-linecap="round" fill="none">
+                <path d="M 24 96 L 60 80" />
+                <path d="M 22 126 L 70 106" />
+                <path d="M 176 96 L 140 80" />
+                <path d="M 178 126 L 130 106" />
+                <path d="M 30 156 L 72 140" />
+                <path d="M 170 156 L 128 140" />
+              </g>
+            {:else}
+              <rect x="0" y="96" width="200" height="100" fill="url(#fade-{uid})" />
+            {/if}
           </g>
-          <g fill={body}>
-            <circle cx="62" cy="128" r="34" />
-            <circle cx="138" cy="128" r="34" />
-            <circle cx="100" cy="100" r="46" />
-            <rect x="64" y="118" width="72" height="56" />
-          </g>
-        {:else}
-          <path
-            d="M 36 150 C 30 80, 70 58, 100 58 C 130 58, 170 80, 164 150 C 162 176, 38 176, 36 150 Z"
-            fill={body}
-            stroke={line}
-            stroke-width="4"
-          />
-          <ellipse cx="100" cy="66" rx="10" ry="8" fill={body} stroke={line} stroke-width="4" />
         {/if}
 
         <!-- Feet -->
@@ -154,6 +195,20 @@
           {:else if mood === 'sick'}
             <path d="M 72 112 l 12 12 M 84 112 l -12 12" />
             <path d="M 116 112 l 12 12 M 128 112 l -12 12" />
+          {:else if eyes === 'sleepy'}
+            <path d="M 70 117 h 16 M 114 117 h 16" />
+            <path d="M 72 117 a 6 6 0 0 0 12 0 z M 116 117 a 6 6 0 0 0 12 0 z" fill={line} />
+          {:else if eyes === 'sparkle'}
+            <circle cx="78" cy="117" r="9" fill={line} stroke="none" />
+            <circle cx="122" cy="117" r="9" fill={line} stroke="none" />
+            <circle cx="81" cy="113" r="3.2" fill="white" stroke="none" />
+            <circle cx="125" cy="113" r="3.2" fill="white" stroke="none" />
+            <circle cx="75" cy="121" r="1.6" fill="white" stroke="none" />
+            <circle cx="119" cy="121" r="1.6" fill="white" stroke="none" />
+          {:else if eyes === 'sly'}
+            <path d="M 70 114 q 8 -4 16 4 M 130 114 q -8 -4 -16 4" />
+            <ellipse cx="79" cy="118" rx="4" ry="3" fill={line} stroke="none" />
+            <ellipse cx="121" cy="118" rx="4" ry="3" fill={line} stroke="none" />
           {:else}
             <circle cx="78" cy="117" r="5" fill={line} stroke="none" />
             <circle cx="122" cy="117" r="5" fill={line} stroke="none" />
