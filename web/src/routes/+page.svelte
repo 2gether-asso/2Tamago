@@ -7,7 +7,6 @@
     SPECIES_LABELS,
     TEMPERAMENT_LABELS,
     TRICK_LABELS,
-    traitsOf,
     TRICKS,
     trickLevel,
     type ItemId,
@@ -75,7 +74,7 @@
       stage={pet.stage}
       form={pet.form}
       color={pet.color}
-      traits={traitsOf(pet)}
+      traits={pet.traits}
       mood={game.mood ?? 'gone'}
       size={160}
     />
@@ -99,8 +98,8 @@
         {#if pet.form}· {FORM_LABELS[pet.form]}{/if}
         · {game.rules ? ageInDays(pet, now, game.rules) : 0} j
       </p>
-      {#if pet.stage !== 'egg'}
-        {@const temperament = TEMPERAMENT_LABELS[traitsOf(pet).temperament]}
+      {#if pet.traits}
+        {@const temperament = TEMPERAMENT_LABELS[pet.traits.temperament]}
         <p class="temperament" title={temperament.hint}>
           {temperament.label} <span class="muted">· {temperament.hint}</span>
         </p>
@@ -120,7 +119,7 @@
           stage={pet.stage}
           form={pet.form}
           color={pet.color}
-          traits={traitsOf(pet)}
+          traits={pet.traits}
           mood={game.mood ?? 'ok'}
           equipped={pet.equipped}
           oncaress={awake ? caress : undefined}

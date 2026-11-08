@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { ITEMS, isSnack, traitsOf, type ItemId } from '@2tamago/core';
+  import { ITEMS, isSnack, type ItemId } from '@2tamago/core';
   import type { VisitResponse } from '@2tamago/core/contracts';
   import PetSprite from '#lib/components/PetSprite.svelte';
   import StatBar from '#lib/components/StatBar.svelte';
@@ -61,7 +61,7 @@
       stage={pet.stage}
       form={pet.form}
       color={pet.color}
-      traits={traitsOf(pet)}
+      traits={pet.traits}
       mood={visit.pet.mood}
       equipped={pet.equipped}
     />

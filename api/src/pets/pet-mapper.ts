@@ -1,13 +1,21 @@
-import { alertsOf, moodOf, type PetEvent, type PetEventType } from '@2tamago/core';
+import { alertsOf, moodOf, type PetEvent, type PetEventType, type PetState } from '@2tamago/core';
 import type { PetDto } from '@2tamago/core/contracts';
 import type { PetRow } from '../database/schema.js';
+
+/** An egg does not reveal its traits (coat, eyes, temperament): they are a surprise at hatching. */
+export function concealUnhatched(state: PetState): PetState {
+  if (state.stage !== 'egg') return state;
+  const copy = { ...state };
+  delete copy.traits;
+  return copy;
+}
 
 export function toPetDto(row: PetRow, ownerName: string): PetDto {
   return {
     id: row.id,
     ownerId: row.ownerId,
     ownerName,
-    state: row.state,
+    state: concealUnhatched(row.state),
     mood: moodOf(row.state),
     alerts: alertsOf(row.state),
   };

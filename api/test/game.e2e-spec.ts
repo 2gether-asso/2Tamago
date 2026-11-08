@@ -133,6 +133,25 @@ describe('2Tamago API (e2e)', () => {
     expect(feed.map((entry) => entry.data.event)).toContain('hatched');
   });
 
+  it('keeps traits secret while the pet is an egg, then reveals them', async () => {
+    const alice = await signIn('Alice');
+    const bob = await signIn('Bob');
+    await adopt(alice, 'Pompon');
+
+    let me: MeResponse = (await alice.get('/api/me').expect(200)).body;
+    expect(me.pet?.state.stage).toBe('egg');
+    expect(me.pet?.state.traits).toBeUndefined();
+    let village: VillagePet[] = (await bob.get('/api/village').expect(200)).body;
+    expect(village[0]?.traits).toBeNull();
+
+    clock.advance(hours(0.5));
+    me = (await alice.get('/api/me').expect(200)).body;
+    expect(me.pet?.state.stage).toBe('baby');
+    expect(me.pet?.state.traits?.temperament).toBeTruthy();
+    village = (await bob.get('/api/village').expect(200)).body;
+    expect(village[0]?.traits).toEqual(me.pet?.state.traits);
+  });
+
   it('lets a neglected pet leave, then adopt a new egg', async () => {
     const bob = await signIn('Bob');
     await adopt(bob, 'Caillou');

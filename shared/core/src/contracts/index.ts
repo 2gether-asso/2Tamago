@@ -230,7 +230,8 @@ export interface VillagePet {
   stage: Stage;
   form: Form | null;
   color: number;
-  traits: PetTraits;
+  /** `null` while the pet is an egg. */
+  traits: PetTraits | null;
   equipped: string | null;
   mood: Mood;
   ownerName: string;

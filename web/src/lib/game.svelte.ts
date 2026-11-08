@@ -46,6 +46,7 @@ class Game {
   alerts = $derived(this.pet ? alertsOf(this.pet) : []);
 
   #timers: ReturnType<typeof setInterval>[] = [];
+  #lastHatchSync = 0;
 
   /** Loads everything; resolves to false when the player is not signed in. */
   async load(): Promise<boolean> {
@@ -153,9 +154,25 @@ class Game {
     }
   }
 
+  /**
+   * The API hides an egg's traits, so a pet that hatched in our local prediction has none yet:
+   * ask the server for the real state (at most once every 5 s while they disagree).
+   */
+  #syncHatching(): void {
+    if (this.snapshot?.state.stage !== 'egg' || !this.pet || this.pet.stage === 'egg') return;
+    if (this.now - this.#lastHatchSync < 5000) return;
+    this.#lastHatchSync = this.now;
+    void this.refresh().catch(() => {});
+  }
+
   #startTimers(): void {
     if (this.#timers.length > 0) return;
-    this.#timers.push(setInterval(() => (this.now = Date.now()), 1000));
+    this.#timers.push(
+      setInterval(() => {
+        this.now = Date.now();
+        this.#syncHatching();
+      }, 1000),
+    );
     this.#timers.push(setInterval(() => void this.refresh().catch(() => {}), REFRESH_MS));
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') void this.refresh().catch(() => {});

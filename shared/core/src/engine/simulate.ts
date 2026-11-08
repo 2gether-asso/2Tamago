@@ -24,7 +24,8 @@ export interface SimulationResult {
 export function simulate(input: PetState, now: number, rules: GameRules): SimulationResult {
   const state = structuredClone(input);
   const events: PetEvent[] = [];
-  state.traits = traitsOf(state);
+  // An egg keeps its traits hidden (the API may not send them): they appear at hatching.
+  if (state.stage !== 'egg') state.traits = traitsOf(state);
   if (state.status !== 'alive') return { state, events };
 
   const step = stepMs(rules);

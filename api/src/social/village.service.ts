@@ -68,7 +68,7 @@ export class VillageService {
         stage: state.stage,
         form: state.form,
         color: state.color,
-        traits: traitsOf(state),
+        traits: state.stage === 'egg' ? null : traitsOf(state),
         equipped: state.equipped,
         mood: moodOf(state),
         ownerName,

@@ -73,7 +73,7 @@ Six espèces, toutes des créatures abstraites qui évoquent un animal : **Mochi
 - un style d'**yeux** : ronds, endormis, brillants ou rusés (cosmétique) ;
 - un **tempérament**, qui modifie légèrement les règles.
 
-Les traits sont stockés dans l'état du compagnon et révélés à l'éclosion (le journal et la page d'accueil l'annoncent). Un compagnon créé avant l'ajout des traits en reçoit de façon déterministe à partir de son nom et de sa date de naissance.
+Les traits sont stockés dans l'état du compagnon et révélés à l'éclosion (le journal et la page d'accueil l'annoncent). Tant que c'est un œuf, **l'API ne les envoie pas** (ni au propriétaire ni dans le village) : le navigateur ne peut donc pas les lire à l'avance, et il recharge l'état du serveur dès que sa prédiction locale voit l'éclosion. Un compagnon créé avant l'ajout des traits en reçoit de façon déterministe à partir de son nom et de sa date de naissance.
 
 Le tempérament est tiré **indépendamment de l'espèce**. Chacun a **un avantage et un inconvénient**, avec des multiplicateurs bornés entre ×0,7 et ×1,5 (un test le vérifie pour tout tempérament ajouté) :
 

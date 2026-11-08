@@ -68,8 +68,9 @@ export interface PetState {
   /** Hue (0-359) used to tint the pet. */
   color: number;
   /**
-   * Rolled at creation and revealed at hatching. Absent on pets created before traits existed:
-   * `simulate()` backfills it deterministically.
+   * Rolled at creation and revealed at hatching: the API leaves it out while the pet is an egg.
+   * Also absent on pets created before traits existed: `simulate()` backfills it
+   * deterministically once they have hatched.
    */
   traits?: PetTraits;
 

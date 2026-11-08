@@ -41,12 +41,19 @@ describe('traits', () => {
     expect(createPet(base, rules).traits).toEqual(createPet(base, rules).traits);
   });
 
-  it('backfills traits on a pet that has none, without changing them afterwards', () => {
-    const pet = createPet({ name: 'Vieux', species: 'kumo', color: 10, now: T0 }, rules);
+  it('backfills traits on a hatched pet that has none, without changing them afterwards', () => {
+    const egg = createPet({ name: 'Vieux', species: 'kumo', color: 10, now: T0 }, rules);
+    const pet = simulate(egg, T0 + gameHours(rules, 0.2), rules).state;
     delete pet.traits;
-    const first = simulate(pet, T0 + 1000, rules).state;
+    const first = simulate(pet, pet.simulatedAt + 1000, rules).state;
     expect(first.traits).toEqual(traitsOf(pet));
-    expect(simulate(first, T0 + 2000, rules).state.traits).toEqual(first.traits);
+    expect(simulate(first, first.simulatedAt + 1000, rules).state.traits).toEqual(first.traits);
+  });
+
+  it('leaves an egg without traits alone (they are hidden until hatching)', () => {
+    const egg = createPet({ name: 'Secret', species: 'mochi', color: 10, now: T0 }, rules);
+    delete egg.traits;
+    expect(simulate(egg, T0 + 1000, rules).state.traits).toBeUndefined();
   });
 });
 
