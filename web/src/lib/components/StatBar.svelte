@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '#lib/i18n/index.svelte.ts';
   interface Props {
     label: string;
     icon: string;
@@ -8,7 +9,7 @@
   let level = $derived(value < 25 ? 'low' : value < 50 ? 'mid' : 'high');
 </script>
 
-<div class="stat" title="{label} : {Math.round(value)} / 100">
+<div class="stat" title={t('stat.title', { label, value: Math.round(value) })}>
   <span class="icon" aria-hidden="true">{icon}</span>
   <span class="label">{label}</span>
   <div

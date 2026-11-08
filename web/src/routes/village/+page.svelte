@@ -1,24 +1,20 @@
 <script lang="ts">
   import PetSprite from '#lib/components/PetSprite.svelte';
   import { api } from '#lib/api.ts';
-  import { MOOD_LABELS, STAGE_LABELS } from '#lib/texts.ts';
+  import { moodLabel, stageLabel } from '#lib/texts.ts';
+  import { t } from '#lib/i18n/index.svelte.ts';
 
   const village = api.village();
 </script>
 
-<h1>Le village</h1>
-<p class="muted">
-  Les compagnons des autres membres. Passe leur dire bonjour : une caresse par jour fait plaisir (et
-  rapporte quelques pièces).
-</p>
+<h1>{t('village.title')}</h1>
+<p class="muted">{t('village.intro')}</p>
 
 {#await village}
-  <p class="muted">Chargement…</p>
+  <p class="muted">{t('common.loading')}</p>
 {:then pets}
   {#if pets.length === 0}
-    <p class="card">
-      Personne au village pour l’instant. Invite d’autres membres à adopter un compagnon !
-    </p>
+    <p class="card">{t('village.empty')}</p>
   {:else}
     <div class="grid">
       {#each pets as pet (pet.petId)}
@@ -34,8 +30,8 @@
             size={110}
           />
           <strong>{pet.name}</strong>
-          <small class="muted">{pet.ownerName} · {STAGE_LABELS[pet.stage]}</small>
-          <small>{MOOD_LABELS[pet.mood]}{pet.caressedToday ? ' · 💞' : ''}</small>
+          <small class="muted">{pet.ownerName} · {stageLabel(pet.stage)}</small>
+          <small>{moodLabel(pet.mood)}{pet.caressedToday ? ' · 💞' : ''}</small>
         </a>
       {/each}
     </div>

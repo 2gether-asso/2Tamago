@@ -1,86 +1,55 @@
 import {
   ITEMS,
-  TEMPERAMENT_LABELS,
-  TRICK_LABELS,
+  type Alert,
+  type Form,
   type ItemId,
+  type Mood,
   type PetEvent,
   type Stage,
   type Temperament,
   type TrickId,
 } from '@2tamago/core';
-import type { Alert, Form, Mood } from '@2tamago/core';
 import type { ActivityDto, Notice } from '@2tamago/core/contracts';
 import { t } from './i18n/index.svelte.ts';
 
-/** French texts of the game. */
+/** Texts of the game, in the current language (see `lib/i18n`). */
 
-export const STAGE_LABELS: Record<Stage, string> = {
-  egg: 'Œuf',
-  baby: 'Bébé',
-  child: 'Enfant',
-  teen: 'Ado',
-  adult: 'Adulte',
-  elder: 'Ancien',
-};
-
-export const FORM_LABELS: Record<Form, string> = {
-  radiant: 'Rayonnant',
-  gentle: 'Doux',
-  rascal: 'Chenapan',
-};
-
-export const MOOD_LABELS: Record<Mood, string> = {
-  egg: 'Dans son œuf',
-  gone: 'Parti',
-  retired: 'À la retraite',
-  away: 'En promenade',
-  sleeping: 'Dort',
-  sick: 'Malade',
-  sad: 'Triste',
-  calling: 'Réclame de l’attention',
-  ok: 'Ça va',
-  happy: 'Joyeux',
-};
-
-export const ALERT_LABELS: Record<Alert, string> = {
-  hungry: 'A faim',
-  bored: 'S’ennuie',
-  tired: 'Fatigué',
-  dirty: 'Sale',
-  poop: 'Caca à nettoyer',
-  sick: 'Malade',
-  calling: 'Fait un caprice',
-};
-
-function hatchedTemperament(event: PetEvent): string {
-  const temperament = TEMPERAMENT_LABELS[event.data?.temperament as Temperament];
-  return temperament ? ` Tempérament : ${temperament.label.toLowerCase()}.` : '';
-}
+export const stageLabel = (stage: Stage) => t(`stage.${stage}`);
+export const formLabel = (form: Form) => t(`form.${form}`);
+export const moodLabel = (mood: Mood) => t(`mood.${mood}`);
+export const alertLabel = (alert: Alert) => t(`alert.${alert}`);
+export const trickLabel = (trick: TrickId) => t(`trick.${trick}`);
+export const temperamentLabel = (temperament: Temperament) => t(`temperament.${temperament}`);
+export const temperamentHint = (temperament: Temperament) => t(`temperament.${temperament}.hint`);
+export const itemLabel = (id: ItemId) => t(`item.${id}`);
 
 export function eventText(event: PetEvent, name: string): string | null {
   switch (event.type) {
-    case 'hatched':
-      return `${name} est sorti de son œuf !${hatchedTemperament(event)}`;
+    case 'hatched': {
+      const temperament = event.data?.temperament as Temperament | undefined;
+      return temperament
+        ? t('event.hatched_temperament', {
+            name,
+            temperament: temperamentLabel(temperament).toLowerCase(),
+          })
+        : t('event.hatched', { name });
+    }
     case 'evolved':
-      return `${name} a grandi : ${STAGE_LABELS[event.data?.to as Stage] ?? ''} !`;
-    case 'fell_ill':
-      return `${name} est tombé malade.`;
-    case 'cured':
-      return `${name} est guéri !`;
-    case 'care_mistake':
-      return `${name} s’est senti délaissé…`;
+      return t('event.evolved', { name, stage: stageLabel(event.data?.to as Stage) });
     case 'fell_asleep':
-      return event.data?.exhausted ? `${name} s’est endormi d’épuisement.` : `Bonne nuit ${name}.`;
-    case 'woke_up':
-      return `${name} est réveillé.`;
-    case 'attention_call':
-      return `${name} fait un caprice !`;
+      return event.data?.exhausted
+        ? t('event.fell_asleep_exhausted', { name })
+        : t('event.fell_asleep', { name });
     case 'trick_level_up':
-      return `${name} progresse en « ${TRICK_LABELS[event.data?.trick as TrickId]} » !`;
+      return t('event.trick_level_up', { name, trick: trickLabel(event.data?.trick as TrickId) });
+    case 'fell_ill':
+    case 'cured':
+    case 'care_mistake':
+    case 'woke_up':
+    case 'attention_call':
     case 'departed':
-      return `${name} est parti…`;
     case 'retired':
-      return `${name} part couler des jours paisibles.`;
+      return t(`event.${event.type}`, { name });
     default:
       return null;
   }
@@ -90,23 +59,29 @@ export function activityText(entry: ActivityDto): string {
   const d = entry.data as Record<string, string | number>;
   switch (entry.kind) {
     case 'daily_bonus':
-      return `Bonus du jour : +${d.coins} pièces.`;
+      return t('activity.daily_bonus', { count: Number(d.coins) });
     case 'visit_caress':
-      return `${d.visitorName} est passé caresser ${d.petName}.`;
+      return t('activity.visit_caress', {
+        visitorName: String(d.visitorName),
+        petName: String(d.petName),
+      });
     case 'visit_gift':
-      return `${d.visitorName} a offert ${ITEMS[d.item as ItemId]?.label ?? 'un cadeau'} à ${d.petName}.`;
+      return t('activity.visit_gift', {
+        visitorName: String(d.visitorName),
+        item: String(d.item) in ITEMS ? itemLabel(d.item as ItemId) : t('item.unknown'),
+        petName: String(d.petName),
+      });
     case 'encounter':
-      return `Rencontre en promenade avec ${d.otherPetName} (${d.otherOwnerName}).`;
+      return t('activity.encounter', {
+        otherPetName: String(d.otherPetName),
+        otherOwnerName: String(d.otherOwnerName),
+      });
     case 'pet_event':
       return (
         eventText({ type: d.event as PetEvent['type'], at: 0, data: d }, String(d.petName)) ??
         String(d.event)
       );
   }
-}
-
-export function itemLabel(id: ItemId): string {
-  return t(`item.${id}`);
 }
 
 export function noticeText(notice: Notice): string {

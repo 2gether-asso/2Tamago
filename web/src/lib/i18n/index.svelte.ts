@@ -68,6 +68,13 @@ export function translate(locale: Locale, key: MessageKey, params?: Params): str
   return format(template, params);
 }
 
+const INTL_TAGS: Record<Locale, string> = { fr: 'fr-FR', en: 'en-GB' };
+
+/** BCP 47 tag of the current language, for `Intl` formatters. Reactive like `t()`. */
+export function intlTag(): string {
+  return INTL_TAGS[i18n.locale];
+}
+
 /** Translates in the current language. Reactive: reading `i18n.locale` tracks changes. */
 export function t(key: MessageKey, params?: Params): string {
   return translate(i18n.locale, key, params);

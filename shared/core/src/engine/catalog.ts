@@ -1,11 +1,10 @@
-import type { Species, Stats, Temperament, TrickId } from './types.js';
+import type { Species, Stats } from './types.js';
 
-/** Shop and inventory items. Labels are the French texts shown in the game. */
+/** Shop and inventory items. Names are texts of the web app (`lib/i18n`), not of the engine. */
 
 export interface SnackItem {
   kind: 'snack';
   id: string;
-  label: string;
   price: number;
   effects: Partial<Pick<Stats, 'satiety' | 'happiness' | 'energy'>>;
   weight: number;
@@ -14,7 +13,6 @@ export interface SnackItem {
 export interface AccessoryItem {
   kind: 'accessory';
   id: string;
-  label: string;
   price: number;
 }
 
@@ -24,7 +22,6 @@ export const ITEMS = {
   cookie: {
     kind: 'snack',
     id: 'cookie',
-    label: 'Biscuit',
     price: 8,
     effects: { happiness: 10, satiety: 5 },
     weight: 1,
@@ -32,7 +29,6 @@ export const ITEMS = {
   strawberry: {
     kind: 'snack',
     id: 'strawberry',
-    label: 'Fraise',
     price: 12,
     effects: { happiness: 12, satiety: 8 },
     weight: 0,
@@ -40,7 +36,6 @@ export const ITEMS = {
   warm_milk: {
     kind: 'snack',
     id: 'warm_milk',
-    label: 'Lait chaud',
     price: 15,
     effects: { energy: 15, happiness: 5 },
     weight: 0,
@@ -48,15 +43,14 @@ export const ITEMS = {
   cake: {
     kind: 'snack',
     id: 'cake',
-    label: 'Gâteau',
     price: 30,
     effects: { happiness: 30, satiety: 15 },
     weight: 3,
   },
-  ribbon: { kind: 'accessory', id: 'ribbon', label: 'Nœud', price: 50 },
-  hat: { kind: 'accessory', id: 'hat', label: 'Chapeau', price: 80 },
-  glasses: { kind: 'accessory', id: 'glasses', label: 'Lunettes', price: 120 },
-  crown: { kind: 'accessory', id: 'crown', label: 'Couronne', price: 300 },
+  ribbon: { kind: 'accessory', id: 'ribbon', price: 50 },
+  hat: { kind: 'accessory', id: 'hat', price: 80 },
+  glasses: { kind: 'accessory', id: 'glasses', price: 120 },
+  crown: { kind: 'accessory', id: 'crown', price: 300 },
 } as const satisfies Record<string, Item>;
 
 export type ItemId = keyof typeof ITEMS;
@@ -79,13 +73,7 @@ export function isAccessory(id: string): id is AccessoryId {
   return getItem(id)?.kind === 'accessory';
 }
 
-export const TRICK_LABELS: Record<TrickId, string> = {
-  sit: 'Assis',
-  spin: 'Tourne',
-  jump: 'Saute',
-  highfive: 'Tape-m’en cinq',
-};
-
+/** Species names are proper names: the same in every language. */
 export const SPECIES_LABELS: Record<Species, string> = {
   mochi: 'Mochi',
   pyon: 'Pyon',
@@ -93,14 +81,4 @@ export const SPECIES_LABELS: Record<Species, string> = {
   koro: 'Koro',
   nyao: 'Nyao',
   toge: 'Toge',
-};
-
-/** French label and a one-line "pro, but con" hint per temperament. */
-export const TEMPERAMENT_LABELS: Record<Temperament, { label: string; hint: string }> = {
-  greedy: { label: 'Gourmand', hint: 'A vite faim, mais garde le moral.' },
-  sleepy: { label: 'Dormeur', hint: 'Se fatigue vite, mais récupère vite aussi.' },
-  cuddly: { label: 'Câlin', hint: 'Se lie plus fort à chaque caresse, mais boude plus vite.' },
-  prankster: { label: 'Farceur', hint: 'Fait plus de caprices, mais mange moins.' },
-  tidy: { label: 'Propre', hint: 'Reste propre plus longtemps, mais s’épuise plus vite.' },
-  sturdy: { label: 'Costaud', hint: 'Résiste mieux à la maladie, mais a plus d’appétit.' },
 };

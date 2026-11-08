@@ -1,12 +1,13 @@
 <script lang="ts">
-  import { ITEMS, isSnack, type ItemId } from '@2tamago/core';
+  import { isSnack, type ItemId } from '@2tamago/core';
   import type { VisitResponse } from '@2tamago/core/contracts';
   import PetSprite from '#lib/components/PetSprite.svelte';
   import StatBar from '#lib/components/StatBar.svelte';
   import { api } from '#lib/api.ts';
   import { game } from '#lib/game.svelte.ts';
   import { toasts } from '#lib/toasts.svelte.ts';
-  import { MOOD_LABELS, STAGE_LABELS } from '#lib/texts.ts';
+  import { t } from '#lib/i18n/index.svelte.ts';
+  import { itemLabel, moodLabel, stageLabel } from '#lib/texts.ts';
   import type { PageProps } from './$types';
 
   let { params }: PageProps = $props();
@@ -47,7 +48,7 @@
   }
 </script>
 
-<a href="/village">← Retour au village</a>
+<a href="/village">{t('visit.back')}</a>
 
 {#if error}
   <p class="card">{error}</p>
@@ -55,7 +56,9 @@
   {@const pet = visit.pet.state}
   <section class="card visit">
     <h1>{pet.name}</h1>
-    <p class="muted">Compagnon de {visit.pet.ownerName} · {STAGE_LABELS[pet.stage]}</p>
+    <p class="muted">
+      {t('visit.owner', { owner: visit.pet.ownerName, stage: stageLabel(pet.stage) })}
+    </p>
     <PetSprite
       species={pet.species}
       stage={pet.stage}
@@ -65,7 +68,7 @@
       mood={visit.pet.mood}
       equipped={pet.equipped}
     />
-    <p><strong>{MOOD_LABELS[visit.pet.mood]}</strong></p>
+    <p><strong>{moodLabel(visit.pet.mood)}</strong></p>
 
     {#if !isMine && pet.stage !== 'egg'}
       <div class="actions">
@@ -78,7 +81,7 @@
               () => (visit!.caressedToday = true),
             )}
         >
-          {visit.caressedToday ? 'Déjà caressé aujourd’hui 💞' : 'Caresser 🤚'}
+          {visit.caressedToday ? t('visit.caressed') : t('visit.caress')}
         </button>
         {#each snacks as [id, count] (id)}
           <button
@@ -89,7 +92,7 @@
                 () => game.useItem(id),
               )}
           >
-            Offrir : {ITEMS[id].label} ×{count}
+            {t('visit.gift', { item: itemLabel(id), count })}
           </button>
         {/each}
       </div>
@@ -98,12 +101,12 @@
 
   {#if pet.stage !== 'egg'}
     <section class="card">
-      <StatBar icon="😊" label="Bonheur" value={pet.stats.happiness} />
-      <StatBar icon="🍙" label="Satiété" value={pet.stats.satiety} />
+      <StatBar icon="😊" label={t('stat.happiness')} value={pet.stats.happiness} />
+      <StatBar icon="🍙" label={t('stat.satiety')} value={pet.stats.satiety} />
     </section>
   {/if}
 {:else}
-  <p class="muted">Chargement…</p>
+  <p class="muted">{t('common.loading')}</p>
 {/if}
 
 <style>

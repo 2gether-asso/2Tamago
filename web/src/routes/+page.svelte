@@ -1,13 +1,10 @@
 <script lang="ts">
   import {
     ageInDays,
-    ITEMS,
     isAccessory,
     isNight,
     isSnack,
     SPECIES_LABELS,
-    TEMPERAMENT_LABELS,
-    TRICK_LABELS,
     TRICKS,
     trickLevel,
     type ItemId,
@@ -19,7 +16,17 @@
   import PlayGame from '#lib/components/PlayGame.svelte';
   import StatBar from '#lib/components/StatBar.svelte';
   import { game } from '#lib/game.svelte.ts';
-  import { ALERT_LABELS, FORM_LABELS, MOOD_LABELS, STAGE_LABELS } from '#lib/texts.ts';
+  import { t } from '#lib/i18n/index.svelte.ts';
+  import {
+    alertLabel,
+    formLabel,
+    itemLabel,
+    moodLabel,
+    stageLabel,
+    temperamentHint,
+    temperamentLabel,
+    trickLabel,
+  } from '#lib/texts.ts';
 
   let playing = $state(false);
   let walkResult = $state<WalkResponse | null>(null);
@@ -64,7 +71,10 @@
 
   function formatDuration(ms: number): string {
     const s = Math.ceil(ms / 1000);
-    return `${Math.floor(s / 60)} min ${String(s % 60).padStart(2, '0')} s`;
+    return t('duration.min_sec', {
+      minutes: Math.floor(s / 60),
+      seconds: String(s % 60).padStart(2, '0'),
+    });
   }
 </script>
 
@@ -82,14 +92,12 @@
       size={160}
     />
     {#if pet.status === 'retired'}
-      <h2>{pet.name} prend une retraite bien méritée 🌅</h2>
+      <h2>{t('home.farewell.retired', { name: pet.name })}</h2>
     {:else}
-      <h2>{pet.name} est parti…</h2>
-      <p class="muted">
-        Il ne se sentait plus assez entouré. Il vit désormais sa vie, quelque part.
-      </p>
+      <h2>{t('home.farewell.left', { name: pet.name })}</h2>
+      <p class="muted">{t('home.farewell.left_hint')}</p>
     {/if}
-    <p class="muted">Il restera dans ton album.</p>
+    <p class="muted">{t('home.farewell.album')}</p>
   </div>
   <AdoptForm />
 {:else}
@@ -97,26 +105,26 @@
     <div class="heading">
       <h1>{pet.name}</h1>
       <p class="muted">
-        {SPECIES_LABELS[pet.species]} · {STAGE_LABELS[pet.stage]}
-        {#if pet.form}· {FORM_LABELS[pet.form]}{/if}
-        · {game.rules ? ageInDays(pet, now, game.rules) : 0} j
+        {SPECIES_LABELS[pet.species]} · {stageLabel(pet.stage)}
+        {#if pet.form}· {formLabel(pet.form)}{/if}
+        · {t('home.age_days', { count: game.rules ? ageInDays(pet, now, game.rules) : 0 })}
       </p>
       {#if pet.traits}
-        {@const temperament = TEMPERAMENT_LABELS[pet.traits.temperament]}
-        <p class="temperament" title={temperament.hint}>
-          {temperament.label} <span class="muted">· {temperament.hint}</span>
+        {@const hint = temperamentHint(pet.traits.temperament)}
+        <p class="temperament" title={hint}>
+          {temperamentLabel(pet.traits.temperament)} <span class="muted">· {hint}</span>
         </p>
       {/if}
-      <p class="mood">{MOOD_LABELS[game.mood ?? 'ok']}</p>
+      <p class="mood">{moodLabel(game.mood ?? 'ok')}</p>
       <div class="alerts">
-        {#each game.alerts as alert (alert)}<span class="chip">{ALERT_LABELS[alert]}</span>{/each}
-        {#if needsLightsOff}<span class="chip">🌙 Il fait nuit : éteins la lumière</span>{/if}
+        {#each game.alerts as alert (alert)}<span class="chip">{alertLabel(alert)}</span>{/each}
+        {#if needsLightsOff}<span class="chip">{t('home.bedtime_hint')}</span>{/if}
       </div>
     </div>
 
     <div class="scene" class:night={night || pet.asleep}>
       {#if pet.outing}
-        <p class="away">🚶 En promenade… retour dans {formatDuration(walkLeft)}</p>
+        <p class="away">{t('home.away', { time: formatDuration(walkLeft) })}</p>
       {:else}
         <PetSprite
           species={pet.species}
@@ -128,86 +136,86 @@
           equipped={pet.equipped}
           oncaress={awake ? caress : undefined}
         />
-        <div class="poops" aria-label="{pet.poops} cacas">
+        <div class="poops" aria-label={t('home.poops', { count: pet.poops })}>
           {#each Array(pet.poops) as _, i (i)}<span>💩</span>{/each}
         </div>
       {/if}
     </div>
     {#if pet.stage === 'egg'}
-      <p class="muted center">L’œuf bouge… il va bientôt éclore !</p>
+      <p class="muted center">{t('home.egg_hint')}</p>
     {:else if awake}
-      <p class="muted center">
-        Astuce : caresse {pet.name} en passant la souris (ou le doigt) dessus.
-      </p>
+      <p class="muted center">{t('home.caress_tip', { name: pet.name })}</p>
     {/if}
   </section>
 
   {#if hatched}
     <section class="card">
-      <h3>État</h3>
+      <h3>{t('home.status')}</h3>
       <div class="stats">
-        <StatBar icon="🍙" label="Satiété" value={pet.stats.satiety} />
-        <StatBar icon="😊" label="Bonheur" value={pet.stats.happiness} />
-        <StatBar icon="⚡" label="Énergie" value={pet.stats.energy} />
-        <StatBar icon="🛁" label="Propreté" value={pet.stats.hygiene} />
-        <StatBar icon="❤️" label="Santé" value={pet.stats.health} />
-        <StatBar icon="🎓" label="Discipline" value={pet.stats.discipline} />
-        <StatBar icon="💞" label="Lien" value={pet.bond} />
+        <StatBar icon="🍙" label={t('stat.satiety')} value={pet.stats.satiety} />
+        <StatBar icon="😊" label={t('stat.happiness')} value={pet.stats.happiness} />
+        <StatBar icon="⚡" label={t('stat.energy')} value={pet.stats.energy} />
+        <StatBar icon="🛁" label={t('stat.hygiene')} value={pet.stats.hygiene} />
+        <StatBar icon="❤️" label={t('stat.health')} value={pet.stats.health} />
+        <StatBar icon="🎓" label={t('stat.discipline')} value={pet.stats.discipline} />
+        <StatBar icon="💞" label={t('stat.bond')} value={pet.bond} />
       </div>
     </section>
 
     <section class="card">
-      <h3>Soins</h3>
+      <h3>{t('home.care')}</h3>
       <div class="actions">
         <button disabled={!awake || game.busy} onclick={() => game.act({ type: 'feed' })}
-          >🍙 Nourrir</button
+          >{t('action.feed')}</button
         >
-        <button disabled={!awake || game.busy} onclick={() => (playing = true)}>🎲 Jouer</button>
+        <button disabled={!awake || game.busy} onclick={() => (playing = true)}
+          >{t('action.play')}</button
+        >
         <button disabled={!free || game.busy} onclick={() => game.act({ type: 'clean' })}
-          >🧽 Nettoyer</button
+          >{t('action.clean')}</button
         >
         {#if pet.sickSince !== null}
           <button disabled={!free || game.busy} onclick={() => game.act({ type: 'medicine' })}
-            >💊 Soigner</button
+            >{t('action.medicine')}</button
           >
         {/if}
         {#if pet.asleep}
           <button disabled={!free || game.busy} onclick={() => game.act({ type: 'wake' })}
-            >☀️ Réveiller</button
+            >{t('action.wake')}</button
           >
         {:else}
           <button disabled={!awake || game.busy} onclick={() => game.act({ type: 'sleep' })}
-            >🌙 Coucher</button
+            >{t('action.sleep')}</button
           >
         {/if}
         {#if pet.lightsOff}
           <button
             disabled={!free || game.busy}
-            onclick={() => game.act({ type: 'lights', on: true })}>💡 Rallumer la lumière</button
+            onclick={() => game.act({ type: 'lights', on: true })}>{t('action.lights_on')}</button
           >
         {:else if night}
           <button
             disabled={!free || game.busy}
-            onclick={() => game.act({ type: 'lights', on: false })}>🕯️ Éteindre la lumière</button
+            onclick={() => game.act({ type: 'lights', on: false })}>{t('action.lights_off')}</button
           >
         {/if}
         <button disabled={!awake || game.busy} onclick={() => game.act({ type: 'praise' })}
-          >👏 Féliciter</button
+          >{t('action.praise')}</button
         >
         <button disabled={!awake || game.busy} onclick={() => game.act({ type: 'scold' })}
-          >☝️ Gronder</button
+          >{t('action.scold')}</button
         >
       </div>
 
       {#if snacks.length > 0}
-        <h4>Friandises</h4>
+        <h4>{t('home.treats')}</h4>
         <div class="actions">
           {#each snacks as [id, count] (id)}
             <button
               disabled={!awake || game.busy}
               onclick={() => game.act({ type: 'treat', item: id })}
             >
-              {ITEMS[id].label} ×{count}
+              {itemLabel(id)} ×{count}
             </button>
           {/each}
         </div>
@@ -216,40 +224,40 @@
 
     {#if pet.stage !== 'baby'}
       <section class="card">
-        <h3>Dressage et sorties</h3>
+        <h3>{t('home.training')}</h3>
         <div class="actions">
-          <select bind:value={trick} aria-label="Tour à apprendre">
+          <select bind:value={trick} aria-label={t('home.trick_to_learn')}>
             {#each TRICKS as id (id)}
               <option value={id}
-                >{TRICK_LABELS[id]} — {'★'.repeat(trickLevel(pet.tricks[id]))}{'☆'.repeat(
+                >{trickLabel(id)} — {'★'.repeat(trickLevel(pet.tricks[id]))}{'☆'.repeat(
                   3 - trickLevel(pet.tricks[id]),
                 )}</option
               >
             {/each}
           </select>
           <button disabled={!awake || game.busy} onclick={() => game.act({ type: 'train', trick })}
-            >🎓 Entraîner</button
+            >{t('action.train')}</button
           >
           {#if pet.outing}
             <button class="primary" disabled={walkLeft > 0 || game.busy} onclick={returnFromWalk}
-              >🏠 Ramener</button
+              >{t('action.return')}</button
             >
           {:else}
             <button disabled={!awake || game.busy} onclick={() => game.startWalk()}
-              >🚶 Promenade</button
+              >{t('action.walk')}</button
             >
           {/if}
           {#if pet.stage === 'elder'}
             <button
               disabled={game.busy}
               onclick={() =>
-                confirm(`${pet.name} partira à la retraite. Continuer ?`) &&
-                game.act({ type: 'retire' })}>🌅 Retraite</button
+                confirm(t('home.retire_confirm', { name: pet.name })) &&
+                game.act({ type: 'retire' })}>{t('action.retire')}</button
             >
           {/if}
         </div>
         {#if accessories.length > 0}
-          <h4>Accessoires</h4>
+          <h4>{t('home.accessories')}</h4>
           <div class="actions">
             {#each accessories as [id] (id)}
               <button
@@ -257,7 +265,7 @@
                 disabled={game.busy}
                 onclick={() => game.act({ type: 'equip', item: pet.equipped === id ? null : id })}
               >
-                {ITEMS[id].label}
+                {itemLabel(id)}
               </button>
             {/each}
           </div>
@@ -274,11 +282,11 @@
 {#if walkResult}
   <div class="backdrop">
     <div class="card dialog">
-      <h2>De retour de promenade !</h2>
-      <p>🪙 {walkResult.found.coins} pièces trouvées</p>
-      {#each walkResult.found.items as item, i (i)}<p>🎁 {ITEMS[item].label}</p>{/each}
+      <h2>{t('walk.title')}</h2>
+      <p>{t('walk.coins_found', { count: walkResult.found.coins })}</p>
+      {#each walkResult.found.items as item, i (i)}<p>🎁 {itemLabel(item)}</p>{/each}
       {#if walkResult.encounters.length > 0}
-        <h3>Rencontres</h3>
+        <h3>{t('walk.encounters')}</h3>
         <div class="met">
           {#each walkResult.encounters as friend (friend.petId)}
             <a href="/village/{friend.petId}">
@@ -295,9 +303,9 @@
           {/each}
         </div>
       {:else}
-        <p class="muted">Personne d’autre ne se promenait à ce moment-là.</p>
+        <p class="muted">{t('walk.nobody')}</p>
       {/if}
-      <button class="primary" onclick={() => (walkResult = null)}>Super !</button>
+      <button class="primary" onclick={() => (walkResult = null)}>{t('walk.ok')}</button>
     </div>
   </div>
 {/if}

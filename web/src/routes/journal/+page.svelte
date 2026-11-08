@@ -1,5 +1,6 @@
 <script lang="ts">
   import { api } from '#lib/api.ts';
+  import { intlTag, t } from '#lib/i18n/index.svelte.ts';
   import { activityText } from '#lib/texts.ts';
 
   const entries = api.activity().then((list) => {
@@ -7,16 +8,18 @@
     return list;
   });
 
-  const format = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'short', timeStyle: 'short' });
+  let format = $derived(
+    new Intl.DateTimeFormat(intlTag(), { dateStyle: 'short', timeStyle: 'short' }),
+  );
 </script>
 
-<h1>Journal</h1>
+<h1>{t('journal.title')}</h1>
 
 {#await entries}
-  <p class="muted">Chargement…</p>
+  <p class="muted">{t('common.loading')}</p>
 {:then list}
   {#if list.length === 0}
-    <p class="card">Rien pour l’instant.</p>
+    <p class="card">{t('journal.empty')}</p>
   {:else}
     <ul class="card">
       {#each list as entry (entry.id)}
