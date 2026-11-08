@@ -41,7 +41,13 @@ describe('2Tamago API (e2e)', () => {
     clock = new FakeClock();
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
       .overrideProvider(AppConfig)
-      .useValue(new AppConfig({ DATABASE_URL: databaseUrl, AUTH_DEV_LOGIN: 'true' }))
+      .useValue(
+        new AppConfig({
+          DATABASE_URL: databaseUrl,
+          AUTH_DEV_LOGIN: 'true',
+          ADMIN_DISCORD_IDS: 'dev:root',
+        }),
+      )
       .overrideProvider(Clock)
       .useValue(clock)
       .compile();
@@ -184,5 +190,42 @@ describe('2Tamago API (e2e)', () => {
 
     const bobWalk: WalkResponse = (await bob.post('/api/pet/walk/return').expect(200)).body;
     expect(bobWalk.encounters.map((e) => e.name)).toEqual(['Pompon']);
+  });
+
+  it('lets an admin tune the game rules without a restart', async () => {
+    const alice = await signIn('Alice');
+    const root = await signIn('Root');
+    await alice.get('/api/admin/rules').expect(403);
+    await alice
+      .put('/api/admin/rules')
+      .send({ stageHours: { baby: 1 } })
+      .expect(403);
+
+    const initial = (await root.get('/api/admin/rules').expect(200)).body;
+    expect(initial.overrides).toEqual({});
+    expect(initial.effective.stageHours.baby).toBe(rules.stageHours.baby);
+
+    // Fixed or unknown rules, and nonsensical values, are refused.
+    await root.put('/api/admin/rules').send({ timeScale: 60 }).expect(400);
+    await root.put('/api/admin/rules').send({ poopIntervalHours: 0 }).expect(400);
+
+    const saved = (
+      await root
+        .put('/api/admin/rules')
+        .send({ stageHours: { baby: 1 }, caressCooldownSeconds: 3 })
+        .expect(200)
+    ).body;
+    expect(saved.effective.stageHours).toEqual({ ...rules.stageHours, baby: 1 });
+    expect(saved.base.stageHours.baby).toBe(rules.stageHours.baby);
+
+    // Everyone gets the new rules right away.
+    const served = (await alice.get('/api/game/rules').expect(200)).body;
+    expect(served.stageHours.baby).toBe(1);
+    expect(served.caressCooldownSeconds).toBe(3);
+
+    // And an empty object goes back to the defaults.
+    await root.put('/api/admin/rules').send({}).expect(200);
+    const reset = (await alice.get('/api/game/rules').expect(200)).body;
+    expect(reset.stageHours.baby).toBe(rules.stageHours.baby);
   });
 });

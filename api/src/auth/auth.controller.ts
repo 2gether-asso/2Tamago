@@ -76,12 +76,17 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     if (!this.config.auth.devLogin) throw new NotFoundException();
+    const discordId = `dev:${body.name.toLowerCase()}`;
     const player = await this.players.upsertFromLogin({
-      discordId: `dev:${body.name.toLowerCase()}`,
+      discordId,
       displayName: body.name,
       avatarUrl: null,
     });
-    const token = await this.startSession(res, player.id, false);
+    const token = await this.startSession(
+      res,
+      player.id,
+      this.config.auth.adminDiscordIds.includes(discordId),
+    );
     return { token };
   }
 
