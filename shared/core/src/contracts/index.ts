@@ -414,13 +414,37 @@ export interface FavoriteResponse {
   favorite: boolean;
 }
 
+/** The village's goal of the week: walks done together, and a reward for those who took part. */
+export interface CommunityGoal {
+  /** Monday of the week (YYYY-MM-DD). */
+  week: string;
+  /** When the week ends and the goal resets (epoch ms). */
+  endsAt: number;
+  target: number;
+  /** Walks the whole village completed this week. */
+  progress: number;
+  /** Walks the viewer completed this week. */
+  mine: number;
+  reached: boolean;
+  /** Coins for each player who took part, once the goal is reached. */
+  reward: number;
+  claimed: boolean;
+  /** Reached, taken part and not yet claimed. */
+  canClaim: boolean;
+}
+
+export interface ClaimResponse {
+  coins: number;
+  reward: number;
+}
+
 export interface VisitResponse {
   pet: PetDto;
   caressedToday: boolean;
 }
 
 export type ActivityKind =
-  'pet_event' | 'visit_caress' | 'visit_gift' | 'encounter' | 'daily_bonus';
+  'pet_event' | 'visit_caress' | 'visit_gift' | 'encounter' | 'daily_bonus' | 'community_reward';
 
 export interface ActivityDto {
   id: string;
@@ -449,9 +473,12 @@ export interface AlbumEntry {
  */
 export const API_ERROR_CODES = [
   'already_caressed',
+  'already_claimed',
   'already_has_pet',
   'feedback_disabled',
+  'goal_not_reached',
   'missing_item',
+  'no_contribution',
   'no_pet',
   'no_player',
   'not_enough_coins',

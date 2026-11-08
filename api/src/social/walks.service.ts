@@ -23,6 +23,7 @@ import { encounters, pets, players, walks } from '../database/schema.js';
 import { toPetDto } from '../pets/pet-mapper.js';
 import { PetsService } from '../pets/pets.service.js';
 import { PlayersService } from '../players/players.service.js';
+import { CommunityService } from './community.service.js';
 
 const MAX_ENCOUNTERS = 3;
 const SNACKS = (Object.keys(ITEMS) as ItemId[]).filter(isSnack);
@@ -40,6 +41,7 @@ export class WalksService {
     private readonly players: PlayersService,
     private readonly activity: ActivityService,
     private readonly announcements: AnnouncementService,
+    private readonly community: CommunityService,
   ) {}
 
   private get rules(): GameRules {
@@ -88,11 +90,13 @@ export class WalksService {
         const meetings = walk
           ? await this.meet(tx, walk, row.id, state.name, playerId)
           : { met: [], first: new Set<string>() };
-        return { ...change, extra: { found, ...meetings } };
+        const goalReached = await this.community.walkCompleted(tx);
+        return { ...change, extra: { found, goalReached, ...meetings } };
       },
     );
 
-    const { found, met, first } = result.extra!;
+    const { found, met, first, goalReached } = result.extra!;
+    if (goalReached !== null) this.announcements.communityGoal(goalReached);
     // Once saved: only the first walk two players ever share is worth the channel's attention.
     for (const encounter of met) {
       if (!first.has(encounter.petId)) continue;

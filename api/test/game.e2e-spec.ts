@@ -5,6 +5,8 @@ import type {
   ActionResponse,
   AdminStats,
   ActivityDto,
+  ClaimResponse,
+  CommunityGoal,
   MeResponse,
   PlayerProfile,
   VillagePet,
@@ -63,7 +65,7 @@ describe('2Tamago API (e2e)', () => {
     const client = new pg.Client({ connectionString: databaseUrl });
     await client.connect();
     try {
-      await client.query('TRUNCATE players RESTART IDENTITY CASCADE');
+      await client.query('TRUNCATE players, community_goals RESTART IDENTITY CASCADE');
     } finally {
       await client.end();
     }
@@ -370,6 +372,76 @@ describe('2Tamago API (e2e)', () => {
 
     const bobWalk: WalkResponse = (await bob.post('/api/pet/walk/return').expect(200)).body;
     expect(bobWalk.encounters.map((e) => e.name)).toEqual(['Pompon']);
+  });
+
+  it('counts the village walks of the week towards a goal with a reward', async () => {
+    clock.time = Date.UTC(2026, 10, 9, 9); // a Monday, so that the whole test is in one week
+    const alice = await signIn('Alice');
+    const bob = await signIn('Bob');
+    const carol = await signIn('Carol'); // never adopts: she cannot take part
+    await adopt(alice, 'Pompon');
+    await adopt(bob, 'Caillou');
+    // Few requests on purpose: the rate limit counts real time, not the fake clock.
+    for (let i = 0; i < 7; i++) {
+      clock.advance(hours(2));
+      for (const agent of [alice, bob]) {
+        await agent.post('/api/pet/actions').send({ type: 'feed' });
+        await agent.post('/api/pet/actions').send({ type: 'clean' });
+      }
+    }
+    const goal = async (agent: typeof alice): Promise<CommunityGoal> =>
+      (await agent.get('/api/community/goal').expect(200)).body;
+    /** A walk costs energy: a nap first (they all sleep through the same hours). */
+    const walkAll = async (agents: (typeof alice)[]) => {
+      for (const agent of agents) await agent.post('/api/pet/actions').send({ type: 'sleep' });
+      clock.advance(hours(3));
+      for (const agent of agents) {
+        await agent.post('/api/pet/actions').send({ type: 'wake' }); // refused if already up
+        await agent.post('/api/pet/actions').send({ type: 'feed' });
+        await agent.post('/api/pet/walk').expect(200);
+      }
+      clock.advance(hours(rules.outingHours));
+      for (const agent of agents) await agent.post('/api/pet/walk/return').expect(200);
+      clock.advance(hours(1));
+    };
+
+    // Two living companions: the floor of ten walks applies.
+    const start = await goal(alice);
+    expect(start).toMatchObject({ target: 10, progress: 0, mine: 0, reached: false });
+    expect(start.canClaim).toBe(false);
+    expect((await alice.post('/api/community/goal/claim').expect(409)).body.code).toBe(
+      'goal_not_reached',
+    );
+
+    // Alice and Bob walk; Carol does not.
+    for (let i = 0; i < 4; i++) await walkAll([alice, bob]);
+    expect(await goal(carol)).toMatchObject({ progress: 8, reached: false });
+    await walkAll([alice]);
+    await walkAll([bob]);
+    const reached = await goal(alice);
+    expect(reached).toMatchObject({ progress: 10, mine: 5, reached: true, canClaim: true });
+    expect(await goal(bob)).toMatchObject({ mine: 5, canClaim: true });
+    expect(await goal(carol)).toMatchObject({ mine: 0, reached: true, canClaim: false });
+    expect((await carol.post('/api/community/goal/claim').expect(409)).body.code).toBe(
+      'no_contribution',
+    );
+
+    const before: MeResponse = (await alice.get('/api/me').expect(200)).body;
+    const claim: ClaimResponse = (await alice.post('/api/community/goal/claim').expect(200)).body;
+    expect(claim.reward).toBe(reached.reward);
+    expect(claim.coins).toBe(before.player.coins + claim.reward);
+    expect((await alice.post('/api/community/goal/claim').expect(409)).body.code).toBe(
+      'already_claimed',
+    );
+    expect(await goal(alice)).toMatchObject({ claimed: true, canClaim: false });
+    expect(await goal(bob)).toMatchObject({ claimed: false, canClaim: true });
+    const feed: ActivityDto[] = (await alice.get('/api/activity').expect(200)).body;
+    expect(feed.map((entry) => entry.kind)).toContain('community_reward');
+
+    // Next week: a fresh goal, and nothing carried over.
+    clock.advance(hours(24 * 7));
+    expect(await goal(bob)).toMatchObject({ progress: 0, mine: 0, claimed: false, reached: false });
+    await request(app.getHttpServer()).get('/api/community/goal').expect(401);
   });
 
   it('lets an admin tune the game rules without a restart', async () => {
