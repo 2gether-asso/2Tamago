@@ -8,6 +8,7 @@ export const home: Record<keyof typeof fr, string> = {
     'It did not feel looked after enough. It now lives its own life, somewhere out there.',
   'home.farewell.album': 'It will stay in your album.',
   'home.age_days': '{count} d',
+  'home.bedtime': 'Bedtime: {start}:00 to {end}:00',
   'home.bedtime_hint': '🌙 Bedtime: turn off the light',
   'home.away': '🚶 Out for a walk… back in {time}',
   'home.poops_one': '{count} poop',

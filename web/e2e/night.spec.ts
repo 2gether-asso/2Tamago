@@ -13,7 +13,13 @@ test('at night the owner switches the lights off and the pet goes to sleep', asy
   const before = (await (await page.request.get('/api/admin/rules')).json()).overrides;
   const hour = Math.floor(dayHour(rules, Date.now()));
   await page.request.put('/api/admin/rules', {
-    data: { ...before, night: { startHour: (hour + 23) % 24, endHour: (hour + 3) % 24 } },
+    data: {
+      ...before,
+      night: {
+        // The pet is a baby: it follows the bedtime of its stage, not the general one.
+        stages: { baby: { startHour: (hour + 23) % 24, endHour: (hour + 3) % 24 } },
+      },
+    },
   });
 
   try {

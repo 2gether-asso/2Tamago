@@ -1,6 +1,7 @@
 <script lang="ts">
   import {
     ageInDays,
+    bedtimeOf,
     isAccessory,
     isNight,
     isSnack,
@@ -39,7 +40,8 @@
   let hatched = $derived(alive && pet?.stage !== 'egg');
   let free = $derived(hatched && !pet?.outing);
   let awake = $derived(free && !pet?.asleep);
-  let night = $derived(game.rules ? isNight(game.rules, now) : false);
+  let night = $derived(game.rules && pet ? isNight(game.rules, now, pet.stage) : false);
+  let bedtime = $derived(game.rules && pet ? bedtimeOf(game.rules, pet.stage) : null);
   let needsLightsOff = $derived(awake && night && !pet?.lightsOff);
   let snacks = $derived(
     (Object.entries(game.inventory) as [ItemId, number][]).filter(
@@ -113,6 +115,11 @@
         {@const hint = temperamentHint(pet.traits.temperament)}
         <p class="temperament" title={hint}>
           {temperamentLabel(pet.traits.temperament)} <span class="muted">· {hint}</span>
+        </p>
+      {/if}
+      {#if bedtime && hatched}
+        <p class="muted bedtime">
+          {t('home.bedtime', { start: bedtime.startHour, end: bedtime.endHour })}
         </p>
       {/if}
       <p class="mood">{moodLabel(game.mood ?? 'ok')}</p>
@@ -331,6 +338,9 @@
     font-size: 0.85rem;
     font-weight: 600;
     color: var(--accent);
+  }
+  .bedtime {
+    font-size: 0.85rem;
   }
   .alerts {
     display: flex;
