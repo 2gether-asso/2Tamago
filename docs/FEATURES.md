@@ -75,12 +75,13 @@ Le jeu s'inspire de trois sources :
 
 ## 5. Administration et exploitation
 
-|     | Fonctionnalité                                                                                        | Notes                             |
-| --- | ----------------------------------------------------------------------------------------------------- | --------------------------------- |
-| ✅  | Réglages du jeu par variables d'environnement, dont l'accélération du temps (`GAME_TIME_SCALE`)       |                                   |
-| ✅  | Rôle admin à partir des identifiants Discord (`ADMIN_DISCORD_IDS`), une seule source de configuration | Aucune route admin pour l'instant |
-| ✅  | `/api/health`, image Docker, stack compose (Caddy + API + PostgreSQL), CI                             |                                   |
-| 🔜  | Interface d'admin : réglages en base, événements, codes cadeaux, modération des noms                  |                                   |
-| 🔜  | Sauvegardes PostgreSQL automatisées (pg_dump vers Azure Blob, comme 2Gatcha)                          |                                   |
-| 🔜  | Suivi des erreurs (GlitchTip/Sentry)                                                                  |                                   |
-| 💡  | Statistiques d'équilibrage : durée de vie moyenne, causes de départ                                   |                                   |
+|     | Fonctionnalité                                                                                        | Notes                           |
+| --- | ----------------------------------------------------------------------------------------------------- | ------------------------------- |
+| ✅  | Réglages du jeu par variables d'environnement, dont l'accélération du temps (`GAME_TIME_SCALE`)       |                                 |
+| ✅  | Rôle admin à partir des identifiants Discord (`ADMIN_DISCORD_IDS`), une seule source de configuration | Routes `/api/admin/*` réservées |
+| ✅  | `/api/health`, image Docker, stack compose (Caddy + API + PostgreSQL), CI                             |                                 |
+| ✅  | Réglages du jeu en base, éditables depuis l'écran Admin (JSON), sans redéploiement                    | Durée du temps et pas fixes     |
+| 🔜  | Interface d'admin : événements, codes cadeaux, modération des noms                                    |                                 |
+| 🔜  | Sauvegardes PostgreSQL automatisées (pg_dump vers Azure Blob, comme 2Gatcha)                          |                                 |
+| ✅  | Suivi des erreurs côté API (`SENTRY_DSN`, Sentry ou GlitchTip)                                        | Pas encore côté web             |
+| 💡  | Statistiques d'équilibrage : durée de vie moyenne, causes de départ                                   |                                 |

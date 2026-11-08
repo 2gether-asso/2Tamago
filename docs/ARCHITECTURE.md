@@ -104,17 +104,17 @@ Les corps de requête sont des schémas **Zod** dans `@2tamago/core/contracts`. 
 
 Un module Nest par domaine :
 
-| Module             | Contenu                                                                                                  |
-| ------------------ | -------------------------------------------------------------------------------------------------------- |
-| `config/`          | `AppConfig` : toutes les variables d'environnement validées une fois au démarrage, `Clock`, `GAME_RULES` |
-| `database/`        | Schéma Drizzle, ouverture de la base et migrations, `DrizzleModule`                                      |
-| `auth/`            | Garde global, cookie de session, Discord OAuth2, login de dev                                            |
-| `players/`         | Joueurs, pièces (bonus quotidien, plafond journalier), inventaire                                        |
-| `pets/`            | `GET /me`, adoption, actions du propriétaire, album, et `PetsService.mutate()`                           |
-| `social/`          | Village (visites, caresses, cadeaux), promenades et rencontres                                           |
-| `shop/`            | Achats                                                                                                   |
-| `activity/`        | Journal du joueur, écrit dans la transaction de l'action qui le produit                                  |
-| `game/`, `health/` | Règles publiques, sonde de santé                                                                         |
+| Module             | Contenu                                                                                    |
+| ------------------ | ------------------------------------------------------------------------------------------ |
+| `config/`          | `AppConfig` : toutes les variables d'environnement validées une fois au démarrage, `Clock` |
+| `database/`        | Schéma Drizzle, ouverture de la base et migrations, `DrizzleModule`                        |
+| `auth/`            | Garde global, cookie de session, Discord OAuth2, login de dev                              |
+| `players/`         | Joueurs, pièces (bonus quotidien, plafond journalier), inventaire                          |
+| `pets/`            | `GET /me`, adoption, actions du propriétaire, album, et `PetsService.mutate()`             |
+| `social/`          | Village (visites, caresses, cadeaux), promenades et rencontres                             |
+| `shop/`            | Achats                                                                                     |
+| `activity/`        | Journal du joueur, écrit dans la transaction de l'action qui le produit                    |
+| `game/`, `health/` | Règles publiques, sonde de santé                                                           |
 
 `Clock` est injectable, ce qui permet aux tests e2e de **voyager dans le temps** (faire éclore un œuf, laisser partir un compagnon délaissé).
 
@@ -129,6 +129,7 @@ Un module Nest par domaine :
 | `POST /pet/walk` · `POST /pet/walk/return`                                                           | Promenades                                                                  |
 | `GET /village` · `GET /village/:petId` · `POST /village/:petId/caress` · `POST /village/:petId/gift` | Social                                                                      |
 | `POST /shop/buy` · `GET /activity` · `POST /activity/read`                                           | Boutique, journal                                                           |
+| `GET /admin/rules` · `PUT /admin/rules`                                                              | Admin : réglages du jeu en base                                             |
 
 ### Modèle de données
 
@@ -143,6 +144,14 @@ Un module Nest par domaine :
 | `lib/components/PetSprite.svelte` | Rendu SVG du compagnon (espèce, stade, forme, humeur, accessoire) et détection des caresses au pointeur   |
 | `lib/texts.ts`                    | Tous les textes de l'interface, en français                                                               |
 | `routes/`                         | `/` (maison), `/login`, `/village`, `/village/[petId]`, `/shop`, `/journal`, `/album`                     |
+
+### Réglages du jeu en base
+
+`GameRulesService` (`api/src/game/`) fournit les règles en vigueur : les valeurs par défaut du moteur et l'environnement (`GAME_TIME_SCALE`, `GAME_DEPARTURE`), plus les **surcharges** stockées dans la table `game_settings` (clé `rules`, JSON). Les services lisent `current`, toujours à jour pour l'instance ; un admin les modifie via `PUT /api/admin/rules` (écran Admin du front) et le changement est immédiat, les autres instances le récupèrent en 30 s au plus. Le schéma Zod `rulesOverridesBody` (`shared/core`) refuse les clés inconnues et les valeurs absurdes. La vitesse du temps, le pas de simulation et le plafond de pas ne sont pas modifiables : les changer réécrirait la chronologie de tous les compagnons. Les surcharges des objets (`stageHours`…) se fusionnent clé par clé (`applyRulesOverrides`, dans le moteur). Pour tester l'écran en dev, `ADMIN_DISCORD_IDS=dev:<pseudo>` donne le rôle admin à un compte de connexion par pseudo.
+
+### Suivi des erreurs
+
+Avec `SENTRY_DSN` (Sentry, ou GlitchTip qui parle le même protocole), l'API signale les erreurs inattendues (5xx) via un filtre d'exceptions global ; sans la variable, rien n'est envoyé. Les refus du moteur (409) et les erreurs 4xx ne sont pas signalés.
 
 ## Ajouter une fonctionnalité
 
@@ -174,5 +183,4 @@ Un module Nest par domaine :
 ## Évolutions prévues
 
 - **Temps réel** : un gateway `@nestjs/websockets` authentifié par le même JWT, qui diffusera les événements du journal (visites, rencontres) et le parc en direct. Avec plusieurs instances, il faudra un adaptateur Redis ou `LISTEN/NOTIFY` de PostgreSQL.
-- **Réglages en base** : les `GameRules` sont aujourd'hui construites depuis l'environnement. Les lire depuis une table éditable par les admins ne change que le fournisseur `GAME_RULES`.
 - **Notifications push** : pour prévenir sans simulation en tâche de fond, on peut calculer à l'avance la prochaine échéance (faim, caca, caprice) avec le moteur et la stocker, puis faire tourner un petit planificateur (`@nestjs/schedule`).
