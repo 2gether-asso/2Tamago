@@ -27,6 +27,7 @@ export const errors = {
   'error.daycare_exists': 'Ce compagnon est déjà confié, ou une invitation est en attente.',
   'error.daycare_full': 'Cette personne s’occupe déjà d’autant de compagnons qu’elle le peut.',
   'error.no_daycare': 'Cette garderie n’existe plus.',
+  'error.work_cooldown': 'Tu as déjà travaillé il y a peu : reviens plus tard.',
   'error.trade_full': 'Tu as déjà trop d’échanges en attente.',
   'error.trade_invalid':
     'Cet échange n’est pas possible (un accessoire que l’autre possède déjà, par exemple).',

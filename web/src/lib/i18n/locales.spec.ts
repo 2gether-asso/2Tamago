@@ -38,6 +38,7 @@ const NAMESPACES: Record<string, string[]> = {
   admin: ['admin'],
   feedback: ['feedback'],
   errors: ['error'],
+  work: ['work'],
 };
 
 type Messages = Record<string, string>;
