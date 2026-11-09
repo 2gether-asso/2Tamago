@@ -33,6 +33,7 @@ export const errors: Record<keyof typeof fr, string> = {
   'error.trade_invalid':
     'This trade is not possible (an accessory the other already owns, for instance).',
   'error.no_trade': 'This trade no longer exists.',
+  'error.code_exists': 'This code already exists.',
   'error.no_code': 'This code does not exist.',
   'error.code_expired': 'This code has expired.',
   'error.code_used_up': 'This code has already been used as many times as it could be.',

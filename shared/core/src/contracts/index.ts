@@ -681,6 +681,7 @@ export const API_ERROR_CODES = [
   'already_claimed',
   'already_has_pet',
   'code_already_redeemed',
+  'code_exists',
   'code_expired',
   'code_used_up',
   'daycare_exists',

@@ -31,6 +31,7 @@ export const errors = {
   'error.trade_invalid':
     'Cet échange n’est pas possible (un accessoire que l’autre possède déjà, par exemple).',
   'error.no_trade': 'Cet échange n’existe plus.',
+  'error.code_exists': 'Ce code existe déjà.',
   'error.no_code': 'Ce code n’existe pas.',
   'error.code_expired': 'Ce code a expiré.',
   'error.code_used_up': 'Ce code a déjà été utilisé autant de fois qu’il pouvait l’être.',

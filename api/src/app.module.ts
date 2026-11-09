@@ -6,6 +6,7 @@ import { AnnouncementsModule } from './announcements/announcements.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { ErrorReportingFilter } from './common/error-reporter.js';
 import { GameErrorFilter } from './common/game-error.filter.js';
+import { CodesModule } from './codes/codes.module.js';
 import { ConfigModule } from './config/config.module.js';
 import { DatabaseModule } from './database/database.module.js';
 import { FeedbackModule } from './feedback/feedback.module.js';
@@ -25,6 +26,7 @@ import { SocialModule } from './social/social.module.js';
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 120 }]),
     GameModule,
     AuthModule,
+    CodesModule,
     ActivityModule,
     FeedbackModule,
     PetsModule,
