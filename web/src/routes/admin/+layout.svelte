@@ -21,6 +21,9 @@
     <a href="/admin/moderation" class:active={page.url.pathname === '/admin/moderation'}
       >{t('admin.tab_moderation')}</a
     >
+    <a href="/admin/events" class:active={page.url.pathname === '/admin/events'}
+      >{t('admin.tab_events')}</a
+    >
   </div>
 {/if}
 

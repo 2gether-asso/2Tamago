@@ -4,6 +4,8 @@
   import '../app.css';
   import favicon from '#lib/assets/favicon.svg';
   import FeedbackModal from '#lib/components/FeedbackModal.svelte';
+  import EventsBanner from '#lib/components/EventsBanner.svelte';
+  import { events } from '#lib/events.svelte.ts';
   import Toasts from '#lib/components/Toasts.svelte';
   import { clientConfig } from '#lib/client-config.svelte.ts';
   import { api } from '#lib/api.ts';
@@ -45,6 +47,11 @@
     document.documentElement.lang = i18n.locale;
   });
 
+  // Only for someone signed in: the bonuses are not shown on the login page.
+  $effect(() => {
+    if (game.loaded) events.start();
+  });
+
   $effect(() => {
     if (isLogin || game.loaded) return;
     game
@@ -59,6 +66,7 @@
     await push.forget();
     await api.logout();
     game.signOut();
+    events.stop();
     await goto('/login');
   }
 </script>
@@ -127,6 +135,7 @@
         <button onclick={() => location.reload()}>{t('common.retry')}</button>
       </div>
     {:else if game.loaded}
+      <EventsBanner />
       {@render children()}
     {:else}
       <p class="muted">{t('common.loading')}</p>

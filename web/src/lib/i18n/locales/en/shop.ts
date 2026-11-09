@@ -2,6 +2,13 @@ import type { shop as fr } from '../fr/shop.ts';
 
 /** The shop. */
 export const shop: Record<keyof typeof fr, string> = {
+  'promo.title': 'Events',
+  'promo.walk_coins': '🚶 Walks: +{percent}% coins found',
+  'promo.daily_bonus': '🎁 Daily bonus: +{percent}%',
+  'promo.caress_reward': '💞 Visit caresses: +{percent}% coins',
+  'promo.shop_discount': '🛍️ Shop: −{percent}%',
+  'promo.until': 'until {date}',
+  'promo.from': 'from {date}',
   'shop.code_title': 'Gift code',
   'shop.code_hint': 'Got a code? Enter it here.',
   'shop.code_label': 'Code',

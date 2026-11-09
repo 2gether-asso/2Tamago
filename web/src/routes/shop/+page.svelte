@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { isForSale, ITEMS, type ItemId } from '@2tamago/core';
+  import { discounted, isForSale, ITEMS, type ItemId } from '@2tamago/core';
+  import { events } from '#lib/events.svelte.ts';
   import { game } from '#lib/game.svelte.ts';
   import { t } from '#lib/i18n/index.svelte.ts';
   import { bundleLabel } from '#lib/texts.ts';
@@ -13,6 +14,9 @@
   const accessories = items.filter((item) => item.kind === 'accessory');
 
   let coins = $derived(game.player?.coins ?? 0);
+  /** What an item costs now: an event may take a percentage off. */
+  const priceOf = (item: { price: number }) =>
+    discounted(item.price, events.percent('shop_discount'));
 
   let code = $state('');
   let redeeming = $state(false);
@@ -68,8 +72,11 @@
           .join(', ')}
       </small>
       <small>{t('shop.in_bag', { count: game.inventory[item.id as ItemId] ?? 0 })}</small>
-      <button disabled={game.busy || coins < item.price} onclick={() => game.buy(item.id as ItemId)}
-        >🪙 {item.price}</button
+      <button
+        disabled={game.busy || coins < priceOf(item)}
+        onclick={() => game.buy(item.id as ItemId)}
+        >🪙 {priceOf(item)}{#if priceOf(item) < item.price}
+          <s class="was">{item.price}</s>{/if}</button
       >
     </div>
   {/each}
@@ -85,8 +92,10 @@
         <small>{t('shop.owned')}</small>
       {:else}
         <button
-          disabled={game.busy || coins < item.price}
-          onclick={() => game.buy(item.id as ItemId)}>🪙 {item.price}</button
+          disabled={game.busy || coins < priceOf(item)}
+          onclick={() => game.buy(item.id as ItemId)}
+          >🪙 {priceOf(item)}{#if priceOf(item) < item.price}
+            <s class="was">{item.price}</s>{/if}</button
         >
       {/if}
     </div>
@@ -94,6 +103,10 @@
 </div>
 
 <style>
+  .was {
+    opacity: 0.6;
+    margin-left: 0.3rem;
+  }
   .code {
     margin: 1rem 0;
   }

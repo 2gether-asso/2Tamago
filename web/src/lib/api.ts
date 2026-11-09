@@ -17,6 +17,9 @@ import type {
   PlayerProfile,
   VillagePet,
   VisitResponse,
+  EventBody,
+  EventsOverview,
+  GameEventDto,
   BlockedWordsBody,
   ModerationLogEntry,
   ModerationPerson,
@@ -171,6 +174,10 @@ export const api = {
   adminSaveBlockedWords: (words: string[]) =>
     call<BlockedWordsBody>('PUT', '/admin/moderation/blocked-words', { words }),
   adminModerationLog: () => call<ModerationLogEntry[]>('GET', '/admin/moderation/log'),
+  events: () => call<EventsOverview>('GET', '/events'),
+  adminEvents: () => call<GameEventDto[]>('GET', '/admin/events'),
+  adminCreateEvent: (body: EventBody) => call<GameEventDto>('POST', '/admin/events', body),
+  adminCancelEvent: (id: string) => call<void>('DELETE', `/admin/events/${id}`),
   adminStats: () => call<AdminStats>('GET', '/admin/stats'),
   adminRules: () => call<AdminRulesResponse>('GET', '/admin/rules'),
   saveAdminRules: (overrides: unknown) =>
