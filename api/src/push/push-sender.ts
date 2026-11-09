@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import type { PushPayload } from '@2tamago/core/contracts';
-import webpush from 'web-push';
+import * as webpush from 'web-push';
 import { AppConfig } from '../config/app-config.js';
 
 export interface PushTarget {
