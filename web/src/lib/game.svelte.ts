@@ -73,7 +73,13 @@ class Game {
 
   async act(action: OwnerActionBody): Promise<ActionResponse | null> {
     const result = await this.#run(() => api.act(action));
-    if (result && action.type === 'treat') this.#addItem(action.item, -1);
+    if (result) {
+      // What the action used up: a treat, a meal or a medicine (the free care has no item).
+      if (action.type === 'treat') this.#addItem(action.item, -1);
+      else if ((action.type === 'feed' || action.type === 'medicine') && action.item) {
+        this.#addItem(action.item, -1);
+      }
+    }
     return result;
   }
 

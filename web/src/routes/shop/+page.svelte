@@ -11,6 +11,8 @@
   // Some items can only be found on walks.
   const items = Object.values(ITEMS).filter((item) => isForSale(item.id));
   const snacks = items.filter((item) => item.kind === 'snack');
+  const meals = items.filter((item) => item.kind === 'meal');
+  const medicines = items.filter((item) => item.kind === 'medicine');
   const accessories = items.filter((item) => item.kind === 'accessory');
 
   let coins = $derived(game.player?.coins ?? 0);
@@ -41,6 +43,13 @@
     }
   }
 </script>
+
+{#snippet buy(item: { id: string; price: number })}
+  <button disabled={game.busy || coins < priceOf(item)} onclick={() => game.buy(item.id as ItemId)}
+    >🪙 {priceOf(item)}{#if priceOf(item) < item.price}
+      <s class="was">{item.price}</s>{/if}</button
+  >
+{/snippet}
 
 <h1>{t('shop.title')}</h1>
 <p class="muted">{t('shop.intro')}</p>
@@ -78,6 +87,36 @@
         >🪙 {priceOf(item)}{#if priceOf(item) < item.price}
           <s class="was">{item.price}</s>{/if}</button
       >
+    </div>
+  {/each}
+</div>
+
+<h2>{t('shop.meals')}</h2>
+<div class="grid">
+  {#each meals as item (item.id)}
+    <div class="card item">
+      <strong>{itemLabel(item.id as ItemId)}</strong>
+      <small class="muted">
+        {t('item.meal_hint', { satiety: item.satiety, group: t(`group.${item.group}`) })}
+      </small>
+      <small>{t('shop.in_bag', { count: game.inventory[item.id as ItemId] ?? 0 })}</small>
+      {@render buy(item)}
+    </div>
+  {/each}
+</div>
+
+<h2>{t('shop.medicines')}</h2>
+<div class="grid">
+  {#each medicines as item (item.id)}
+    <div class="card item">
+      <strong>{itemLabel(item.id as ItemId)}</strong>
+      <small class="muted">
+        {item.cures === 'any'
+          ? t('item.medicine_hint_any', { doses: game.rules?.medicineDoses ?? 2 })
+          : t('item.medicine_hint', { illness: t(`illness.${item.cures}`) })}
+      </small>
+      <small>{t('shop.in_bag', { count: game.inventory[item.id as ItemId] ?? 0 })}</small>
+      {@render buy(item)}
     </div>
   {/each}
 </div>

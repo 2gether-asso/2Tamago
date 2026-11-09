@@ -96,6 +96,13 @@ export const rulesOverridesBody = z
     starvingHealthLossPerHour: nonNegative,
     healthRegenPerHour: nonNegative,
     overweightThreshold: nonNegative,
+    freeMealSatiety: z.number().min(0).max(100),
+    fullSatiety: z.number().min(0).max(100),
+    overfeedWeight: nonNegative,
+    dietWindow: z.number().int().min(1).max(20),
+    balancedRegenFactor: nonNegative,
+    freeMedicineDose: nonNegative,
+    wrongMedicineDose: nonNegative,
     mistakeGraceHours: nonNegative,
     tantrumIntervalHours: positive,
     tantrumWindowHours: nonNegative,
@@ -196,11 +203,13 @@ export const adoptBody = z.object({
 export type AdoptBody = z.infer<typeof adoptBody>;
 
 export const ownerActionBody = z.discriminatedUnion('type', [
-  z.object({ type: z.literal('feed') }),
+  /** Without an item: the free (small) ration. With one: a meal from the bag. */
+  z.object({ type: z.literal('feed'), item: itemId.optional() }),
   z.object({ type: z.literal('treat'), item: itemId }),
   z.object({ type: z.literal('play'), score: z.number().int().min(0).max(3) }),
   z.object({ type: z.literal('clean') }),
-  z.object({ type: z.literal('medicine') }),
+  /** Without an item: the free (weak) care. With one: a medicine from the bag. */
+  z.object({ type: z.literal('medicine'), item: itemId.optional() }),
   z.object({ type: z.literal('sleep') }),
   z.object({ type: z.literal('wake') }),
   z.object({ type: z.literal('lights'), on: z.boolean() }),

@@ -62,4 +62,19 @@ export const home = {
   'walk.encounters': 'Rencontres',
   'walk.nobody': 'Personne d’autre ne se promenait à ce moment-là.',
   'walk.ok': 'Super !',
+
+  'home.diet': 'Alimentation : {status}',
+  'home.illness': 'Maladie : {illness}',
+  'care.cancel': 'Annuler',
+  'care.shop': '🛍️ Aller à la boutique',
+  'care.in_bag': '×{count}',
+  'care.feed.title': 'Que lui donner à manger ?',
+  'care.feed.free': 'Ration simple',
+  'care.feed.free_hint': 'Gratuite : satiété +{satiety}, sans effet sur l’équilibre alimentaire.',
+  'care.feed.empty': 'Ton sac ne contient aucun repas : la boutique en vend.',
+  'care.medicine.title': 'Comment le soigner ?',
+  'care.medicine.free': 'Soins de base',
+  'care.medicine.free_hint':
+    'Gratuits, mais lents : il en faut environ {count} pour le guérir, et il n’aime pas ça.',
+  'care.medicine.empty': 'Ton sac ne contient aucun remède : la boutique en vend.',
 } as const;

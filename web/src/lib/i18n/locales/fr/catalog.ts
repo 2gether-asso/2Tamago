@@ -8,6 +8,14 @@ export const catalog = {
   'item.mushroom': 'Champignon',
   'item.coconut': 'Noix de coco',
   'item.ice_cream': 'Glace',
+  'item.rice_bowl': 'Bol de riz',
+  'item.veggie_stew': 'Ragoût de légumes',
+  'item.grilled_fish': 'Poisson grillé',
+  'item.fruit_salad': 'Salade de fruits',
+  'item.syrup': 'Sirop',
+  'item.antibiotic': 'Antibiotique',
+  'item.digestive_tea': 'Tisane digestive',
+  'item.vitamins': 'Vitamines',
   'item.flower_crown': 'Couronne de fleurs',
   'item.starfish': 'Étoile de mer',
   'item.ribbon': 'Nœud',
@@ -84,4 +92,29 @@ export const catalog = {
   'stat.title': '{label} : {value} / 100',
 
   'pet.label': 'Compagnon',
+
+  'group.grain': 'Céréales',
+  'group.veg': 'Légumes',
+  'group.protein': 'Protéines',
+  'group.fruit': 'Fruits',
+  'group.sweet': 'Sucreries',
+  'item.meal_hint': 'Satiété +{satiety} · {group}',
+  'item.medicine_hint_any': 'Soigne un peu de tout : il en faut {doses}.',
+  'item.medicine_hint': 'Guérit tout de suite : {illness}.',
+
+  'illness.infection': 'Infection',
+  'illness.infection.hint': 'Venue de la saleté. L’antibiotique la guérit.',
+  'illness.indigestion': 'Indigestion',
+  'illness.indigestion.hint':
+    'Venue d’un excès de sucreries ou de poids. La tisane digestive la guérit.',
+  'illness.weakness': 'Faiblesse',
+  'illness.weakness.hint': 'Venue de la faim. Les vitamines la guérissent.',
+
+  'diet.balanced': 'Équilibrée',
+  'diet.balanced.hint': 'Variée : il récupère plus vite.',
+  'diet.neutral': 'Moyenne',
+  'diet.neutral.hint':
+    'Varie les repas (3 groupes différents, peu de sucreries) pour l’équilibrer.',
+  'diet.unbalanced': 'Déséquilibrée',
+  'diet.unbalanced.hint': 'Trop de sucreries : il risque l’indigestion.',
 } as const;
