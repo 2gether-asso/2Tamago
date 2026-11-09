@@ -81,18 +81,20 @@ Le jeu s'inspire de trois sources :
 
 ## 5. Administration et exploitation
 
-|     | Fonctionnalité                                                                                                               | Notes                                                     |
-| --- | ---------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
-| ✅  | Interface en français et en anglais (langue du navigateur, bouton FR / EN)                                                   | Le web possède tous les textes ; voir [I18N.md](I18N.md)  |
-| ✅  | Thème jour / nuit de l'interface (automatique, jour ou nuit), aux couleurs de 2GETHER                                        | Choix mémorisé dans le navigateur                         |
-| ✅  | Réglages du jeu par variables d'environnement, dont l'accélération du temps (`GAME_TIME_SCALE`)                              |                                                           |
-| ✅  | Connexion Discord réservée aux membres du serveur, avec lien d'invitation et messages d'erreur clairs                        | Tests du parcours complet ; voir [DISCORD.md](DISCORD.md) |
-| ✅  | Rôle admin à partir des identifiants Discord (`ADMIN_DISCORD_IDS`), une seule source de configuration                        | Routes `/api/admin/*` réservées                           |
-| ✅  | `/api/health`, image Docker, stack compose (API + PostgreSQL), front sur GitHub Pages, CI                                    |                                                           |
-| ✅  | Réglages du jeu en base, éditables depuis l'écran Admin (JSON), sans redéploiement                                           | Durée du temps et pas fixes                               |
-| 🔜  | Interface d'admin : événements, codes cadeaux, modération des noms                                                           |                                                           |
-| 🔜  | Sauvegardes PostgreSQL automatisées (pg_dump vers Azure Blob, comme 2Gatcha)                                                 |                                                           |
-| ✅  | Suivi des erreurs côté API (`SENTRY_DSN`, Sentry ou GlitchTip)                                                               |                                                           |
-| ✅  | Suivi des erreurs côté web (`SENTRY_WEB_DSN`, chargé seulement si configuré)                                                 |                                                           |
-| ✅  | « Donner un avis » : bug, idée ou autre, transmis à GlitchTip avec une sévérité selon le type                                | Nécessite `SENTRY_DSN`                                    |
-| ✅  | Statistiques de l'admin : joueurs, compagnons, économie, activité sur 14 jours, et équilibrage par tempérament et par espèce | Onglet « Statistiques » de l'écran Admin                  |
+|     | Fonctionnalité                                                                                                                                               | Notes                                                                      |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------- |
+| ✅  | Interface en français et en anglais (langue du navigateur, bouton FR / EN)                                                                                   | Le web possède tous les textes ; voir [I18N.md](I18N.md)                   |
+| ✅  | Thème jour / nuit de l'interface (automatique, jour ou nuit), aux couleurs de 2GETHER                                                                        | Choix mémorisé dans le navigateur                                          |
+| ✅  | Réglages du jeu par variables d'environnement, dont l'accélération du temps (`GAME_TIME_SCALE`)                                                              |                                                                            |
+| ✅  | Connexion Discord réservée aux membres du serveur, avec lien d'invitation et messages d'erreur clairs                                                        | Tests du parcours complet ; voir [DISCORD.md](DISCORD.md)                  |
+| ✅  | Rôle admin à partir des identifiants Discord (`ADMIN_DISCORD_IDS`), une seule source de configuration                                                        | Routes `/api/admin/*` réservées                                            |
+| ✅  | `/api/health`, image Docker, stack compose (API + PostgreSQL), front sur GitHub Pages, CI                                                                    |                                                                            |
+| ✅  | Réglages du jeu en base, éditables depuis l'écran Admin (JSON), sans redéploiement                                                                           | Durée du temps et pas fixes                                                |
+| ✅  | Codes cadeaux : pièces et objets, une fois par membre, nombre d'utilisations et date limite, désactivables ; saisis dans la boutique                         | Voir « Codes cadeaux et événements » dans [GAME_DESIGN.md](GAME_DESIGN.md) |
+| ✅  | Événements programmés : +% de pièces en promenade, de bonus du jour ou de caresses, réduction de la boutique ; bandeau dans l'application et annonce Discord | Écran Admin, onglet « Événements »                                         |
+| ✅  | Modération des noms : mots interdits à l'adoption, recherche de membres, renommage du membre ou du compagnon (nom imposé), journal de modération             | Écran Admin, onglet « Modération »                                         |
+| 🔜  | Sauvegardes PostgreSQL automatisées (pg_dump vers Azure Blob, comme 2Gatcha)                                                                                 |                                                                            |
+| ✅  | Suivi des erreurs côté API (`SENTRY_DSN`, Sentry ou GlitchTip)                                                                                               |                                                                            |
+| ✅  | Suivi des erreurs côté web (`SENTRY_WEB_DSN`, chargé seulement si configuré)                                                                                 |                                                                            |
+| ✅  | « Donner un avis » : bug, idée ou autre, transmis à GlitchTip avec une sévérité selon le type                                                                | Nécessite `SENTRY_DSN`                                                     |
+| ✅  | Statistiques de l'admin : joueurs, compagnons, économie, activité sur 14 jours, et équilibrage par tempérament et par espèce                                 | Onglet « Statistiques » de l'écran Admin                                   |

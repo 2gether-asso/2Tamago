@@ -187,6 +187,19 @@ Les valeurs sont la règle `temperaments` de `GameRules` : un admin peut les mod
 
 Prix : biscuit 8, fraise 12, lait chaud 15, gâteau 30, nœud 50, chapeau 80, lunettes 120, couronne 300. Les objets qu'on ne trouve qu'en promenade (mûre, champignon, noix de coco, glace, couronne de fleurs, étoile de mer) ne sont pas vendus : la boutique les refuse (`not_for_sale`).
 
+## Codes cadeaux et événements
+
+Deux outils d'animation, réservés aux admins (écran Admin) :
+
+- **Codes cadeaux** : un code (lettres, chiffres et tirets, 4 à 24 caractères, stocké en majuscules : la casse n'a pas d'importance) donne des pièces (jusqu'à 1 000) et des objets (4 sortes au plus, 20 exemplaires de chacune). Chaque membre ne peut l'utiliser qu'une fois, jusqu'à un nombre d'utilisations total et une date limite facultative ; un admin peut le désactiver. Les membres l'entrent dans la boutique. Un code désactivé est traité comme un code inconnu. Le dernier usage est pris en une seule instruction : de deux membres simultanés, un seul l'obtient (`code_used_up` pour l'autre), et une tentative refusée ne compte pas comme un usage. La saisie est limitée (10 essais par minute) pour qu'un code ne se devine pas.
+- **Événements** : un bonus pour tout le monde pendant quelques jours (14 au plus), annoncé sur un bandeau de l'application et dans le salon Discord (avec l'heure affichée dans le fuseau de chacun). Quatre effets : pièces trouvées en promenade (+ %), bonus du jour (+ %), pièces des caresses de visite (+ %) et réduction de la boutique (− %, 90 % au plus : jamais gratuit). Plusieurs événements du même effet en même temps ne s'additionnent pas : le meilleur compte. Les calculs sont dans `shared/core/src/engine/events.ts` (`boosted`, `discounted`, `bestPercent`) ; le serveur les applique quand il verse des pièces ou fixe un prix, et la boutique affiche le prix réduit.
+
+## Modération des noms
+
+- **Mots interdits** : une liste tenue par les admins. Elle est vérifiée à l'adoption (`name_not_allowed`), sans tenir compte des majuscules, des accents, des espaces ni des chiffres qui ressemblent à des lettres (« h4te » est « hate »), et à l'intérieur des mots (`blockedTerm`, dans `shared/core/src/engine/names.ts`) : un mot court comme « ass » se trouve aussi dans « classe », il faut les choisir avec soin.
+- **Renommer** : un admin cherche un membre (par son nom ou celui de son compagnon) et renomme le membre ou son compagnon. Le membre est prévenu dans son journal. Le nom d'un membre renommé est **imposé** : se reconnecter avec Discord ne le remplace plus, jusqu'à ce qu'un admin « rende le nom Discord » (il revient à la connexion suivante).
+- **Journal de modération** : chaque renommage, restitution de nom et changement de la liste est enregistré (qui, quand, avant, après).
+
 ## Interactions entre joueurs
 
 - **Caresse d'un visiteur** : bonheur +8 pour le compagnon visité, une fois par jour et par visiteur.
