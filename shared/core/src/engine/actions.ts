@@ -1,4 +1,5 @@
 import { getItem, isAccessory, isSnack, type ItemId } from './catalog.js';
+import { recordMeal } from './diet.js';
 import { GameError } from './errors.js';
 import { alignToGrid, gameHours, type GameRules } from './rules.js';
 import { clamp, endVacation, simulate } from './simulate.js';
@@ -55,11 +56,13 @@ export function createPet(input: NewPetInput, rules: GameRules): PetState {
 
 /** Actions the owner can do on their own pet. */
 export type OwnerAction =
-  | { type: 'feed' }
+  /** Without an item: the free ration. With a meal: its satiety, its food group. */
+  | { type: 'feed'; item?: ItemId }
   | { type: 'treat'; item: ItemId }
   | { type: 'play'; score: number }
   | { type: 'clean' }
-  | { type: 'medicine' }
+  /** Without an item: the free, weak care. With a medicine: its effect. */
+  | { type: 'medicine'; item?: ItemId }
   | { type: 'sleep' }
   | { type: 'wake' }
   | { type: 'lights'; on: boolean }
@@ -137,9 +140,17 @@ export function applyAction(
   switch (action.type) {
     case 'feed': {
       requireAwake();
-      if (s.satiety >= 95) throw new GameError('not_hungry');
-      add('satiety', 35);
-      state.weight += 1;
+      if (s.satiety >= rules.fullSatiety) throw new GameError('not_hungry');
+      if (action.item === undefined) {
+        add('satiety', rules.freeMealSatiety);
+        state.weight += 1;
+        break;
+      }
+      const meal = getItem(action.item);
+      if (meal?.kind !== 'meal') throw new GameError('unknown_item');
+      add('satiety', meal.satiety);
+      state.weight += meal.weight;
+      recordMeal(state, meal.group, rules);
       break;
     }
     case 'treat':
@@ -148,8 +159,11 @@ export function applyAction(
       const item = getItem(action.item);
       if (!item || !isSnack(action.item) || item.kind !== 'snack')
         throw new GameError('unknown_item');
+      // Stuffing a full pet with treats: it only gets fatter.
+      if (s.satiety >= rules.fullSatiety) state.weight += rules.overfeedWeight;
       for (const [key, value] of Object.entries(item.effects)) add(key as keyof typeof s, value);
       state.weight += item.weight;
+      recordMeal(state, item.group ?? 'sweet', rules);
       if (action.type === 'treat') state.bond = clamp(state.bond + 1);
       break;
     }
@@ -173,12 +187,23 @@ export function applyAction(
     case 'medicine': {
       requireHome();
       if (state.sickSince === null) throw new GameError('not_sick');
-      state.medicineDoses++;
-      add('happiness', -5);
-      if (state.medicineDoses >= rules.medicineDoses) {
+      let dose = rules.freeMedicineDose;
+      let cure = false;
+      if (action.item !== undefined) {
+        const medicine = getItem(action.item);
+        if (medicine?.kind !== 'medicine') throw new GameError('unknown_item');
+        if (medicine.cures === 'any') dose = 1;
+        else if (medicine.cures === state.illness) cure = true;
+        else dose = rules.wrongMedicineDose;
+      }
+      state.medicineDoses += dose;
+      add('happiness', action.item === undefined ? -5 : -2);
+      if (cure || state.medicineDoses >= rules.medicineDoses) {
+        const illness = state.illness ?? null;
         state.sickSince = null;
+        state.illness = null;
         state.medicineDoses = 0;
-        events.push({ type: 'cured', at });
+        events.push({ type: 'cured', at, data: { illness } });
       }
       break;
     }

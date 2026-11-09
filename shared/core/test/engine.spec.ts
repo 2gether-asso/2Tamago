@@ -117,11 +117,13 @@ describe('applyAction', () => {
     expect(() => applyAction(egg, { type: 'feed' }, T0, rules)).toThrowError(/œuf/);
   });
 
-  it('cures sickness after enough medicine doses', () => {
+  it('cures sickness after enough free medicine doses (a weak care)', () => {
     let pet: PetState = { ...hatched(), sickSince: T0 };
     const now = pet.simulatedAt;
-    pet = applyAction(pet, { type: 'medicine' }, now, rules).state;
-    expect(pet.sickSince).not.toBeNull();
+    for (let i = 0; i < rules.medicineDoses / rules.freeMedicineDose - 1; i++) {
+      pet = applyAction(pet, { type: 'medicine' }, now, rules).state;
+      expect(pet.sickSince).not.toBeNull();
+    }
     const result = applyAction(pet, { type: 'medicine' }, now, rules);
     expect(result.state.sickSince).toBeNull();
     expect(result.events.map((e) => e.type)).toContain('cured');

@@ -29,7 +29,7 @@ describe('caretaker actions', () => {
     // The care does what the owner's does: a hungry baby is fed.
     const hungry = { ...baby, stats: { ...baby.stats, satiety: 10 }, asleep: false };
     const fed = applyAction(hungry, { type: 'feed' }, baby.simulatedAt, rules).state;
-    expect(fed.stats.satiety).toBeGreaterThan(40);
+    expect(fed.stats.satiety).toBe(10 + rules.freeMealSatiety);
   });
 
   it('leave the owner’s own choices to the owner', () => {
