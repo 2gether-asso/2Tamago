@@ -18,7 +18,7 @@ function sprite(species: Species, pattern: Pattern, eyes: (typeof EYES)[number] 
 }
 
 /** Species with parts behind the body (ears, tail, spikes), which get their own coat. */
-const HAS_BACK = new Set<Species>(['pyon', 'koro', 'nyao', 'toge']);
+const HAS_BACK = new Set<Species>(['pyon', 'koro', 'nyao', 'toge', 'kame']);
 
 const SHAPE = /<(?:ellipse|circle|rect|path)\b[^>]*>/g;
 const shapes = (markup: string) => markup.match(SHAPE) ?? [];

@@ -198,4 +198,5 @@ export const SPECIES_LABELS: Record<Species, string> = {
   koro: 'Koro',
   nyao: 'Nyao',
   toge: 'Toge',
+  kame: 'Kame',
 };
