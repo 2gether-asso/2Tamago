@@ -10,7 +10,11 @@ export abstract class FeedbackReporter {
 @Injectable()
 export class SentryFeedbackReporter extends FeedbackReporter {
   override async report(report: FeedbackReport): Promise<void> {
-    Sentry.captureMessage(report.message, {
+    // A plain message event, not captureMessage(): that one attaches a synthetic exception with
+    // the reporter's own stack trace, and GlitchTip then titles the issue after the code frame
+    // instead of the player's message.
+    Sentry.captureEvent({
+      message: report.message,
       level: report.level,
       tags: report.tags,
       fingerprint: report.fingerprint,
