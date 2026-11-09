@@ -12,6 +12,7 @@ import { DatabaseModule } from './database/database.module.js';
 import { FeedbackModule } from './feedback/feedback.module.js';
 import { GameModule } from './game/game.module.js';
 import { HealthController } from './health/health.controller.js';
+import { ModerationModule } from './moderation/moderation.module.js';
 import { PetsModule } from './pets/pets.module.js';
 import { PushModule } from './push/push.module.js';
 import { ShopModule } from './shop/shop.module.js';
@@ -30,6 +31,7 @@ import { SocialModule } from './social/social.module.js';
     ActivityModule,
     FeedbackModule,
     PetsModule,
+    ModerationModule,
     ProfileModule,
     PushModule,
     ShopModule,

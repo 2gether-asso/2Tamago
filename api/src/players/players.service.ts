@@ -50,7 +50,12 @@ export class PlayersService {
       .values(input)
       .onConflictDoUpdate({
         target: players.discordId,
-        set: { displayName: input.displayName, avatarUrl: input.avatarUrl, lastSeenAt: new Date() },
+        set: {
+          // A name an admin set stays, whatever Discord says.
+          displayName: sql`case when ${players.nameLocked} then ${players.displayName} else ${input.displayName} end`,
+          avatarUrl: input.avatarUrl,
+          lastSeenAt: new Date(),
+        },
       })
       .returning();
     if (!existing) this.announcements.newPlayer(row!.displayName);
