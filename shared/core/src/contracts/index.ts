@@ -183,6 +183,34 @@ export const feedbackBody = z.object({
 });
 export type FeedbackBody = z.infer<typeof feedbackBody>;
 
+/** One sign-in of the player, as the account page lists it. */
+export interface AccountSession {
+  id: string;
+  /** The session this very request comes from. */
+  current: boolean;
+  createdAt: number;
+  lastUsedAt: number;
+  /** When it ends if nothing renews it (the idle delay or the absolute limit, whichever is first). */
+  expiresAt: number;
+  /** The IP of the last renewal. */
+  ip: string;
+  /** Browser and system, as `chrome/windows` (the web app writes the text). */
+  family: string;
+}
+
+/** `GET /account`: what the player manages about themself. */
+export interface AccountOverview {
+  displayName: string;
+  /** An admin set the name: the player cannot change it. */
+  nameLocked: boolean;
+  memberSince: number;
+  sessions: AccountSession[];
+}
+
+/** `PUT /account/name`: same rules as when an admin renames (see `renameBody`). */
+export const accountNameBody = z.object({ name: z.string().trim().min(2).max(32) });
+export type AccountNameBody = z.infer<typeof accountNameBody>;
+
 export type DevLoginBody = z.infer<typeof devLoginBody>;
 
 export const adoptBody = z.object({
@@ -827,7 +855,9 @@ export const API_ERROR_CODES = [
   'feedback_disabled',
   'goal_not_reached',
   'missing_item',
+  'name_locked',
   'name_not_allowed',
+  'no_session',
   'no_code',
   'no_contribution',
   'no_entry',

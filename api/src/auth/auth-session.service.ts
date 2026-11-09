@@ -1,11 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { InjectDrizzle } from '@nestjs/drizzle';
 import { JwtService } from '@nestjs/jwt';
-import { eq, lt, or } from 'drizzle-orm';
+import { and, desc, eq, gt, lt, ne, or } from 'drizzle-orm';
 import { Clock } from '../common/clock.js';
 import { AppConfig } from '../config/app-config.js';
 import type { Database } from '../database/database.js';
-import { authCodes, authProofs, authSessions, players } from '../database/schema.js';
+import {
+  authCodes,
+  authProofs,
+  authSessions,
+  players,
+  type AuthSessionRow,
+} from '../database/schema.js';
 import { AuthError } from './auth-error.js';
 import type { ClientInfo } from './client-info.js';
 import { hashSecret, pkceChallenge, randomToken } from './crypto.js';
@@ -205,6 +211,42 @@ export class AuthSessionService {
 
   async revoke(sessionId: string): Promise<void> {
     await this.db.delete(authSessions).where(eq(authSessions.id, sessionId));
+  }
+
+  /** The live sessions of a player, most recently used first. */
+  async listFor(playerId: string): Promise<AuthSessionRow[]> {
+    const at = new Date(this.clock.now());
+    return this.db
+      .select()
+      .from(authSessions)
+      .where(
+        and(
+          eq(authSessions.playerId, playerId),
+          gt(authSessions.idleExpiresAt, at),
+          gt(authSessions.absoluteExpiresAt, at),
+        ),
+      )
+      .orderBy(desc(authSessions.lastUsedAt));
+  }
+
+  /** Ends one session of this player; false when it is not theirs (or already gone). */
+  async revokeOf(playerId: string, sessionId: string): Promise<boolean> {
+    const removed = await this.db
+      .delete(authSessions)
+      .where(and(eq(authSessions.id, sessionId), eq(authSessions.playerId, playerId)))
+      .returning({ id: authSessions.id });
+    return removed.length > 0;
+  }
+
+  /** Ends every session of this player but `keep`. Returns how many. */
+  async revokeOthers(playerId: string, keep: string | undefined): Promise<number> {
+    const removed = await this.db
+      .delete(authSessions)
+      .where(
+        and(eq(authSessions.playerId, playerId), keep ? ne(authSessions.id, keep) : undefined),
+      )
+      .returning({ id: authSessions.id });
+    return removed.length;
   }
 
   /** Whether this discord account is an admin; read at each renewal, so a change applies soon. */

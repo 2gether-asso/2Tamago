@@ -30,6 +30,8 @@ export const players = pgTable('players', {
   displayName: text('display_name').notNull(),
   /** An admin set the name: the Discord name no longer replaces it at sign-in. */
   nameLocked: boolean('name_locked').notNull().default(false),
+  /** The lock is an admin's: the player cannot change the name themselves either. */
+  nameByAdmin: boolean('name_by_admin').notNull().default(false),
   avatarUrl: text('avatar_url'),
   coins: integer().notNull().default(50),
   lastDailyBonusDay: text('last_daily_bonus_day'),
