@@ -209,6 +209,31 @@
     {#if part === 'front'}
       <ellipse cx="100" cy="130" rx="58" ry="50" fill={body} stroke={line} stroke-width="4" />
     {/if}
+  {:else if species === 'kame'}
+    <!-- Turtle-like: a domed shell behind a low body, and a small tail -->
+    {#if part === 'back'}
+      <path
+        d="M 28 158 C 24 78, 62 44, 100 44 C 138 44, 176 78, 172 158 Z"
+        fill={shade}
+        stroke={line}
+        stroke-width="4"
+        stroke-linejoin="round"
+      />
+      <ellipse
+        class="tail"
+        cx="172"
+        cy="166"
+        rx="12"
+        ry="7"
+        fill={body}
+        stroke={line}
+        stroke-width="4"
+        transform="rotate(20 172 166)"
+      />
+    {/if}
+    {#if part === 'front'}
+      <ellipse cx="100" cy="132" rx="52" ry="46" fill={body} stroke={line} stroke-width="4" />
+    {/if}
   {:else if part === 'front'}
     <path
       d="M 36 150 C 30 80, 70 58, 100 58 C 130 58, 170 80, 164 150 C 162 176, 38 176, 36 150 Z"
@@ -306,6 +331,14 @@
           {/if}
         {/each}
 
+        {#if species === 'kame'}
+          <!-- Scutes of the shell, above the face -->
+          <g stroke={line} stroke-width="3" stroke-linecap="round" fill="none" opacity="0.55">
+            <path d="M 100 48 v 24 M 72 62 l 14 10 M 128 62 l -14 -10" />
+            <path d="M 52 96 l 20 -10 M 148 96 l -20 -10 M 86 72 h 28" />
+          </g>
+        {/if}
+
         <!-- Feet -->
         <ellipse cx="74" cy="178" rx="14" ry="7" fill={shade} stroke={line} stroke-width="3" />
         <ellipse cx="126" cy="178" rx="14" ry="7" fill={shade} stroke={line} stroke-width="3" />
@@ -373,6 +406,8 @@
           <ellipse cx="100" cy="131" rx="7" ry="5" fill={line} />
         {:else if species === 'toge'}
           <ellipse cx="100" cy="131" rx="5" ry="4" fill={line} />
+        {:else if species === 'kame'}
+          <path d="M 94 130 h 12" stroke={line} stroke-width="3" stroke-linecap="round" />
         {/if}
         {#if form !== 'rascal'}
           <ellipse

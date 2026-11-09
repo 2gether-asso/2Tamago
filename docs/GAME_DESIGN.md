@@ -212,7 +212,7 @@ L'œuf n'a pas de nuit. Les heures générales de la règle `night` (`startHour`
 
 ## Espèces, apparence et tempérament
 
-Six espèces, toutes des créatures abstraites qui évoquent un animal : **Mochi** (blob), **Pyon** (lapin), **Kumo** (nuage), **Koro** (chien), **Nyao** (chat) et **Toge** (hérisson). **Les espèces sont purement visuelles** : aucune n'a de règle propre, aucune n'est meilleure qu'une autre.
+Sept espèces, toutes des créatures abstraites qui évoquent un animal : **Mochi** (blob), **Pyon** (lapin), **Kumo** (nuage), **Koro** (chien), **Nyao** (chat) **Toge** (hérisson) et **Kame** (tortue). **Les espèces sont purement visuelles** : aucune n'a de règle propre, aucune n'est meilleure qu'une autre.
 
 À l'adoption, le joueur choisit l'espèce, la teinte et le nom. Le serveur tire en plus une **graine aléatoire** dont le moteur déduit (`rollTraits`, `shared/core/src/engine/traits.ts`) :
 

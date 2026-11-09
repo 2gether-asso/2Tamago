@@ -7,7 +7,7 @@
 import type { RpgSheet } from './rpg.js';
 import type { WalkZoneId } from './zones.js';
 
-export const SPECIES = ['mochi', 'pyon', 'kumo', 'koro', 'nyao', 'toge'] as const;
+export const SPECIES = ['mochi', 'pyon', 'kumo', 'koro', 'nyao', 'toge', 'kame'] as const;
 export type Species = (typeof SPECIES)[number];
 
 /** Personality, rolled once per pet. Each one nudges the rules with a pro and a con (see `traits.ts`). */
