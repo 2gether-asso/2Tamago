@@ -10,6 +10,7 @@ import { CodesModule } from './codes/codes.module.js';
 import { ConfigModule } from './config/config.module.js';
 import { DatabaseModule } from './database/database.module.js';
 import { ContestsModule } from './contests/contests.module.js';
+import { WorkModule } from './work/work.module.js';
 import { EventsModule } from './events/events.module.js';
 import { FeedbackModule } from './feedback/feedback.module.js';
 import { GameModule } from './game/game.module.js';
@@ -31,6 +32,7 @@ import { SocialModule } from './social/social.module.js';
     AuthModule,
     CodesModule,
     ContestsModule,
+    WorkModule,
     EventsModule,
     ActivityModule,
     FeedbackModule,

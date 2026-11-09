@@ -8,6 +8,7 @@ import { WALK_ZONE_IDS, type WalkZoneId } from '../engine/zones.js';
 import { TRADE_LIMITS, tradeProblem } from '../engine/trade.js';
 import { CONTEST_KINDS, type ContestKind, type ContestProblem } from '../engine/contests.js';
 import { EVENT_KINDS, EVENT_LIMITS, maxPercent, type EventKind } from '../engine/events.js';
+import { WORK } from '../engine/work.js';
 import type { GameErrorCode } from '../engine/errors.js';
 import type { Alert, Mood } from '../engine/view.js';
 import type { GameRules, RulesOverrides } from '../engine/rules.js';
@@ -419,6 +420,30 @@ export interface ContestsOverview {
 export interface ContestClaimResponse {
   prize: number;
   coins: number;
+}
+
+/** The score of the player's skill game (the server pays it, once per hour). */
+export const workBody = z.object({ score: z.number().int().min(0).max(WORK.rounds) });
+export type WorkBody = z.infer<typeof workBody>;
+
+/** When each job can be done again (epoch ms; 0 or in the past: now). */
+export interface WorkStatus {
+  playerAvailableAt: number;
+  petAvailableAt: number;
+  /** What the companion would earn at best and at worst, from its ability today. */
+  petWageRange: { min: number; max: number };
+}
+
+export interface WorkResponse {
+  /** Coins earned by this job. */
+  earned: number;
+  coins: number;
+  status: WorkStatus;
+}
+
+export interface PetWorkResponse extends WorkResponse {
+  pet: PetDto;
+  events: PetEvent[];
 }
 
 /** Entrusting one's companion to another member. */
@@ -840,6 +865,7 @@ export const API_ERROR_CODES = [
   'not_enough_coins',
   'not_for_sale',
   'trade_full',
+  'work_cooldown',
   'trade_invalid',
   'not_giftable',
   'own_pet',
