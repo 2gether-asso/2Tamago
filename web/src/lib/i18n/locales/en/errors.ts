@@ -30,6 +30,7 @@ export const errors: Record<keyof typeof fr, string> = {
   'error.daycare_full': 'This person already looks after as many companions as they can.',
   'error.no_daycare': 'This daycare no longer exists.',
   'error.trade_full': 'You already have too many trades waiting.',
+  'error.wish_already_asked': 'You already asked for this item today.',
   'error.trade_invalid':
     'This trade is not possible (an accessory the other already owns, for instance).',
   'error.no_trade': 'This trade no longer exists.',

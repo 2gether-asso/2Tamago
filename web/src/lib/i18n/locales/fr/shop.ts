@@ -15,6 +15,12 @@ export const shop = {
   'shop.code_coins_other': '{count} pièces',
   'shop.code_done': 'Code accepté : {reward}.',
   'shop.title': 'Boutique',
+  'shop.wish_title': 'Ma liste d’envies',
+  'shop.wish_hint':
+    'Marque avec 🤍 les objets que tu aimerais avoir ({max} au plus). Les autres les voient sur ton profil, et tu peux les demander depuis le leur.',
+  'shop.wish_empty': 'Rien pour l’instant.',
+  'shop.wish_add': 'Ajouter à ma liste d’envies',
+  'shop.wish_remove': 'Retirer de ma liste d’envies',
   'shop.intro':
     'Gagne des pièces en jouant, en te promenant et en rendant visite aux autres compagnons.',
   'shop.snacks': 'Friandises',
