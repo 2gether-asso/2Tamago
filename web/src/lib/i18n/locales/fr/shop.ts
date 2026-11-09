@@ -24,6 +24,8 @@ export const shop = {
   'shop.intro':
     'Gagne des pièces en jouant, en te promenant et en rendant visite aux autres compagnons.',
   'shop.snacks': 'Friandises',
+  'shop.meals': 'Repas',
+  'shop.medicines': 'Pharmacie',
   'shop.in_bag': 'Dans ton sac : {count}',
   'shop.accessories': 'Accessoires',
   'shop.owned': 'Déjà à toi ✔',

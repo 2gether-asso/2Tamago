@@ -1,0 +1,53 @@
+/** The character sheet: statistics, quests and walk stories. */
+export const rpg = {
+  'rpg.title': '{name}’s sheet',
+  'rpg.intro':
+    'Its statistics grow with what you do together: playing, training, caressing and going for walks.',
+  'rpg.no_pet': 'No companion yet.',
+  'rpg.egg': 'The sheet fills in once it has hatched.',
+  'rpg.level': 'Level {level}',
+  'rpg.stats': 'Statistics',
+  'rpg.progress': '{xp}/{max} towards the next point',
+  'rpg.maxed': 'Maxed out',
+  'rpg.quests': 'Quests',
+  'rpg.quest_progress': 'Step {step} of {steps}',
+  'rpg.quest_unknown': 'Not started yet: who knows what you will meet on a walk…',
+  'rpg.quest_done': 'Completed!',
+  'rpg.history': 'Walk memories',
+  'rpg.history_empty': 'No walk yet.',
+
+  'rpg.stat.vigor': 'Vigor',
+  'rpg.stat.vigor.hint': 'Grows by walking, more so the further the zone.',
+  'rpg.stat.agility': 'Agility',
+  'rpg.stat.agility.hint': 'Grows by playing. Softens the mishaps of walks.',
+  'rpg.stat.wit': 'Wit',
+  'rpg.stat.wit.hint': 'Grows by training. Useful to solve riddles.',
+  'rpg.stat.charm': 'Charm',
+  'rpg.stat.charm.hint': 'Grows with caresses and meetings.',
+  'rpg.stat.luck': 'Luck',
+  'rpg.stat.luck.hint': 'Grows with finds. Makes finds more frequent.',
+
+  'rpg.quest.hermit': 'The forest hermit',
+  'rpg.quest.hermit.hint':
+    'An old hermit hides between the meadow and the forest. He likes sharp minds.',
+
+  'rpg.event.quiet_stroll': '{name} strolled around without meeting anything special.',
+  'rpg.event.sunny_spot': '{name} napped in a sunny spot.',
+  'rpg.event.shiny_pebble': '{name} found a shiny pebble.',
+  'rpg.event.berry_patch': '{name} stumbled upon a berry bush and feasted.',
+  'rpg.event.old_coin': '{name} dug up an old coin.',
+  'rpg.event.buried_treasure': '{name} discovered a treasure buried in the sand!',
+  'rpg.event.friendly_snail': '{name} chatted with a very friendly snail.',
+  'rpg.event.wise_owl': '{name} listened to the advice of a wise owl.',
+  'rpg.event.crab_race': '{name} raced a crab!',
+  'rpg.event.travelling_merchant': '{name} sold a few trinkets to a travelling merchant.',
+  'rpg.event.muddy_puddle': '{name} jumped into a muddy puddle.',
+  'rpg.event.sudden_rain': '{name} was caught in a downpour.',
+  'rpg.event.thorny_bush': '{name} got scratched by a thorny bush.',
+  'rpg.event.crab_pinch': '{name} got pinched by a crab.',
+  'rpg.event.hermit_meet': '{name} met an old hermit, who promised a riddle next time they meet.',
+  'rpg.event.hermit_riddle': '{name} solved the hermit’s riddle, and he is very impressed.',
+  'rpg.event.hermit_riddle_failed':
+    '{name} got stuck on the hermit’s riddle. A bit of training would help…',
+  'rpg.event.hermit_gift': 'The hermit thanked {name} with a treasure: the quest is complete!',
+} as const;

@@ -36,11 +36,36 @@ Un compagnon bien soigné vit donc environ 16 jours avant de devenir ancien.
 
 ## Santé, maladie, départ
 
-- **Pression de maladie** : chaque facteur (3 cacas ou plus, propreté < 20, satiété < 10, surpoids > 40) ajoute 1 par heure (0,5 pour le surpoids). À 2, il tombe malade. Sans facteur, la pression redescend.
-- **Malade** : −1 santé/h, guéri après 2 doses de médicament.
+- **Pression de maladie** : chaque facteur (3 cacas ou plus, propreté < 20, satiété < 10, surpoids > 40, alimentation déséquilibrée) ajoute 1 par heure (0,5 pour le surpoids et pour l'alimentation déséquilibrée). À 2, il tombe malade. Sans facteur, la pression redescend.
+- **Malade** : −1 santé/h, guéri par des médicaments (voir « Maladies et soins »).
 - **Affamé** (satiété à 0) : −1,5 santé/h.
-- **Bien portant** (pas malade, satiété > 40, bonheur > 30) : +2 santé/h.
+- **Bien portant** (pas malade, satiété > 40, bonheur > 30) : +2 santé/h (×1,5 avec une alimentation équilibrée).
 - **Santé à 0** : le compagnon part (statut `gone`), ou reste à 1 PV si `GAME_DEPARTURE=false`. Un bébé totalement délaissé tient environ deux jours (vérifié par les tests).
+
+## Repas et alimentation équilibrée
+
+Nourrir ouvre un choix (tickets #50 et #55) :
+
+- **Ration simple** (gratuite) : satiété +20 (`freeMealSatiety`), poids +1. Elle garde le jeu jouable sans objet, mais ne compte pas dans l'équilibre alimentaire.
+- **Repas du sac** (achetés à la boutique, retirés de l'inventaire) : bol de riz (céréales, 10 pièces, +35), ragoût de légumes (légumes, 14, +30), poisson grillé (protéines, 20, +40), salade de fruits (fruits, 12, +25). Un repas refuse d'être donné à partir de 80 de satiété (`fullSatiety`, erreur `not_hungry`) : c'est la saturation. Seuls les repas se donnent avec « Nourrir » ; les friandises restent un geste à part.
+- **Friandises** : comptent aussi dans l'équilibre (par défaut des sucreries ; fraise, mûre et noix de coco sont des fruits, le champignon un légume). Donner une friandise à un compagnon déjà rassasié (satiété ≥ 80) ajoute +2 au poids (`overfeedWeight`).
+- **Équilibre** : le moteur garde les 6 derniers repas et friandises (`diet`, `dietWindow`). _Équilibrée_ : au moins 3 groupes sains différents et au plus un tiers de sucreries, la régénération de santé est ×1,5. _Déséquilibrée_ : plus de la moitié de sucreries (à partir de 4 repas), ce qui ajoute un facteur de pression de maladie. Sinon _moyenne_.
+- Un gardien nourrit toujours avec la ration simple (il n'a pas accès au sac du propriétaire).
+
+## Maladies et soins
+
+Chaque maladie a une cause (celle qui pèse le plus au moment de tomber malade, ticket #54) et un remède :
+
+| Maladie     | Cause                                  | Remède                       |
+| ----------- | -------------------------------------- | ---------------------------- |
+| Infection   | Saleté (cacas, propreté basse)         | Antibiotique (30 pièces)     |
+| Indigestion | Surpoids ou alimentation déséquilibrée | Tisane digestive (20 pièces) |
+| Faiblesse   | Faim                                   | Vitamines (20 pièces)        |
+
+- Le **bon remède** guérit tout de suite. Un remède d'une autre maladie compte pour 0,5 dose (`wrongMedicineDose`).
+- Le **sirop** (15 pièces) soigne toutes les maladies mais compte pour 1 dose : il en faut 2 (`medicineDoses`).
+- Les **soins de base** (« Soigner » sans objet, gratuits) comptent pour 0,5 dose (`freeMedicineDose`), soit 4 soins, bonheur −5 chacun, contre −2 avec un remède. C'est le chemin des joueurs sans pièces, et celui des gardiens.
+- Un animal tombé malade avant cette mise à jour n'a pas de maladie connue : seuls le sirop et les soins de base le soignent.
 
 ## Garderie
 
@@ -91,6 +116,40 @@ Avant de partir, le joueur choisit une **zone** (`WALK_ZONES`, dans `shared/core
 - **Les rencontres** ne dépendent pas de la zone : deux promenades qui se chevauchent dans le temps se croisent, où qu'elles aillent.
 - **Données** : la zone est dans `outing.zone` (absente sur une promenade commencée avant les zones : c'est la prairie) et dans la colonne `walks.zone`. Toutes les valeurs du tableau sont dans `zones.ts` ; seule la durée de base (`outingHours`) se règle depuis l'écran Admin.
 
+## Fiche de personnage et événements de promenade
+
+Tickets #57 (fiche de personnage) et #58 (événement tiré au sort à chaque promenade, quête). Tout est dans `shared/core/src/engine/rpg.ts` ; la page web est `/sheet`.
+
+### Statistiques
+
+Cinq statistiques RPG, distinctes des besoins (satiété, bonheur…) : **vigueur, agilité, astuce, charme, chance** (`RPG_STATS`). Chacune vaut 1 à la naissance (2 pour celle que favorise le tempérament, `TEMPERAMENT_BONUS`) et gagne 1 point par 10 points d'expérience (`XP_PER_POINT`), jusqu'à 20 (`MAX_STAT`). Le **niveau** est 1 plus le total des points gagnés.
+
+| Statistique | Elle grandit avec                                   | Elle sert à                                                             |
+| ----------- | --------------------------------------------------- | ----------------------------------------------------------------------- |
+| Vigueur     | Promenade terminée (+2 prairie, +3 forêt, +4 plage) | (réservée : endurance, à exploiter par d'autres règles)                 |
+| Agilité     | Jouer (+2) ; mésaventures de promenade              | Atténue les pertes d'une mésaventure (1 point de moins par 2 d'agilité) |
+| Astuce      | S'entraîner (+3) ; énigmes et conseils              | Condition de l'énigme de la quête de l'ermite (astuce 2 ou plus)        |
+| Charme      | Caresse prête (+1) ; rencontres de promenade        | (réservée)                                                              |
+| Chance      | Trouvailles de promenade                            | +10 % de poids par point sur les trouvailles du tirage                  |
+
+- **Lecture propre** : `characterSheet(state)` (valeurs, progression, niveau, quêtes, souvenirs) et `statOf(state, stat)` sont les points d'entrée pour toute autre règle (économie, concours…). Les données brutes sont dans `PetState.rpg` (`xp`, `quests`, `history`), facultatif : absent tant que rien n'a été gagné, donc aucun compagnon existant n'a besoin de migration (ni de migration SQL : c'est dans le JSONB de l'état).
+- **Gains** : `gainXp()` ajoute l'expérience (plafonnée) et émet un `stat_up` à chaque point gagné. Seules les actions limitées naturellement (énergie, délai de caresse, promenade) donnent de l'expérience : pas de gain sur les félicitations, qui se répètent sans limite.
+
+### Événement de promenade
+
+- À chaque retour (`endOuting`), le moteur tire **un événement** dans la table `WALK_EVENTS` : rien de spécial, découverte, rencontre (PNJ), mésaventure ou étape de quête. Il dépend du **stade** (`minStage`), de la **zone** (`zones`), de la **quête** en cours et d'une condition de statistique.
+- **Déterministe** : `pickWalkEvent(state, zone, seed)`. La graine est un paramètre facultatif de l'action (`{ type: 'endOuting', seed }`) ; par défaut elle est dérivée du compagnon et de l'heure de départ (`walkSeed`), donc l'événement d'une promenade est fixé dès qu'elle commence et ne peut pas être « retiré » en rappelant l'API. Le moteur ne tire aucun dé.
+- **Pas de limite quotidienne** ajoutée : on ne bride pas les promenades (l'énergie les limite déjà) ; l'événement a lieu à chaque promenade. Choix à revoir si l'équilibre l'exige.
+- **Effets** : besoins du compagnon (appliqués par le moteur), expérience, quête, souvenirs. Les **pièces** et l'**objet** de l'événement ne sont pas au compagnon : ils sont dans les données de l'événement `walk_event` (`coins`, `item`) et l'API les ajoute à ce que la promenade rapporte (`found` ; bonus d'événement admin et règle « un accessoire une fois » appliqués).
+- **Textes** : aucune phrase côté moteur ni API. L'événement est un code (`data.walk`, `kind`, `zone`) ; le texte est `rpg.event.<id>` dans `web/src/lib/i18n/locales/{fr,en}/rpg.ts`. Ajouter un événement : une entrée dans `WALK_EVENTS`, deux textes, un test si une règle change.
+- **Journal** : les événements `stat_up` et les étapes de quête passent par le journal d'activité (`pet_event`) ; les autres récits ne s'affichent que dans la fenêtre de retour de promenade.
+
+### Souvenirs et quête
+
+- `rpg.history` garde les 12 derniers événements (`HISTORY_SIZE`) : de quoi afficher les souvenirs et vérifier ce qu'il s'est passé.
+- `rpg.quests` retient l'étape atteinte de chaque quête (`QUESTS`). Un événement de quête (`quest: { id, step }`) n'est possible que si la quête est exactement à cette étape, et la fait avancer. Un événement avec `questHold` ne fait que se répéter (nouvelle tentative).
+- **Quête « L'ermite de la forêt »** (`hermit`, 3 étapes) : 1. rencontre dans la prairie ou la forêt (dès le stade enfant) ; 2. énigme : demande astuce 2 ; sinon l'ermite pose l'énigme sans succès (`hermit_riddle_failed`, +5 d'astuce) et on réessaie ; 3. remerciements : 40 pièces et une couronne de fleurs (gardée une seule fois). Ces événements ont un poids fort (40) pour que la chaîne avance en quelques promenades. Une fois terminée, elle ne revient plus.
+
 ## Vacances
 
 Le propriétaire peut mettre son compagnon en pause (« Partir en vacances » sur l'écran d'accueil), pour ne pas le voir partir pendant un voyage.
@@ -136,11 +195,17 @@ L'œuf n'a pas de nuit. Les heures générales de la règle `night` (`startHour`
 - **Réveiller** un compagnon rallume la lumière (sinon il se rendormirait aussitôt). Coucher, réveiller et l'épuisement fonctionnent comme avant.
 - Tout est réglable depuis l'écran Admin (`night`) : heures générales, heures de chaque stade (`stages`), décalage horaire, facteur. Si le début et la fin sont égaux, il n'y a pas de nuit. Les surcharges sont **fusionnées clé par clé, à tous les niveaux** : `{ "night": { "stages": { "baby": { "startHour": 18 } } } }` ne change que le coucher des bébés.
 
+## Limites des soins (anti-spam)
+
+- **Jouer** : un quota de **3 jeux d'affilée** (`playMaxCharges`) ; ensuite le compagnon « en a assez de jouer » (`tired_of_playing`) et **un jeu revient toutes les 30 minutes** réelles (`playRefillSeconds`). L'état est `playCharges` / `playChargesAt` (absents = quota plein, donc compatible avec les compagnons existants). Le moteur expose `playChargesLeft()` et `nextPlayChargeAt()` ; le quota est en temps réel, pas en temps de jeu. Le mini-jeu est tiré au hasard côté web parmi trois (gauche/droite, plus/moins, pierre-feuille-ciseaux) ; le score 0-3 envoyé reste le même.
+- **Féliciter** : **une fois toutes les 30 minutes** (`praiseCooldownSeconds`, erreur `praise_cooldown`, état `lastPraiseAt`), gardien en garderie compris. Les boutons sont grisés avec l'heure de retour.
+- **Nourrir** reste limité par la satiété (`not_hungry`) ; son coût en pièces/stock est traité à part (inventaire).
+
 ## Caprices et discipline
 
 À partir du stade enfant, il réclame de l'attention sans raison environ toutes les 10 h. On a 30 minutes pour réagir :
 
-- **Gronder** pendant un caprice : discipline +25.
+- **Gronder** pendant un caprice : discipline +25. C'est la seule façon de gagner de la discipline (qui décroît avec le temps) : elle accélère le dressage (+1 % de gain par point) et oriente l'évolution (`radiant` à partir de 50, `unruly` sous 25). Gronder n'a donc de sens que face à un caprice, et l'accueil l'indique alors par un message ; sans caprice, c'est puni (bonheur −10, lien −3). Décision (ticket #53) : on garde l'action avec ce compromis, sans nouvelle règle.
 - **Gronder** sans caprice : bonheur −10, lien −3.
 - **Féliciter** pendant un caprice : discipline −5.
 - **Ignorer** le caprice : discipline −10.
@@ -174,11 +239,11 @@ Les valeurs sont la règle `temperaments` de `GameRules` : un admin peut les mod
 
 | Action                 | Effet                                                                                                                          |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| Nourrir                | Satiété +35, poids +1. Refusé à partir de 95 de satiété                                                                        |
+| Nourrir                | Ration simple (satiété +20) ou repas du sac, voir « Repas ». Refusé à partir de 80 de satiété                                  |
 | Friandise              | Selon l'objet (voir la boutique), lien +1                                                                                      |
 | Jouer (score de 0 à 3) | Bonheur +10 + 5 × score, énergie −10, satiété −3, poids −1, lien +2. Il faut au moins 10 d'énergie                             |
 | Nettoyer               | Retire les cacas, propreté +40                                                                                                 |
-| Médicament             | Une dose (bonheur −5)                                                                                                          |
+| Soigner                | Soins de base ou remède du sac, voir « Maladies et soins »                                                                     |
 | Coucher / Réveiller    | Coucher seulement si énergie < 90. Réveiller coûte −10 bonheur                                                                 |
 | Lumière                | Éteindre : seulement la nuit. Rallumer : à tout moment (voir « Jour et nuit »)                                                 |
 | Caresser               | Bonheur +3, lien +1, au plus une fois toutes les 15 s                                                                          |
@@ -194,9 +259,21 @@ Les valeurs sont la règle `temperaments` de `GameRules` : un admin peut les mod
 | Bonus quotidien                                                       | 20                                 |
 | Jouer / dresser                                                       | +2 / +1, au plus 30 par jour       |
 | Promenade                                                             | 5 à 15 (prairie) à 20 à 40 (plage) |
+| Petit boulot du joueur (toutes les heures)                            | 0 à 10                             |
+| Travail du compagnon (toutes les 2 heures)                            | 1 à 12, selon ses talents          |
 | Caresser le compagnon d'un autre (une fois par jour et par compagnon) | 3                                  |
 
-Prix : biscuit 8, fraise 12, lait chaud 15, gâteau 30, nœud 50, chapeau 80, lunettes 120, couronne 300. Les objets qu'on ne trouve qu'en promenade (mûre, champignon, noix de coco, glace, couronne de fleurs, étoile de mer) ne sont pas vendus : la boutique les refuse (`not_for_sale`).
+Repas : bol de riz 10, ragoût 14, poisson 20, salade de fruits 12. Remèdes : sirop 15, antibiotique 30, tisane digestive 20, vitamines 20. Prix : biscuit 8, fraise 12, lait chaud 15, gâteau 30, nœud 50, chapeau 80, lunettes 120, couronne 300. Les objets qu'on ne trouve qu'en promenade (mûre, champignon, noix de coco, glace, couronne de fleurs, étoile de mer) ne sont pas vendus : la boutique les refuse (`not_for_sale`).
+
+## Travail
+
+Idée du ticket 56 (revenu de base + gagner sa vie). Le **revenu de base** existe déjà : le bonus quotidien de 20 pièces (`DAILY_BONUS`, une fois par jour calendaire). Le travail s'y ajoute pour financer soins et nourriture. Tout le calcul est dans `shared/core/src/engine/work.ts` (constantes `WORK`), page « Travail » dans l'application.
+
+- **Petit boulot du joueur** : un jeu d'adresse (5 additions à choix parmi 3 réponses, côté client). Le score (0 à 5) est envoyé à `POST /work/player` et payé 2 pièces par point (`playerWage`). Limite : une fois par heure (`work_cooldown` sinon, avec `availableAt`). Choix assumé : le score vient du client comme pour le mini-jeu de jeu ; le plafond (10 pièces par heure) borne la triche.
+- **Travail du compagnon** : `POST /work/pet`, une fois toutes les 2 heures, à partir du stade enfant (`too_young`, `too_tired` sous 30 d'énergie, `too_hungry` sous 30 de satiété). L'action moteur `work` coûte énergie −25, satiété −10, bonheur −5, hygiène −5. Le salaire (`petWage`) va de 2 à 8 pièces selon l'**aptitude** (`petAbility`, 0 à 1 : 40 % tours appris, 25 % discipline, 20 % lien, 15 % humeur ; un enfant est moins constant qu'un adulte), multiplié par une **chance** de ×0,5 à ×1,5.
+- **Hasard** : le moteur reste pur et déterministe. Le serveur tire une graine (`randomInt`) et la passe à `petWage(state, seed)` ; la chance en est dérivée par `workLuck` (hachage FNV de la graine). Même compagnon et même graine, même salaire. Le salaire est calculé sur l'état du compagnon avant que le travail ne le fatigue.
+- **Limites** : deux colonnes `last_work_at` et `last_pet_work_at` sur `players`, prises par une seule instruction conditionnelle (deux demandes simultanées ne passent pas toutes les deux). Un refus du moteur annule la transaction : le temps d'attente n'est pas consommé. Les gains du travail ne comptent pas dans le plafond de 30 pièces par jour du jeu et du dressage.
+- Les statistiques de compagnon d'autres chantiers (RPG, etc.) pourront entrer dans `petAbility` ; seules les statistiques existantes sont utilisées ici.
 
 ## Concours
 

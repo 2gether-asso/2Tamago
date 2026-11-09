@@ -26,6 +26,7 @@ export const feed: Record<keyof typeof fr, string> = {
   'event.vacation_started': '{name} is off on vacation.',
   'event.vacation_ended': '{name} is back from vacation.',
   'event.vacation_ended_auto': '{name} came back from vacation: the longest stay was reached.',
+  'event.stat_up': '{name} improves: {stat} {value}!',
   'event.retired': '{name} is off to enjoy a quiet life.',
 
   'activity.daily_bonus_one': 'Daily bonus: +{count} coin.',

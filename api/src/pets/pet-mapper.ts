@@ -32,8 +32,14 @@ const NOTABLE: ReadonlySet<PetEventType> = new Set([
   'departed',
   'retired',
   'vacation_ended',
+  'stat_up',
 ]);
 
 export function notableEvents(events: PetEvent[]): PetEvent[] {
-  return events.filter((event) => NOTABLE.has(event.type));
+  return events.filter(
+    (event) =>
+      NOTABLE.has(event.type) ||
+      // Walk events fill the journal: only the encounters of a quest are worth a line.
+      (event.type === 'walk_event' && event.data?.kind === 'quest'),
+  );
 }

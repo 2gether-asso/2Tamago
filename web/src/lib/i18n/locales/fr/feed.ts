@@ -24,6 +24,7 @@ export const feed = {
   'event.vacation_started': '{name} part en vacances.',
   'event.vacation_ended': '{name} est de retour de vacances.',
   'event.vacation_ended_auto': '{name} est rentré de vacances : la durée maximale était atteinte.',
+  'event.stat_up': '{name} progresse : {stat} {value} !',
   'event.retired': '{name} part couler des jours paisibles.',
 
   'activity.daily_bonus_one': 'Bonus du jour : +{count} pièce.',

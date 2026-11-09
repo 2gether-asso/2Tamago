@@ -10,6 +10,14 @@ export const catalog: Record<keyof typeof fr, string> = {
   'item.mushroom': 'Mushroom',
   'item.coconut': 'Coconut',
   'item.ice_cream': 'Ice cream',
+  'item.rice_bowl': 'Rice bowl',
+  'item.veggie_stew': 'Veggie stew',
+  'item.grilled_fish': 'Grilled fish',
+  'item.fruit_salad': 'Fruit salad',
+  'item.syrup': 'Syrup',
+  'item.antibiotic': 'Antibiotic',
+  'item.digestive_tea': 'Digestive tea',
+  'item.vitamins': 'Vitamins',
   'item.flower_crown': 'Flower crown',
   'item.starfish': 'Starfish',
   'item.ribbon': 'Bow',
@@ -85,4 +93,28 @@ export const catalog: Record<keyof typeof fr, string> = {
   'stat.title': '{label}: {value} / 100',
 
   'pet.label': 'Companion',
+
+  'group.grain': 'Grains',
+  'group.veg': 'Vegetables',
+  'group.protein': 'Protein',
+  'group.fruit': 'Fruit',
+  'group.sweet': 'Sweets',
+  'item.meal_hint': 'Satiety +{satiety} · {group}',
+  'item.medicine_hint_any': 'Treats a bit of everything: {doses} are needed.',
+  'item.medicine_hint': 'Cures at once: {illness}.',
+
+  'illness.infection': 'Infection',
+  'illness.infection.hint': 'Caused by dirt. The antibiotic cures it.',
+  'illness.indigestion': 'Indigestion',
+  'illness.indigestion.hint':
+    'Caused by too many sweets or too much weight. Digestive tea cures it.',
+  'illness.weakness': 'Weakness',
+  'illness.weakness.hint': 'Caused by hunger. Vitamins cure it.',
+
+  'diet.balanced': 'Balanced',
+  'diet.balanced.hint': 'Varied: it recovers faster.',
+  'diet.neutral': 'Average',
+  'diet.neutral.hint': 'Vary the meals (3 different groups, few sweets) to balance it.',
+  'diet.unbalanced': 'Unbalanced',
+  'diet.unbalanced.hint': 'Too many sweets: it may get indigestion.',
 };

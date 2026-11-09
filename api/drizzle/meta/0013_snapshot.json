@@ -1,5 +1,5 @@
 {
-  "id": "9072295d-bd47-4f79-935e-909c6fbc62bf",
+  "id": "90377622-556a-4d54-9776-985d7743946e",
   "prevId": "e2ddc62a-2101-4459-ae18-02d1b3a5d329",
   "version": "7",
   "dialect": "postgresql",
@@ -1674,6 +1674,18 @@
           "notNull": true,
           "default": 0
         },
+        "last_work_at": {
+          "name": "last_work_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_pet_work_at": {
+          "name": "last_pet_work_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -1889,20 +1901,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "offer_coins": {
-          "name": "offer_coins",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "request_coins": {
-          "name": "request_coins",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
         "status": {
           "name": "status",
           "type": "text",
@@ -2089,133 +2087,6 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.wish_asks": {
-      "name": "wish_asks",
-      "schema": "",
-      "columns": {
-        "asker_id": {
-          "name": "asker_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "target_id": {
-          "name": "target_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "item_id": {
-          "name": "item_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "asked_at": {
-          "name": "asked_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "wish_asks_asker_id_players_id_fk": {
-          "name": "wish_asks_asker_id_players_id_fk",
-          "tableFrom": "wish_asks",
-          "tableTo": "players",
-          "columnsFrom": [
-            "asker_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "wish_asks_target_id_players_id_fk": {
-          "name": "wish_asks_target_id_players_id_fk",
-          "tableFrom": "wish_asks",
-          "tableTo": "players",
-          "columnsFrom": [
-            "target_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "wish_asks_asker_id_target_id_item_id_pk": {
-          "name": "wish_asks_asker_id_target_id_item_id_pk",
-          "columns": [
-            "asker_id",
-            "target_id",
-            "item_id"
-          ]
-        }
-      },
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.wishlist": {
-      "name": "wishlist",
-      "schema": "",
-      "columns": {
-        "player_id": {
-          "name": "player_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "item_id": {
-          "name": "item_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "wishlist_player_id_players_id_fk": {
-          "name": "wishlist_player_id_players_id_fk",
-          "tableFrom": "wishlist",
-          "tableTo": "players",
-          "columnsFrom": [
-            "player_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "wishlist_player_id_item_id_pk": {
-          "name": "wishlist_player_id_item_id_pk",
-          "columns": [
-            "player_id",
-            "item_id"
-          ]
-        }
-      },
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
