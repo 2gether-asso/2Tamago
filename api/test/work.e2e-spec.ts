@@ -73,8 +73,9 @@ describe('Work (e2e)', () => {
   it('pays the player once per hour', async () => {
     const agent = await signIn('Alice');
     const before = (await me(agent)).player.coins;
-    const first: WorkResponse = (await agent.post('/api/work/player').send({ score: 4 }).expect(200))
-      .body;
+    const first: WorkResponse = (
+      await agent.post('/api/work/player').send({ score: 4 }).expect(200)
+    ).body;
     expect(first.earned).toBe(4 * WORK.coinsPerPoint);
     expect(first.coins).toBe(before + first.earned);
     expect(first.status.playerAvailableAt).toBe(clock.time + HOUR);

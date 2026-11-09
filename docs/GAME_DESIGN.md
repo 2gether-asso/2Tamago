@@ -183,9 +183,21 @@ Les valeurs sont la règle `temperaments` de `GameRules` : un admin peut les mod
 | Bonus quotidien                                                       | 20                                 |
 | Jouer / dresser                                                       | +2 / +1, au plus 30 par jour       |
 | Promenade                                                             | 5 à 15 (prairie) à 20 à 40 (plage) |
+| Petit boulot du joueur (toutes les heures)                            | 0 à 10                             |
+| Travail du compagnon (toutes les 2 heures)                            | 1 à 12, selon ses talents          |
 | Caresser le compagnon d'un autre (une fois par jour et par compagnon) | 3                                  |
 
 Prix : biscuit 8, fraise 12, lait chaud 15, gâteau 30, nœud 50, chapeau 80, lunettes 120, couronne 300. Les objets qu'on ne trouve qu'en promenade (mûre, champignon, noix de coco, glace, couronne de fleurs, étoile de mer) ne sont pas vendus : la boutique les refuse (`not_for_sale`).
+
+## Travail
+
+Idée du ticket 56 (revenu de base + gagner sa vie). Le **revenu de base** existe déjà : le bonus quotidien de 20 pièces (`DAILY_BONUS`, une fois par jour calendaire). Le travail s'y ajoute pour financer soins et nourriture. Tout le calcul est dans `shared/core/src/engine/work.ts` (constantes `WORK`), page « Travail » dans l'application.
+
+- **Petit boulot du joueur** : un jeu d'adresse (5 additions à choix parmi 3 réponses, côté client). Le score (0 à 5) est envoyé à `POST /work/player` et payé 2 pièces par point (`playerWage`). Limite : une fois par heure (`work_cooldown` sinon, avec `availableAt`). Choix assumé : le score vient du client comme pour le mini-jeu de jeu ; le plafond (10 pièces par heure) borne la triche.
+- **Travail du compagnon** : `POST /work/pet`, une fois toutes les 2 heures, à partir du stade enfant (`too_young`, `too_tired` sous 30 d'énergie, `too_hungry` sous 30 de satiété). L'action moteur `work` coûte énergie −25, satiété −10, bonheur −5, hygiène −5. Le salaire (`petWage`) va de 2 à 8 pièces selon l'**aptitude** (`petAbility`, 0 à 1 : 40 % tours appris, 25 % discipline, 20 % lien, 15 % humeur ; un enfant est moins constant qu'un adulte), multiplié par une **chance** de ×0,5 à ×1,5.
+- **Hasard** : le moteur reste pur et déterministe. Le serveur tire une graine (`randomInt`) et la passe à `petWage(state, seed)` ; la chance en est dérivée par `workLuck` (hachage FNV de la graine). Même compagnon et même graine, même salaire. Le salaire est calculé sur l'état du compagnon avant que le travail ne le fatigue.
+- **Limites** : deux colonnes `last_work_at` et `last_pet_work_at` sur `players`, prises par une seule instruction conditionnelle (deux demandes simultanées ne passent pas toutes les deux). Un refus du moteur annule la transaction : le temps d'attente n'est pas consommé. Les gains du travail ne comptent pas dans le plafond de 30 pièces par jour du jeu et du dressage.
+- Les statistiques de compagnon d'autres chantiers (RPG, etc.) pourront entrer dans `petAbility` ; seules les statistiques existantes sont utilisées ici.
 
 ## Concours
 
