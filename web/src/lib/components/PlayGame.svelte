@@ -1,9 +1,10 @@
 <script lang="ts">
   /**
-   * Mini-game, in the spirit of the classic virtual pets: the pet will look
-   * left or right, guess where. Three rounds, the score (0-3) goes to the API.
+   * Mini-games, in the spirit of the classic virtual pets. One is drawn at random each time:
+   * guess where it looks, guess if the next number is higher or lower, or beat it at
+   * rock-paper-scissors. Three rounds, the score (0-3) goes to the API.
    */
-  import { t } from '#lib/i18n/index.svelte.ts';
+  import { t, type MessageKey } from '#lib/i18n/index.svelte.ts';
 
   interface Props {
     name: string;
@@ -12,33 +13,90 @@
   }
   let { name, onfinish, oncancel }: Props = $props();
 
+  type Kind = 'look' | 'number' | 'hand';
+  const TITLES: Record<Kind, MessageKey> = {
+    look: 'minigame.title_look',
+    number: 'minigame.title_number',
+    hand: 'minigame.title_hand',
+  };
+  const KINDS: Kind[] = ['look', 'number', 'hand'];
+  const CHOICES: Record<Kind, { id: string; label: MessageKey }[]> = {
+    look: [
+      { id: 'left', label: 'minigame.left' },
+      { id: 'right', label: 'minigame.right' },
+    ],
+    number: [
+      { id: 'higher', label: 'minigame.higher' },
+      { id: 'lower', label: 'minigame.lower' },
+    ],
+    hand: [
+      { id: 'rock', label: 'minigame.rock' },
+      { id: 'paper', label: 'minigame.paper' },
+      { id: 'scissors', label: 'minigame.scissors' },
+    ],
+  };
+  const BEATS: Record<string, string> = { rock: 'scissors', paper: 'rock', scissors: 'paper' };
+  const SHOWN: Record<string, string> = {
+    left: '⬅️',
+    right: '➡️',
+    rock: '✊',
+    paper: '✋',
+    scissors: '✌️',
+  };
+
+  const pick = <T,>(items: readonly T[]): T => items[Math.floor(Math.random() * items.length)] as T;
+  const kind = pick(KINDS);
   const ROUNDS = 3;
   let round = $state(0);
   let score = $state(0);
-  let last = $state<{ guess: 'left' | 'right'; side: 'left' | 'right' } | null>(null);
+  // The number to compare with, for the "number" game.
+  let current = $state(2 + Math.floor(Math.random() * 7));
+  let last = $state<{ won: boolean; shown: string } | null>(null);
 
-  function guess(side: 'left' | 'right') {
-    const actual = Math.random() < 0.5 ? 'left' : 'right';
-    last = { guess: side, side: actual };
-    if (actual === side) score++;
+  function guess(choice: string) {
+    let won: boolean;
+    let shown: string;
+    if (kind === 'number') {
+      // Never equal to the current number: a clear answer each time.
+      let next = 1 + Math.floor(Math.random() * 9);
+      while (next === current) next = 1 + Math.floor(Math.random() * 9);
+      won = (choice === 'higher') === next > current;
+      shown = `${current} → ${next}`;
+      current = next;
+    } else if (kind === 'hand') {
+      const theirs = pick(['rock', 'paper', 'scissors']);
+      // A draw counts as a miss.
+      won = BEATS[choice] === theirs;
+      shown = SHOWN[theirs] ?? '';
+    } else {
+      const actual = Math.random() < 0.5 ? 'left' : 'right';
+      won = actual === choice;
+      shown = SHOWN[actual] ?? '';
+    }
+    last = { won, shown };
+    if (won) score++;
     round++;
   }
 </script>
 
 <div class="backdrop">
   <div class="card dialog">
-    <h2>{t('minigame.title', { name })}</h2>
+    <h2>{t(TITLES[kind], { name })}</h2>
     {#if round < ROUNDS}
       <p>{t('minigame.round', { round: round + 1, total: ROUNDS, score })}</p>
+      {#if kind === 'number'}
+        <p class="number">{current}</p>
+      {/if}
       {#if last}
         <p class="result">
-          {last.guess === last.side ? t('minigame.won') : t('minigame.lost')}
-          ({last.side === 'left' ? '⬅️' : '➡️'})
+          {last.won ? t('minigame.won') : t('minigame.lost')}
+          ({last.shown})
         </p>
       {/if}
       <div class="row">
-        <button class="big" onclick={() => guess('left')}>{t('minigame.left')}</button>
-        <button class="big" onclick={() => guess('right')}>{t('minigame.right')}</button>
+        {#each CHOICES[kind] as choice (choice.id)}
+          <button class="big" onclick={() => guess(choice.id)}>{t(choice.label)}</button>
+        {/each}
       </div>
       <button class="link" onclick={oncancel}>{t('minigame.stop')}</button>
     {:else}
@@ -58,6 +116,11 @@
   .big {
     font-size: 1.2rem;
     padding: 0.8rem 1.4rem;
+  }
+  .number {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin: 0.5rem 0;
   }
   .result {
     font-weight: bold;

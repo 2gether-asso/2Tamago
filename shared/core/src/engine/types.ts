@@ -32,6 +32,14 @@ export type Stage = (typeof STAGES)[number];
 export const FORMS = ['radiant', 'gentle', 'rascal'] as const;
 export type Form = (typeof FORMS)[number];
 
+/** Food groups of the diet: a balanced diet mixes the healthy ones and goes easy on sweets. */
+export const FOOD_GROUPS = ['grain', 'veg', 'protein', 'fruit', 'sweet'] as const;
+export type FoodGroup = (typeof FOOD_GROUPS)[number];
+
+/** What a pet falls ill with, decided by what made it ill. Each has its own medicine. */
+export const ILLNESSES = ['infection', 'indigestion', 'weakness'] as const;
+export type Illness = (typeof ILLNESSES)[number];
+
 export const TRICKS = ['sit', 'spin', 'jump', 'highfive'] as const;
 export type TrickId = (typeof TRICKS)[number];
 
@@ -100,7 +108,12 @@ export interface PetState {
   nextPoopAt: number;
 
   sickSince: number | null;
+  /** What it suffers from. Absent (or null) on pets that fell ill before illnesses existed. */
+  illness?: Illness | null;
+  /** Doses received so far (a fraction for the free care, see `GameRules.medicineDoses`). */
   medicineDoses: number;
+  /** The food groups of the latest meals and treats, oldest first (see `dietOf`). */
+  diet?: FoodGroup[];
   /** Hours of exposure to sickness factors, see `sicknessThresholdHours`. */
   sicknessPressure: number;
 
@@ -118,6 +131,12 @@ export interface PetState {
   /** Training progress per trick, 0-100 (100 = mastered). */
   tricks: Record<TrickId, number>;
   lastCaressAt: number | null;
+  /** Games left before the pet is tired of playing, as of `playChargesAt`. Absent = full. */
+  playCharges?: number;
+  /** When `playCharges` was last settled (real ms); the quota refills from there. */
+  playChargesAt?: number;
+  /** When the pet was last praised (real ms). Absent (or null) = never. */
+  lastPraiseAt?: number | null;
 
   equipped: string | null;
 

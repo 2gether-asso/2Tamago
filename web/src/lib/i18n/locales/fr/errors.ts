@@ -14,6 +14,10 @@ export const errors = {
   'error.not_hungry': 'Il n’a plus faim.',
   'error.not_sleepy': 'Il n’a pas sommeil.',
   'error.not_sick': 'Il n’est pas malade.',
+  'error.tired_of_playing':
+    'Il en a assez de jouer pour le moment : un jeu revient toutes les 30 minutes.',
+  'error.praise_cooldown':
+    'Tu l’as déjà félicité il y a peu : une félicitation toutes les 30 minutes.',
   'error.too_tired': 'Il est trop fatigué.',
   'error.too_hungry': 'Il a trop faim pour ça.',
   'error.unknown_item': 'Objet inconnu.',
