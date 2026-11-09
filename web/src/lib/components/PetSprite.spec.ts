@@ -1,5 +1,5 @@
 import { render } from 'svelte/server';
-import { EYES, PATTERNS, SPECIES, type Pattern, type Species } from '@2tamago/core';
+import { EYES, PATTERNS, SPECIES, STAGES, type Pattern, type Species } from '@2tamago/core';
 import { describe, expect, it } from 'vitest';
 import PetSprite from './PetSprite.svelte';
 
@@ -78,5 +78,15 @@ describe('pet sprite traits, for every species', () => {
       const bodies = PATTERNS.map((pattern) => sprite(species, pattern));
       expect(new Set(bodies).size, species).toBe(PATTERNS.length);
     }
+  });
+
+  it('draws every life stage differently', () => {
+    const bodies = STAGES.map(
+      (stage) =>
+        render(PetSprite, {
+          props: { species: 'pyon', stage, form: null, color: 120, mood: 'ok' },
+        }).body,
+    );
+    expect(new Set(bodies).size).toBe(STAGES.length);
   });
 });
