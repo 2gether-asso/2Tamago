@@ -8,6 +8,7 @@ export const shell: Record<keyof typeof fr, string> = {
   'nav.village': 'Village',
   'nav.shop': 'Shop',
   'nav.journal': 'Journal',
+  'nav.sheet': 'Sheet',
   'nav.album': 'Album',
   'nav.admin': 'Admin',
 

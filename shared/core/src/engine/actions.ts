@@ -4,6 +4,7 @@ import { GameError } from './errors.js';
 import { alignToGrid, gameHours, type GameRules } from './rules.js';
 import { clamp, endVacation, simulate } from './simulate.js';
 import { isNight } from './night.js';
+import { gainXp, resolveWalkEvent, walkSeed } from './rpg.js';
 import { WORK } from './work.js';
 import { hashSeed, modOf, rollTraits } from './traits.js';
 import { DEFAULT_ZONE, WALK_ZONES, zoneOpenTo, type WalkZoneId } from './zones.js';
@@ -98,7 +99,8 @@ export type CaretakerActionType = (typeof CARETAKER_ACTION_TYPES)[number];
 /** Actions triggered by the server: outings, and what other players do. */
 export type SystemAction =
   | { type: 'startOuting'; zone?: WalkZoneId }
-  | { type: 'endOuting' }
+  /** `seed` picks the walk event (default: derived from the pet and the walk, see `walkSeed`). */
+  | { type: 'endOuting'; seed?: number }
   | { type: 'visitorCaress' }
   | { type: 'visitorTreat'; item: ItemId };
 
@@ -184,6 +186,7 @@ export function applyAction(
       add('satiety', -3);
       state.weight = Math.max(5, state.weight - 1);
       state.bond = clamp(state.bond + 2);
+      gainXp(state, 'agility', 2, at, events);
       break;
     }
     case 'clean': {
@@ -273,6 +276,7 @@ export function applyAction(
         add('happiness', 3);
         state.bond = clamp(state.bond + modOf(state, rules, 'caressBond'));
         state.lastCaressAt = at;
+        gainXp(state, 'charm', 1, at, events);
       }
       break;
     }
@@ -293,6 +297,7 @@ export function applyAction(
       const gain = 8 * (1 + s.discipline / 100) * focus;
       state.tricks[action.trick] = clamp(state.tricks[action.trick] + gain);
       state.bond = clamp(state.bond + 1);
+      gainXp(state, 'wit', 3, at, events);
       const after = trickLevel(state.tricks[action.trick]);
       if (after > before) {
         events.push({ type: 'trick_level_up', at, data: { trick: action.trick, level: after } });
@@ -354,12 +359,15 @@ export function applyAction(
       if (!state.outing) throw new GameError('not_away');
       if (at < state.outing.endsAt) throw new GameError('outing_not_finished');
       const zone = WALK_ZONES[state.outing.zone ?? DEFAULT_ZONE];
+      const seed = action.seed ?? walkSeed(state);
       state.outing = null;
       add('happiness', 15);
       add('energy', -zone.energyCost);
       add('satiety', -zone.satietyCost);
       state.weight = Math.max(5, state.weight - 2);
       state.bond = clamp(state.bond + zone.bondGain);
+      gainXp(state, 'vigor', zone.vigorXp, at, events);
+      resolveWalkEvent(state, zone.id, seed, at, events);
       break;
     }
     default: {

@@ -2,7 +2,7 @@ import { EYES, PATTERNS, TEMPERAMENTS, type PetState, type PetTraits } from './t
 import type { GameRules, TemperamentMods } from './rules.js';
 
 /** Small seeded PRNG (mulberry32): same seed, same sequence, on every machine. */
-function prng(seed: number): () => number {
+export function prng(seed: number): () => number {
   let a = seed >>> 0;
   return () => {
     a = (a + 0x6d2b79f5) >>> 0;

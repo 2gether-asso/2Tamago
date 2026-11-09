@@ -6,6 +6,7 @@ export const shell = {
   'nav.village': 'Village',
   'nav.shop': 'Boutique',
   'nav.journal': 'Journal',
+  'nav.sheet': 'Fiche',
   'nav.album': 'Album',
   'nav.admin': 'Admin',
 

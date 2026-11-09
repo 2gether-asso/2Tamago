@@ -4,6 +4,7 @@
  */
 import { z } from 'zod';
 import { ITEM_IDS, type ItemId } from '../engine/catalog.js';
+import type { QuestId, WalkEventId, WalkEventKind } from '../engine/rpg.js';
 import { WALK_ZONE_IDS, type WalkZoneId } from '../engine/zones.js';
 import { TRADE_LIMITS, tradeProblem } from '../engine/trade.js';
 import { CONTEST_KINDS, type ContestKind, type ContestProblem } from '../engine/contests.js';
@@ -657,8 +658,22 @@ export interface WalkEncounter {
   ownerName: string;
 }
 
+/** What happened during a walk (a `walk_event` of the engine); the web app writes the story. */
+export interface WalkEventDto {
+  walk: WalkEventId;
+  kind: WalkEventKind;
+  /** Coins and item of the event, already included in `found`. */
+  coins?: number;
+  item?: ItemId;
+  quest?: QuestId;
+  step?: number;
+  questDone?: boolean;
+}
+
 export interface WalkResponse extends ActionResponse {
   zone: WalkZoneId;
+  /** What happened on the way. */
+  walkEvent: WalkEventDto;
   found: { coins: number; items: ItemId[] };
   encounters: WalkEncounter[];
 }

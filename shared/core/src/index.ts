@@ -12,5 +12,6 @@ export * from './engine/trade.js';
 export * from './engine/names.js';
 export * from './engine/events.js';
 export * from './engine/contests.js';
+export * from './engine/rpg.js';
 export * from './engine/work.js';
 export * from './engine/diet.js';

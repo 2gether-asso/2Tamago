@@ -105,6 +105,40 @@ Avant de partir, le joueur choisit une **zone** (`WALK_ZONES`, dans `shared/core
 - **Les rencontres** ne dépendent pas de la zone : deux promenades qui se chevauchent dans le temps se croisent, où qu'elles aillent.
 - **Données** : la zone est dans `outing.zone` (absente sur une promenade commencée avant les zones : c'est la prairie) et dans la colonne `walks.zone`. Toutes les valeurs du tableau sont dans `zones.ts` ; seule la durée de base (`outingHours`) se règle depuis l'écran Admin.
 
+## Fiche de personnage et événements de promenade
+
+Tickets #57 (fiche de personnage) et #58 (événement tiré au sort à chaque promenade, quête). Tout est dans `shared/core/src/engine/rpg.ts` ; la page web est `/sheet`.
+
+### Statistiques
+
+Cinq statistiques RPG, distinctes des besoins (satiété, bonheur…) : **vigueur, agilité, astuce, charme, chance** (`RPG_STATS`). Chacune vaut 1 à la naissance (2 pour celle que favorise le tempérament, `TEMPERAMENT_BONUS`) et gagne 1 point par 10 points d'expérience (`XP_PER_POINT`), jusqu'à 20 (`MAX_STAT`). Le **niveau** est 1 plus le total des points gagnés.
+
+| Statistique | Elle grandit avec                                   | Elle sert à                                                             |
+| ----------- | --------------------------------------------------- | ----------------------------------------------------------------------- |
+| Vigueur     | Promenade terminée (+2 prairie, +3 forêt, +4 plage) | (réservée : endurance, à exploiter par d'autres règles)                 |
+| Agilité     | Jouer (+2) ; mésaventures de promenade              | Atténue les pertes d'une mésaventure (1 point de moins par 2 d'agilité) |
+| Astuce      | S'entraîner (+3) ; énigmes et conseils              | Condition de l'énigme de la quête de l'ermite (astuce 2 ou plus)        |
+| Charme      | Caresse prête (+1) ; rencontres de promenade        | (réservée)                                                              |
+| Chance      | Trouvailles de promenade                            | +10 % de poids par point sur les trouvailles du tirage                  |
+
+- **Lecture propre** : `characterSheet(state)` (valeurs, progression, niveau, quêtes, souvenirs) et `statOf(state, stat)` sont les points d'entrée pour toute autre règle (économie, concours…). Les données brutes sont dans `PetState.rpg` (`xp`, `quests`, `history`), facultatif : absent tant que rien n'a été gagné, donc aucun compagnon existant n'a besoin de migration (ni de migration SQL : c'est dans le JSONB de l'état).
+- **Gains** : `gainXp()` ajoute l'expérience (plafonnée) et émet un `stat_up` à chaque point gagné. Seules les actions limitées naturellement (énergie, délai de caresse, promenade) donnent de l'expérience : pas de gain sur les félicitations, qui se répètent sans limite.
+
+### Événement de promenade
+
+- À chaque retour (`endOuting`), le moteur tire **un événement** dans la table `WALK_EVENTS` : rien de spécial, découverte, rencontre (PNJ), mésaventure ou étape de quête. Il dépend du **stade** (`minStage`), de la **zone** (`zones`), de la **quête** en cours et d'une condition de statistique.
+- **Déterministe** : `pickWalkEvent(state, zone, seed)`. La graine est un paramètre facultatif de l'action (`{ type: 'endOuting', seed }`) ; par défaut elle est dérivée du compagnon et de l'heure de départ (`walkSeed`), donc l'événement d'une promenade est fixé dès qu'elle commence et ne peut pas être « retiré » en rappelant l'API. Le moteur ne tire aucun dé.
+- **Pas de limite quotidienne** ajoutée : on ne bride pas les promenades (l'énergie les limite déjà) ; l'événement a lieu à chaque promenade. Choix à revoir si l'équilibre l'exige.
+- **Effets** : besoins du compagnon (appliqués par le moteur), expérience, quête, souvenirs. Les **pièces** et l'**objet** de l'événement ne sont pas au compagnon : ils sont dans les données de l'événement `walk_event` (`coins`, `item`) et l'API les ajoute à ce que la promenade rapporte (`found` ; bonus d'événement admin et règle « un accessoire une fois » appliqués).
+- **Textes** : aucune phrase côté moteur ni API. L'événement est un code (`data.walk`, `kind`, `zone`) ; le texte est `rpg.event.<id>` dans `web/src/lib/i18n/locales/{fr,en}/rpg.ts`. Ajouter un événement : une entrée dans `WALK_EVENTS`, deux textes, un test si une règle change.
+- **Journal** : les événements `stat_up` et les étapes de quête passent par le journal d'activité (`pet_event`) ; les autres récits ne s'affichent que dans la fenêtre de retour de promenade.
+
+### Souvenirs et quête
+
+- `rpg.history` garde les 12 derniers événements (`HISTORY_SIZE`) : de quoi afficher les souvenirs et vérifier ce qu'il s'est passé.
+- `rpg.quests` retient l'étape atteinte de chaque quête (`QUESTS`). Un événement de quête (`quest: { id, step }`) n'est possible que si la quête est exactement à cette étape, et la fait avancer. Un événement avec `questHold` ne fait que se répéter (nouvelle tentative).
+- **Quête « L'ermite de la forêt »** (`hermit`, 3 étapes) : 1. rencontre dans la prairie ou la forêt (dès le stade enfant) ; 2. énigme : demande astuce 2 ; sinon l'ermite pose l'énigme sans succès (`hermit_riddle_failed`, +5 d'astuce) et on réessaie ; 3. remerciements : 40 pièces et une couronne de fleurs (gardée une seule fois). Ces événements ont un poids fort (40) pour que la chaîne avance en quelques promenades. Une fois terminée, elle ne revient plus.
+
 ## Vacances
 
 Le propriétaire peut mettre son compagnon en pause (« Partir en vacances » sur l'écran d'accueil), pour ne pas le voir partir pendant un voyage.
