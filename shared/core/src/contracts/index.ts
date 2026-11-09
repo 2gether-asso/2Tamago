@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { ITEM_IDS, type ItemId } from '../engine/catalog.js';
 import { WALK_ZONE_IDS, type WalkZoneId } from '../engine/zones.js';
 import { TRADE_LIMITS, tradeProblem } from '../engine/trade.js';
+import { EVENT_KINDS, EVENT_LIMITS, maxPercent, type EventKind } from '../engine/events.js';
 import type { GameErrorCode } from '../engine/errors.js';
 import type { Alert, Mood } from '../engine/view.js';
 import type { GameRules, RulesOverrides } from '../engine/rules.js';
@@ -316,6 +317,42 @@ export interface ModerationLogEntry {
   before: string | null;
   after: string | null;
   createdAt: number;
+}
+
+/** An admin schedules an event: a bonus for a few days. */
+export const eventBody = z
+  .object({
+    kind: z.enum(EVENT_KINDS),
+    percent: z.number().int().min(1),
+    /** Epoch ms. */
+    startsAt: z.number().int(),
+    endsAt: z.number().int(),
+  })
+  .superRefine((event, ctx) => {
+    const issue = (message: string, path: string) =>
+      ctx.addIssue({ code: 'custom', message, path: [path] });
+    if (event.endsAt <= event.startsAt) issue('ends_before_start', 'endsAt');
+    else if (event.endsAt - event.startsAt > EVENT_LIMITS.maxDays * 86_400_000) {
+      issue('too_long', 'endsAt');
+    }
+    if (event.percent > maxPercent(event.kind)) issue('too_much', 'percent');
+  });
+export type EventBody = z.infer<typeof eventBody>;
+
+export interface GameEventDto {
+  id: string;
+  kind: EventKind;
+  percent: number;
+  startsAt: number;
+  endsAt: number;
+  /** Called off by an admin. */
+  cancelled: boolean;
+}
+
+/** What members see: the bonuses on now, and the ones announced for the days to come. */
+export interface EventsOverview {
+  active: GameEventDto[];
+  upcoming: GameEventDto[];
 }
 
 /** Entrusting one's companion to another member. */
@@ -727,6 +764,7 @@ export const API_ERROR_CODES = [
   'name_not_allowed',
   'no_code',
   'no_contribution',
+  'no_event',
   'no_daycare',
   'no_trade',
   'no_pet',

@@ -37,6 +37,7 @@ export const errors = {
   'error.code_used_up': 'Ce code a déjà été utilisé autant de fois qu’il pouvait l’être.',
   'error.code_already_redeemed': 'Tu as déjà utilisé ce code.',
   'error.name_not_allowed': 'Ce nom n’est pas autorisé.',
+  'error.no_event': 'Cet événement n’existe plus.',
   'error.already_caressed': 'Tu as déjà caressé ce compagnon aujourd’hui.',
   'error.already_claimed': 'Tu as déjà récupéré la récompense de cette semaine.',
   'error.goal_not_reached': 'Le village n’a pas encore atteint son objectif.',

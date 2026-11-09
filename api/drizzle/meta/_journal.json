@@ -78,6 +78,13 @@
       "when": 1794184413047,
       "tag": "0010_solid_red_hulk",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1794184823876,
+      "tag": "0011_free_revanche",
+      "breakpoints": true
     }
   ]
 }

@@ -1,4 +1,4 @@
-import type { WalkZoneId } from '@2tamago/core';
+import type { EventKind, WalkZoneId } from '@2tamago/core';
 import type {
   ActivityKind,
   ModerationAction,
@@ -289,6 +289,22 @@ export const giftCodeRedemptions = pgTable(
     createdAt: createdAt(),
   },
   (t) => [primaryKey({ columns: [t.codeId, t.playerId] })],
+);
+
+/** An event: a bonus on for a while (see `EVENT_KINDS`). */
+export const gameEvents = pgTable(
+  'game_events',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    kind: text().$type<EventKind>().notNull(),
+    percent: integer().notNull(),
+    startsAt: timestamp('starts_at', { withTimezone: true }).notNull(),
+    endsAt: timestamp('ends_at', { withTimezone: true }).notNull(),
+    cancelledAt: timestamp('cancelled_at', { withTimezone: true }),
+    createdBy: uuid('created_by').references(() => players.id, { onDelete: 'set null' }),
+    createdAt: createdAt(),
+  },
+  (t) => [index('game_events_time_idx').on(t.startsAt, t.endsAt)],
 );
 
 /** What admins did to names, for accountability. */

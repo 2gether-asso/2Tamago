@@ -39,6 +39,7 @@ export const errors: Record<keyof typeof fr, string> = {
   'error.code_used_up': 'This code has already been used as many times as it could be.',
   'error.code_already_redeemed': 'You have already used this code.',
   'error.name_not_allowed': 'This name is not allowed.',
+  'error.no_event': 'This event no longer exists.',
   'error.already_caressed': 'You already petted this companion today.',
   'error.already_claimed': 'You already collected this week’s reward.',
   'error.goal_not_reached': 'The village has not reached its goal yet.',
