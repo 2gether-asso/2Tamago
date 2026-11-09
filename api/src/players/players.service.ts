@@ -183,6 +183,27 @@ export class PlayersService {
     return updated.length > 0;
   }
 
+  /** Atomically removes `quantity` of an item. Returns false (and removes nothing) if short. */
+  async takeItems(
+    executor: Executor,
+    playerId: string,
+    itemId: ItemId,
+    quantity: number,
+  ): Promise<boolean> {
+    const updated = await executor
+      .update(inventory)
+      .set({ quantity: sql`${inventory.quantity} - ${quantity}` })
+      .where(
+        and(
+          eq(inventory.playerId, playerId),
+          eq(inventory.itemId, itemId),
+          gte(inventory.quantity, quantity),
+        ),
+      )
+      .returning({ quantity: inventory.quantity });
+    return updated.length > 0;
+  }
+
   today(): string {
     return dayOf(this.clock.now(), this.config.game.timezone);
   }

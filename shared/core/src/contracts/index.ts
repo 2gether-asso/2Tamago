@@ -559,6 +559,10 @@ export interface TradeDto {
 }
 
 export interface TradeOverview {
+  /** How long an offer waits for an answer, in hours. */
+  expireHours: number;
+  /** Offers one player can have waiting at once. */
+  maxOpen: number;
   /** Offers waiting for the viewer's answer. */
   incoming: TradeDto[];
   /** The viewer's own offers, waiting for an answer. */

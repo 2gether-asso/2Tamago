@@ -1,10 +1,5 @@
 import type { WalkZoneId } from '@2tamago/core';
-import type {
-  ActivityKind,
-  PushKind,
-  PushLocale,
-  TradeItems,
-} from '@2tamago/core/contracts';
+import type { ActivityKind, PushKind, PushLocale, TradeItems } from '@2tamago/core/contracts';
 import type { PetState } from '@2tamago/core';
 import { sql } from 'drizzle-orm';
 import {
@@ -247,9 +242,7 @@ export const trades = pgTable(
       .references(() => players.id, { onDelete: 'cascade' }),
     offer: jsonb().$type<TradeItems>().notNull(),
     request: jsonb().$type<TradeItems>().notNull(),
-    status: text()
-      .$type<'pending' | 'accepted' | 'declined' | 'cancelled' | 'expired'>()
-      .notNull(),
+    status: text().$type<'pending' | 'accepted' | 'declined' | 'cancelled' | 'expired'>().notNull(),
     expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
     createdAt: createdAt(),
     resolvedAt: timestamp('resolved_at', { withTimezone: true }),

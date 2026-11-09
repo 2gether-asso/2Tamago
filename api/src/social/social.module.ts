@@ -9,12 +9,21 @@ import { DaycareController } from './daycare.controller.js';
 import { DaycareService } from './daycare.service.js';
 import { FavoritesService } from './favorites.service.js';
 import { SocialController } from './social.controller.js';
+import { TradesController } from './trades.controller.js';
+import { TradesService } from './trades.service.js';
 import { VillageService } from './village.service.js';
 import { WalksService } from './walks.service.js';
 
 @Module({
   imports: [PetsModule, PlayersModule, ActivityModule, PushModule],
-  controllers: [SocialController, CommunityController, DaycareController],
-  providers: [VillageService, WalksService, FavoritesService, CommunityService, DaycareService],
+  controllers: [SocialController, CommunityController, DaycareController, TradesController],
+  providers: [
+    VillageService,
+    WalksService,
+    FavoritesService,
+    CommunityService,
+    DaycareService,
+    TradesService,
+  ],
 })
 export class SocialModule {}
