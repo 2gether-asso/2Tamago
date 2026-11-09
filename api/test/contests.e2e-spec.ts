@@ -85,7 +85,9 @@ describe('Weekly contests (e2e)', () => {
     }
     await root
       .put('/api/admin/rules')
-      .send({ stageHours: { baby: 1, child: 1000 } })
+      // Happy pets learn at full speed: below 50 happiness, a lesson only counts for half, which
+      // made the scores depend on the temperament rolled for each pet.
+      .send({ stageHours: { baby: 1, child: 1000 }, awakeDecayPerHour: { happiness: 0 } })
       .expect(200);
     clock.advance(hours(1.7));
     return agents;
