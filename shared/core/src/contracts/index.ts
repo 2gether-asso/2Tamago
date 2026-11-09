@@ -4,6 +4,10 @@
  */
 import { z } from 'zod';
 import { ITEM_IDS, type ItemId } from '../engine/catalog.js';
+import { WALK_ZONE_IDS, type WalkZoneId } from '../engine/zones.js';
+import { TRADE_LIMITS, tradeProblem } from '../engine/trade.js';
+import { CONTEST_KINDS, type ContestKind, type ContestProblem } from '../engine/contests.js';
+import { EVENT_KINDS, EVENT_LIMITS, maxPercent, type EventKind } from '../engine/events.js';
 import type { GameErrorCode } from '../engine/errors.js';
 import type { Alert, Mood } from '../engine/view.js';
 import type { GameRules, RulesOverrides } from '../engine/rules.js';
@@ -96,6 +100,8 @@ export const rulesOverridesBody = z
     tantrumIntervalHours: positive,
     tantrumWindowHours: nonNegative,
     outingHours: nonNegative,
+    vacationMaxHours: positive,
+    vacationCooldownHours: nonNegative,
     caressCooldownSeconds: nonNegative,
     departureEnabled: z.boolean(),
     night: z
@@ -201,8 +207,229 @@ export const ownerActionBody = z.discriminatedUnion('type', [
   z.object({ type: z.literal('train'), trick: z.enum(TRICKS) }),
   z.object({ type: z.literal('equip'), item: itemId.nullable() }),
   z.object({ type: z.literal('retire') }),
+  z.object({ type: z.literal('startVacation') }),
+  z.object({ type: z.literal('endVacation') }),
 ]);
 export type OwnerActionBody = z.infer<typeof ownerActionBody>;
+
+/** What a caretaker may do (see `CARETAKER_ACTION_TYPES`): the same shapes as the owner's. */
+export const careActionBody = z.discriminatedUnion('type', [
+  z.object({ type: z.literal('feed') }),
+  z.object({ type: z.literal('clean') }),
+  z.object({ type: z.literal('medicine') }),
+  z.object({ type: z.literal('sleep') }),
+  z.object({ type: z.literal('wake') }),
+  z.object({ type: z.literal('lights'), on: z.boolean() }),
+  z.object({ type: z.literal('praise') }),
+  z.object({ type: z.literal('scold') }),
+  z.object({ type: z.literal('caress') }),
+]);
+export type CareActionBody = z.infer<typeof careActionBody>;
+
+const tradeBundle = z.partialRecord(itemId, z.number().int().min(1).max(TRADE_LIMITS.maxQuantity));
+
+/** An offer to swap items with another member: what is given, and what is asked in return. */
+export const tradeBody = z
+  .object({ targetId: z.uuid(), offer: tradeBundle, request: tradeBundle })
+  .superRefine((trade, ctx) => {
+    const problem = tradeProblem(trade.offer, trade.request);
+    if (problem) ctx.addIssue({ code: 'custom', message: problem, path: ['offer'] });
+  });
+export type TradeBody = z.infer<typeof tradeBody>;
+
+const rewardItems = z.partialRecord(itemId, z.number().int().min(1).max(20));
+
+/** A gift code an admin creates: what it gives, how often it can be used, until when. */
+export const giftCodeBody = z
+  .object({
+    /** Letters, digits and dashes; stored in capitals, so that players need not care about case. */
+    code: z
+      .string()
+      .trim()
+      .toUpperCase()
+      .regex(/^[A-Z0-9-]{4,24}$/),
+    coins: z.number().int().min(0).max(1000).default(0),
+    items: rewardItems.default({}),
+    /** How many members can use it, in all. */
+    maxUses: z.number().int().min(1).max(10_000),
+    /** Epoch ms; `null`: no end. */
+    expiresAt: z.number().int().nullable().default(null),
+  })
+  .refine((gift) => gift.coins > 0 || Object.keys(gift.items).length > 0, {
+    message: 'empty_gift',
+  })
+  .refine((gift) => Object.keys(gift.items).length <= 4, { message: 'too_many_items' });
+export type GiftCodeBody = z.infer<typeof giftCodeBody>;
+
+export const redeemBody = z.object({ code: z.string().trim().min(1).max(40) });
+export type RedeemBody = z.infer<typeof redeemBody>;
+
+export interface GiftCodeDto {
+  id: string;
+  code: string;
+  coins: number;
+  items: Partial<Record<ItemId, number>>;
+  maxUses: number;
+  uses: number;
+  expiresAt: number | null;
+  /** Switched off by an admin. */
+  disabled: boolean;
+  createdAt: number;
+}
+
+export interface RedeemResponse {
+  /** What the code gave. */
+  coins: number;
+  items: Partial<Record<ItemId, number>>;
+  /** The balance and the bag, after. */
+  balance: number;
+  inventory: Inventory;
+}
+
+/** An admin sets a name (of a companion, or of a member). */
+export const renameBody = z.object({ name: z.string().trim().min(2).max(32) });
+export type RenameBody = z.infer<typeof renameBody>;
+
+/** Words that cannot be in a companion's name (see `blockedTerm`). */
+export const blockedWordsBody = z.object({
+  words: z.array(z.string().trim().min(2).max(32)).max(200),
+});
+export type BlockedWordsBody = z.infer<typeof blockedWordsBody>;
+
+/** A member found by the admin search, with their living companion. */
+export interface ModerationPerson {
+  playerId: string;
+  playerName: string;
+  /** An admin set the name: signing in with Discord no longer changes it. */
+  nameLocked: boolean;
+  petId: string | null;
+  petName: string | null;
+}
+
+export type ModerationAction =
+  'rename_pet' | 'rename_player' | 'unlock_player_name' | 'blocked_words';
+
+export interface ModerationLogEntry {
+  id: string;
+  adminName: string;
+  action: ModerationAction;
+  /** Whom it was about (the member), when it was about someone. */
+  targetName: string | null;
+  before: string | null;
+  after: string | null;
+  createdAt: number;
+}
+
+/** An admin schedules an event: a bonus for a few days. */
+export const eventBody = z
+  .object({
+    kind: z.enum(EVENT_KINDS),
+    percent: z.number().int().min(1),
+    /** Epoch ms. */
+    startsAt: z.number().int(),
+    endsAt: z.number().int(),
+  })
+  .superRefine((event, ctx) => {
+    const issue = (message: string, path: string) =>
+      ctx.addIssue({ code: 'custom', message, path: [path] });
+    if (event.endsAt <= event.startsAt) issue('ends_before_start', 'endsAt');
+    else if (event.endsAt - event.startsAt > EVENT_LIMITS.maxDays * 86_400_000) {
+      issue('too_long', 'endsAt');
+    }
+    if (event.percent > maxPercent(event.kind)) issue('too_much', 'percent');
+  });
+export type EventBody = z.infer<typeof eventBody>;
+
+export interface GameEventDto {
+  id: string;
+  kind: EventKind;
+  percent: number;
+  startsAt: number;
+  endsAt: number;
+  /** Called off by an admin. */
+  cancelled: boolean;
+}
+
+/** What members see: the bonuses on now, and the ones announced for the days to come. */
+export interface EventsOverview {
+  active: GameEventDto[];
+  upcoming: GameEventDto[];
+}
+
+export const contestKind = z.enum(CONTEST_KINDS);
+export const contestBody = z.object({ kind: contestKind });
+export type ContestBody = z.infer<typeof contestBody>;
+
+/** A member votes for a companion in the week's beauty contest. */
+export const voteBody = z.object({ playerId: z.uuid() });
+export type VoteBody = z.infer<typeof voteBody>;
+
+export interface ContestEntryDto {
+  /** 1 for the best. */
+  rank: number;
+  playerId: string;
+  playerName: string;
+  petId: string;
+  petName: string;
+  species: Species;
+  stage: Stage;
+  form: Form | null;
+  color: number;
+  traits: PetTraits | null;
+  equipped: string | null;
+  mood: Mood;
+  /** What the pet had learned when it entered (`tricks`), or the votes it got (`beauty`). */
+  score: number;
+  isMine: boolean;
+  /** Beauty: the viewer's vote this week is for this entry. */
+  votedByMe: boolean;
+}
+
+export interface ContestBoard {
+  kind: ContestKind;
+  /** The best entries, best first. */
+  entries: ContestEntryDto[];
+  /** The viewer's own entry, wherever it ranks. */
+  mine: ContestEntryDto | null;
+  /** Why the viewer's companion cannot enter right now (`null`: it can, or has). */
+  problem: ContestProblem | null;
+}
+
+export interface ContestResults {
+  kind: ContestKind;
+  /** The first three. */
+  podium: ContestEntryDto[];
+  mine: ContestEntryDto | null;
+  /** Coins the viewer can take for their rank (0: none). */
+  prize: number;
+  claimed: boolean;
+}
+
+export interface ContestsOverview {
+  /** Monday of the week (YYYY-MM-DD). */
+  week: string;
+  /** When the week ends and the contests start again (epoch ms). */
+  endsAt: number;
+  tricks: ContestBoard;
+  beauty: ContestBoard;
+  /** Last week's results, when anyone took part. */
+  last: { week: string; results: ContestResults[] } | null;
+}
+
+export interface ContestClaimResponse {
+  prize: number;
+  coins: number;
+}
+
+/** Entrusting one's companion to another member. */
+export const daycareBody = z.object({ caretakerId: z.uuid() });
+export type DaycareBody = z.infer<typeof daycareBody>;
+
+/** Where to walk; without a body, the meadow. */
+export const walkBody = z
+  .object({ zone: z.enum(WALK_ZONE_IDS).default('meadow') })
+  .default({ zone: 'meadow' });
+export type WalkBody = z.infer<typeof walkBody>;
 
 export const buyBody = z.object({
   item: itemId,
@@ -212,6 +439,42 @@ export type BuyBody = z.infer<typeof buyBody>;
 
 export const giftBody = z.object({ item: itemId });
 export type GiftBody = z.infer<typeof giftBody>;
+
+/** Languages of the push notifications: the service worker writes the text, in the player's. */
+export const PUSH_LOCALES = ['fr', 'en'] as const;
+export type PushLocale = (typeof PUSH_LOCALES)[number];
+
+/** A browser's push subscription (`PushSubscription.toJSON()`), with the language to write in. */
+export const pushSubscriptionBody = z.object({
+  endpoint: z.url().max(2048),
+  keys: z.object({ p256dh: z.string().min(1).max(256), auth: z.string().min(1).max(256) }),
+  locale: z.enum(PUSH_LOCALES),
+});
+export type PushSubscriptionBody = z.infer<typeof pushSubscriptionBody>;
+
+export const pushUnsubscribeBody = z.object({ endpoint: z.url().max(2048) });
+export type PushUnsubscribeBody = z.infer<typeof pushUnsubscribeBody>;
+
+/** Why a push is sent. The API sends the code, the service worker writes the sentence. */
+export const PUSH_KINDS = [
+  'hungry',
+  'sick',
+  'calling',
+  'walk_done',
+  'daycare_invite',
+  'trade_offer',
+  'test',
+] as const;
+export type PushKind = (typeof PUSH_KINDS)[number];
+
+/** The data of a push message, as the service worker receives it. */
+export interface PushPayload {
+  kind: PushKind;
+  petName: string;
+  /** The other player, for what another player did (the owner who entrusts their companion). */
+  playerName?: string;
+  locale: PushLocale;
+}
 
 export const uuidParam = z.uuid();
 
@@ -318,6 +581,8 @@ export interface ClientConfig {
   sentryDsn: string | null;
   /** Whether the feedback form can deliver (the API has a `SENTRY_DSN`). */
   feedbackEnabled: boolean;
+  /** VAPID public key for Web Push, `null` when notifications are off on this server. */
+  pushPublicKey: string | null;
 }
 
 export interface MeResponse {
@@ -356,6 +621,7 @@ export interface WalkEncounter {
 }
 
 export interface WalkResponse extends ActionResponse {
+  zone: WalkZoneId;
   found: { coins: number; items: ItemId[] };
   encounters: WalkEncounter[];
 }
@@ -384,6 +650,8 @@ export interface PlayerProfile {
     /** When they first signed in (epoch ms). */
     memberSince: number;
     isYou: boolean;
+    /** Whether the viewer follows this player. */
+    favorite: boolean;
   };
   stats: PlayerStats;
   /** Their living companion, brought up to date. */
@@ -401,17 +669,125 @@ export interface VillagePet {
   traits: PetTraits | null;
   equipped: string | null;
   mood: Mood;
+  ownerId: string;
   ownerName: string;
   caressedToday: boolean;
+  /** Whether the viewer follows the owner (favorites come first in the village). */
+  favorite: boolean;
+}
+
+export interface FavoriteResponse {
+  favorite: boolean;
+}
+
+/** The village's goal of the week: walks done together, and a reward for those who took part. */
+export interface CommunityGoal {
+  /** Monday of the week (YYYY-MM-DD). */
+  week: string;
+  /** When the week ends and the goal resets (epoch ms). */
+  endsAt: number;
+  target: number;
+  /** Walks the whole village completed this week. */
+  progress: number;
+  /** Walks the viewer completed this week. */
+  mine: number;
+  reached: boolean;
+  /** Coins for each player who took part, once the goal is reached. */
+  reward: number;
+  claimed: boolean;
+  /** Reached, taken part and not yet claimed. */
+  canClaim: boolean;
+}
+
+export interface ClaimResponse {
+  coins: number;
+  reward: number;
 }
 
 export interface VisitResponse {
   pet: PetDto;
   caressedToday: boolean;
+  /** Set when the viewer looks after this companion right now: the way to the care actions. */
+  daycareId: string | null;
+}
+
+/** `pending`: waiting for the caretaker's answer. `active`: the caretaker looks after the pet. */
+export type DaycareStatus = 'pending' | 'active';
+
+export interface DaycareDto {
+  id: string;
+  status: DaycareStatus;
+  petId: string;
+  petName: string;
+  ownerId: string;
+  ownerName: string;
+  caretakerId: string;
+  caretakerName: string;
+  /** When the invitation lapses (pending) or the stay ends by itself (active), epoch ms. */
+  expiresAt: number;
+}
+
+/** What is swapped, as the API sends it: item id to quantity. */
+export type TradeItems = Partial<Record<ItemId, number>>;
+
+export interface TradeDto {
+  id: string;
+  proposerId: string;
+  proposerName: string;
+  targetId: string;
+  targetName: string;
+  /** What the proposer gives (already set aside for the trade). */
+  offer: TradeItems;
+  /** What the proposer asks the target for. */
+  request: TradeItems;
+  /** The offer lapses at this time (epoch ms), and the proposer gets their items back. */
+  expiresAt: number;
+}
+
+export interface TradeOverview {
+  /** How long an offer waits for an answer, in hours. */
+  expireHours: number;
+  /** Offers one player can have waiting at once. */
+  maxOpen: number;
+  /** Offers waiting for the viewer's answer. */
+  incoming: TradeDto[];
+  /** The viewer's own offers, waiting for an answer. */
+  outgoing: TradeDto[];
+}
+
+export interface TradeResult {
+  coins: number;
+  inventory: Inventory;
+}
+
+export interface DaycareOverview {
+  /** How long a stay lasts at most, in days (it ends by itself after that). */
+  maxDays: number;
+  /** The viewer's own companion, entrusted to someone (or an invitation waiting for an answer). */
+  entrusted: DaycareDto | null;
+  /** Companions the viewer looks after. */
+  caring: DaycareDto[];
+  /** Invitations the viewer can accept or decline. */
+  invitations: DaycareDto[];
 }
 
 export type ActivityKind =
-  'pet_event' | 'visit_caress' | 'visit_gift' | 'encounter' | 'daily_bonus';
+  | 'pet_event'
+  | 'visit_caress'
+  | 'visit_gift'
+  | 'encounter'
+  | 'daily_bonus'
+  | 'community_reward'
+  | 'daycare_invite'
+  | 'daycare_accepted'
+  | 'daycare_declined'
+  | 'daycare_ended'
+  | 'daycare_care'
+  | 'trade_offer'
+  | 'trade_accepted'
+  | 'trade_declined'
+  | 'trade_expired'
+  | 'name_changed';
 
 export interface ActivityDto {
   id: string;
@@ -440,14 +816,35 @@ export interface AlbumEntry {
  */
 export const API_ERROR_CODES = [
   'already_caressed',
+  'already_claimed',
   'already_has_pet',
+  'code_already_redeemed',
+  'code_exists',
+  'code_expired',
+  'code_used_up',
+  'daycare_exists',
+  'daycare_full',
   'feedback_disabled',
+  'goal_not_reached',
   'missing_item',
+  'name_not_allowed',
+  'no_code',
+  'no_contribution',
+  'no_entry',
+  'no_prize',
+  'no_event',
+  'no_daycare',
+  'no_trade',
   'no_pet',
   'no_player',
   'not_enough_coins',
+  'not_for_sale',
+  'trade_full',
+  'trade_invalid',
   'not_giftable',
   'own_pet',
+  'own_profile',
+  'push_disabled',
 ] as const;
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];
 

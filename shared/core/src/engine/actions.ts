@@ -1,9 +1,10 @@
 import { getItem, isAccessory, isSnack, type ItemId } from './catalog.js';
 import { GameError } from './errors.js';
 import { alignToGrid, gameHours, type GameRules } from './rules.js';
-import { clamp, simulate } from './simulate.js';
+import { clamp, endVacation, simulate } from './simulate.js';
 import { isNight } from './night.js';
 import { hashSeed, modOf, rollTraits } from './traits.js';
+import { DEFAULT_ZONE, WALK_ZONES, zoneOpenTo, type WalkZoneId } from './zones.js';
 import { type PetEvent, type PetState, type Species, type TrickId, TRICKS } from './types.js';
 
 export interface NewPetInput {
@@ -67,11 +68,30 @@ export type OwnerAction =
   | { type: 'caress' }
   | { type: 'train'; trick: TrickId }
   | { type: 'equip'; item: ItemId | null }
-  | { type: 'retire' };
+  | { type: 'retire' }
+  | { type: 'startVacation' }
+  | { type: 'endVacation' };
+
+/**
+ * What a caretaker may do while a pet is in daycare: the day-to-day care, not what only its owner
+ * decides (training, walks, items, vacations, retiring). The API enforces the list.
+ */
+export const CARETAKER_ACTION_TYPES = [
+  'feed',
+  'clean',
+  'medicine',
+  'sleep',
+  'wake',
+  'lights',
+  'praise',
+  'scold',
+  'caress',
+] as const satisfies readonly OwnerAction['type'][];
+export type CaretakerActionType = (typeof CARETAKER_ACTION_TYPES)[number];
 
 /** Actions triggered by the server: outings, and what other players do. */
 export type SystemAction =
-  | { type: 'startOuting' }
+  | { type: 'startOuting'; zone?: WalkZoneId }
   | { type: 'endOuting' }
   | { type: 'visitorCaress' }
   | { type: 'visitorTreat'; item: ItemId };
@@ -101,6 +121,10 @@ export function applyAction(
 
   if (state.status !== 'alive') throw new GameError('pet_gone');
   if (state.stage === 'egg') throw new GameError('still_an_egg');
+  // Paused: the only thing left to do is to bring it back.
+  if (state.vacationSince != null && action.type !== 'endVacation') {
+    throw new GameError('on_vacation');
+  }
 
   const requireHome = () => {
     if (state.outing) throw new GameError('away');
@@ -252,22 +276,44 @@ export function applyAction(
       events.push({ type: 'retired', at });
       break;
     }
+    case 'startVacation': {
+      requireHome();
+      const coolingDown =
+        state.vacationEndedAt != null &&
+        at - state.vacationEndedAt < gameHours(rules, rules.vacationCooldownHours);
+      if (coolingDown) throw new GameError('vacation_cooldown');
+      state.vacationSince = at;
+      events.push({ type: 'vacation_started', at });
+      break;
+    }
+    case 'endVacation': {
+      if (state.vacationSince == null) throw new GameError('not_on_vacation');
+      endVacation(state, at, rules, events, false);
+      break;
+    }
     case 'startOuting': {
       requireAwake();
       if (state.stage === 'baby') throw new GameError('too_young');
-      if (s.energy < 20) throw new GameError('too_tired');
-      state.outing = { startedAt: at, endsAt: at + gameHours(rules, rules.outingHours) };
+      const zone = WALK_ZONES[action.zone ?? DEFAULT_ZONE];
+      if (!zoneOpenTo(zone, state.stage)) throw new GameError('zone_locked');
+      if (s.energy < zone.energyCost + 5) throw new GameError('too_tired');
+      state.outing = {
+        startedAt: at,
+        endsAt: at + gameHours(rules, rules.outingHours * zone.durationFactor),
+        zone: zone.id,
+      };
       break;
     }
     case 'endOuting': {
       if (!state.outing) throw new GameError('not_away');
       if (at < state.outing.endsAt) throw new GameError('outing_not_finished');
+      const zone = WALK_ZONES[state.outing.zone ?? DEFAULT_ZONE];
       state.outing = null;
       add('happiness', 15);
-      add('energy', -15);
-      add('satiety', -10);
+      add('energy', -zone.energyCost);
+      add('satiety', -zone.satietyCost);
       state.weight = Math.max(5, state.weight - 2);
-      state.bond = clamp(state.bond + 3);
+      state.bond = clamp(state.bond + zone.bondGain);
       break;
     }
     default: {

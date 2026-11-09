@@ -1,4 +1,5 @@
 import {
+  bundleEntries,
   ITEMS,
   type Alert,
   type Form,
@@ -8,9 +9,10 @@ import {
   type Stage,
   type Temperament,
   type TrickId,
+  type WalkZoneId,
 } from '@2tamago/core';
 import type { ActivityDto, Notice } from '@2tamago/core/contracts';
-import { t } from './i18n/index.svelte.ts';
+import { t, type MessageKey } from './i18n/index.svelte.ts';
 
 /** Texts of the game, in the current language (see `lib/i18n`). */
 
@@ -21,6 +23,14 @@ export const alertLabel = (alert: Alert) => t(`alert.${alert}`);
 export const trickLabel = (trick: TrickId) => t(`trick.${trick}`);
 export const temperamentLabel = (temperament: Temperament) => t(`temperament.${temperament}`);
 export const temperamentHint = (temperament: Temperament) => t(`temperament.${temperament}.hint`);
+export const zoneLabel = (zone: WalkZoneId) => t(`zone.${zone}`);
+export const zoneHint = (zone: WalkZoneId) => t(`zone.${zone}.hint`);
+/** "Cookie ×2, Mushroom ×1": what a trade is about, or nothing if the side is empty. */
+export function bundleLabel(items: Partial<Record<ItemId, number>>): string {
+  return bundleEntries(items)
+    .map(([id, quantity]) => `${t(`item.${id}`)} ×${quantity}`)
+    .join(', ');
+}
 export const itemLabel = (id: ItemId) => t(`item.${id}`);
 
 export function eventText(event: PetEvent, name: string): string | null {
@@ -40,6 +50,10 @@ export function eventText(event: PetEvent, name: string): string | null {
       return event.data?.exhausted
         ? t('event.fell_asleep_exhausted', { name })
         : t('event.fell_asleep', { name });
+    case 'vacation_ended':
+      return t(event.data?.automatic ? 'event.vacation_ended_auto' : 'event.vacation_ended', {
+        name,
+      });
     case 'trick_level_up':
       return t('event.trick_level_up', { name, trick: trickLabel(event.data?.trick as TrickId) });
     case 'fell_ill':
@@ -49,6 +63,7 @@ export function eventText(event: PetEvent, name: string): string | null {
     case 'attention_call':
     case 'departed':
     case 'retired':
+    case 'vacation_started':
       return t(`event.${event.type}`, { name });
     default:
       return null;
@@ -69,6 +84,35 @@ export function activityText(entry: ActivityDto): string {
       return t('activity.visit_gift', {
         visitorName: String(d.visitorName),
         item: String(d.item) in ITEMS ? itemLabel(d.item as ItemId) : t('item.unknown'),
+        petName: String(d.petName),
+      });
+    case 'community_reward':
+      return t('activity.community_reward', { count: Number(d.coins) });
+    case 'trade_offer':
+    case 'trade_accepted':
+    case 'trade_declined':
+    case 'trade_expired':
+      return t(`activity.${entry.kind}`, { playerName: String(d.playerName) });
+    case 'name_changed':
+      return t(d.what === 'pet' ? 'activity.name_changed_pet' : 'activity.name_changed_player', {
+        name: String(d.name),
+      });
+    case 'daycare_invite':
+      return t('activity.daycare_invite', {
+        ownerName: String(d.ownerName),
+        petName: String(d.petName),
+      });
+    case 'daycare_accepted':
+    case 'daycare_declined':
+      return t(`activity.${entry.kind}`, {
+        caretakerName: String(d.caretakerName),
+        petName: String(d.petName),
+      });
+    case 'daycare_ended':
+      return t('activity.daycare_ended', { petName: String(d.petName) });
+    case 'daycare_care':
+      return t(`activity.daycare_care.${String(d.action)}` as MessageKey, {
+        caretakerName: String(d.caretakerName),
         petName: String(d.petName),
       });
     case 'encounter':

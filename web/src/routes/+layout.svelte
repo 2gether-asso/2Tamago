@@ -4,11 +4,14 @@
   import '../app.css';
   import favicon from '#lib/assets/favicon.svg';
   import FeedbackModal from '#lib/components/FeedbackModal.svelte';
+  import EventsBanner from '#lib/components/EventsBanner.svelte';
+  import { events } from '#lib/events.svelte.ts';
   import Toasts from '#lib/components/Toasts.svelte';
   import { clientConfig } from '#lib/client-config.svelte.ts';
   import { api } from '#lib/api.ts';
   import { game } from '#lib/game.svelte.ts';
   import { i18n, t, type Locale, type MessageKey } from '#lib/i18n/index.svelte.ts';
+  import { push } from '#lib/push.svelte.ts';
   import { theme } from '#lib/theme.svelte.ts';
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
@@ -21,6 +24,7 @@
   const NAV: { href: string; label: MessageKey; icon: string }[] = [
     { href: '/', label: 'nav.home', icon: '🏠' },
     { href: '/village', label: 'nav.village', icon: '🌳' },
+    { href: '/contests', label: 'nav.contests', icon: '🏆' },
     { href: '/shop', label: 'nav.shop', icon: '🛍️' },
     { href: '/journal', label: 'nav.journal', icon: '📜' },
     { href: '/album', label: 'nav.album', icon: '📔' },
@@ -44,6 +48,11 @@
     document.documentElement.lang = i18n.locale;
   });
 
+  // Only for someone signed in: the bonuses are not shown on the login page.
+  $effect(() => {
+    if (game.loaded) events.start();
+  });
+
   $effect(() => {
     if (isLogin || game.loaded) return;
     game
@@ -55,8 +64,10 @@
   });
 
   async function logout() {
+    await push.forget();
     await api.logout();
     game.signOut();
+    events.stop();
     await goto('/login');
   }
 </script>
@@ -125,6 +136,7 @@
         <button onclick={() => location.reload()}>{t('common.retry')}</button>
       </div>
     {:else if game.loaded}
+      <EventsBanner />
       {@render children()}
     {:else}
       <p class="muted">{t('common.loading')}</p>

@@ -23,5 +23,7 @@ export const profile: Record<keyof typeof fr, string> = {
   'profile.tricks': 'Tricks learned',
   'profile.equipped': 'Wearing: {item}',
   'profile.visit': 'Pay a visit',
+  'profile.follow': '☆ Add to favorites',
+  'profile.unfollow': '★ Remove from favorites',
   'profile.album': 'My album',
 };

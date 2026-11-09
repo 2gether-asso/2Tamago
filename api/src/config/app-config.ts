@@ -61,6 +61,12 @@ const envSchema = z
     DISCORD_WEBHOOK_URL: optionalUrl,
     ADMIN_DISCORD_IDS: csv,
 
+    /** Web Push (VAPID keys, see `make vapid-keys`); notifications are off without both keys. */
+    VAPID_PUBLIC_KEY: z.string().optional(),
+    VAPID_PRIVATE_KEY: z.string().optional(),
+    /** A `mailto:` or https URL the push services can reach in case of abuse. */
+    VAPID_SUBJECT: z.string().default('mailto:admin@example.com'),
+
     GAME_TIME_SCALE: z.coerce.number().positive().default(1),
     GAME_DEPARTURE: z
       .enum(['true', 'false'])
@@ -118,6 +124,7 @@ export class AppConfig {
     guildId: string;
     redirectUri: string;
   } | null;
+  readonly push: { publicKey: string; privateKey: string; subject: string } | null;
   readonly game: { timeScale: number; departureEnabled: boolean; timezone: string };
 
   constructor(source: Record<string, string | undefined> = process.env) {
@@ -151,6 +158,14 @@ export class AppConfig {
             clientSecret: env.DISCORD_CLIENT_SECRET,
             guildId: env.DISCORD_GUILD_ID,
             redirectUri: env.DISCORD_REDIRECT_URI ?? `${env.WEB_ORIGIN}/api/auth/discord/callback`,
+          }
+        : null;
+    this.push =
+      env.VAPID_PUBLIC_KEY && env.VAPID_PRIVATE_KEY
+        ? {
+            publicKey: env.VAPID_PUBLIC_KEY,
+            privateKey: env.VAPID_PRIVATE_KEY,
+            subject: env.VAPID_SUBJECT,
           }
         : null;
     this.game = {

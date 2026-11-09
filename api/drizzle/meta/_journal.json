@@ -22,6 +22,76 @@
       "when": 1794151413429,
       "tag": "0002_icy_madrox",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1794175715592,
+      "tag": "0003_silly_bishop",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1794177214403,
+      "tag": "0004_minor_kylun",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1794177884899,
+      "tag": "0005_cute_vampiro",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1794179576507,
+      "tag": "0006_absurd_polaris",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1794180229201,
+      "tag": "0007_white_madelyne_pryor",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1794182633954,
+      "tag": "0008_redundant_cerebro",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1794184232067,
+      "tag": "0009_giant_dazzler",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1794184413047,
+      "tag": "0010_solid_red_hulk",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1794184823876,
+      "tag": "0011_free_revanche",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1794185530633,
+      "tag": "0012_great_glorian",
+      "breakpoints": true
     }
   ]
 }

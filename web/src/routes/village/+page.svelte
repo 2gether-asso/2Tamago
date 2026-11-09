@@ -1,4 +1,7 @@
 <script lang="ts">
+  import Trades from '#lib/components/Trades.svelte';
+  import DaycareCaretaker from '#lib/components/DaycareCaretaker.svelte';
+  import CommunityGoal from '#lib/components/CommunityGoal.svelte';
   import PetSprite from '#lib/components/PetSprite.svelte';
   import { api } from '#lib/api.ts';
   import { moodLabel, stageLabel } from '#lib/texts.ts';
@@ -9,6 +12,12 @@
 
 <h1>{t('village.title')}</h1>
 <p class="muted">{t('village.intro')}</p>
+
+<Trades />
+
+<DaycareCaretaker />
+
+<CommunityGoal />
 
 {#await village}
   <p class="muted">{t('common.loading')}</p>
@@ -29,7 +38,9 @@
             equipped={pet.equipped}
             size={110}
           />
-          <strong>{pet.name}</strong>
+          <strong
+            >{pet.name}{#if pet.favorite}<span title={t('village.favorite')}> ★</span>{/if}</strong
+          >
           <small class="muted">{pet.ownerName} · {stageLabel(pet.stage)}</small>
           <small>{moodLabel(pet.mood)}{pet.caressedToday ? ' · 💞' : ''}</small>
         </a>

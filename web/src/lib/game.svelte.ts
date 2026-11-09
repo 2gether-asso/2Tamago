@@ -5,6 +5,7 @@ import {
   type GameRules,
   type PetEvent,
   type PetState,
+  type WalkZoneId,
 } from '@2tamago/core';
 import type {
   ActionResponse,
@@ -82,8 +83,8 @@ class Game {
     });
   }
 
-  async startWalk() {
-    return this.#run(() => api.startWalk());
+  async startWalk(zone: WalkZoneId) {
+    return this.#run(() => api.startWalk(zone));
   }
 
   async returnFromWalk() {

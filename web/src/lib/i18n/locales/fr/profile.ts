@@ -21,5 +21,7 @@ export const profile = {
   'profile.tricks': 'Tours appris',
   'profile.equipped': 'Accessoire : {item}',
   'profile.visit': 'Rendre visite',
+  'profile.follow': '☆ Ajouter aux favoris',
+  'profile.unfollow': '★ Retirer des favoris',
   'profile.album': 'Mon album',
 } as const;

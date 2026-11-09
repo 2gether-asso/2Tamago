@@ -1,10 +1,13 @@
 <script lang="ts">
   import { ageInDays, ITEMS, SPECIES_LABELS, TRICKS, trickLevel, type ItemId } from '@2tamago/core';
-  import type { PlayerProfile } from '@2tamago/core/contracts';
+  import type { DaycareOverview, PlayerProfile } from '@2tamago/core/contracts';
+  import TradeComposer from '#lib/components/TradeComposer.svelte';
+  import PushSettings from '#lib/components/PushSettings.svelte';
   import PetSprite from '#lib/components/PetSprite.svelte';
   import StatBar from '#lib/components/StatBar.svelte';
   import { api } from '#lib/api.ts';
   import { game } from '#lib/game.svelte.ts';
+  import { toasts } from '#lib/toasts.svelte.ts';
   import { intlTag, t } from '#lib/i18n/index.svelte.ts';
   import {
     formLabel,
@@ -29,6 +32,64 @@
       .then((p) => (profile = p))
       .catch((e: Error) => (error = e.message));
   });
+
+  let daycare = $state.raw<DaycareOverview | null>(null);
+  let entrusting = $state(false);
+  // Only someone else's profile can receive the companion, and only if it is not entrusted yet.
+  $effect(() => {
+    daycare = null;
+    api
+      .daycare()
+      .then((overview) => (daycare = overview))
+      .catch(() => {});
+  });
+  let canEntrust = $derived(
+    !!profile &&
+      !profile.player.isYou &&
+      game.pet?.status === 'alive' &&
+      daycare !== null &&
+      daycare.entrusted === null,
+  );
+
+  async function entrust() {
+    if (!profile || !daycare || !game.pet || entrusting) return;
+    const caretaker = profile.player.displayName;
+    if (
+      !confirm(
+        t('daycare.entrust_confirm', {
+          pet: game.pet.name,
+          caretaker,
+          days: daycare.maxDays,
+        }),
+      )
+    ) {
+      return;
+    }
+    entrusting = true;
+    try {
+      const sent = await api.daycareInvite(profile.player.id);
+      daycare = { ...daycare, entrusted: sent };
+      toasts.push(t('daycare.invited_toast', { caretaker }));
+    } catch (e) {
+      toasts.push((e as Error).message, 'error');
+    } finally {
+      entrusting = false;
+    }
+  }
+
+  let toggling = $state(false);
+  async function toggleFavorite() {
+    if (!profile || toggling) return;
+    toggling = true;
+    try {
+      const { favorite } = await api.setFavorite(profile.player.id, !profile.player.favorite);
+      profile = { ...profile, player: { ...profile.player, favorite } };
+    } catch (e) {
+      toasts.push((e as Error).message, 'error');
+    } finally {
+      toggling = false;
+    }
+  }
 
   let date = $derived(new Intl.DateTimeFormat(intlTag(), { dateStyle: 'long' }));
   let now = $derived(game.now + game.clockOffset);
@@ -90,7 +151,23 @@
         </div>
       {/each}
     </dl>
-    {#if player.isYou}<a class="link-button" href="/album">{t('profile.album')}</a>{/if}
+    {#if player.isYou}<a class="link-button" href="/album">{t('profile.album')}</a>{:else}
+      <button
+        class="link-button"
+        type="button"
+        aria-pressed={player.favorite}
+        disabled={toggling}
+        onclick={toggleFavorite}
+      >
+        {player.favorite ? t('profile.unfollow') : t('profile.follow')}
+      </button>
+      {#if canEntrust}
+        <button class="link-button" type="button" disabled={entrusting} onclick={entrust}>
+          {t('daycare.entrust')}
+        </button>
+      {/if}
+      <TradeComposer targetId={player.id} targetName={player.displayName} />
+    {/if}
   </section>
 
   <section class="card pet" aria-labelledby="pet-title">
@@ -161,6 +238,7 @@
       <p class="muted center">{t('profile.no_pet')}</p>
     {/if}
   </section>
+  {#if player.isYou}<PushSettings />{/if}
 {:else}
   <p class="muted">{t('common.loading')}</p>
 {/if}

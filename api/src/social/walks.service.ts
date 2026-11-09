@@ -1,5 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { applyAction, ITEMS, isSnack, type GameRules, type ItemId } from '@2tamago/core';
+import {
+  applyAction,
+  boosted,
+  DEFAULT_ZONE,
+  isAccessory,
+  rollFinds,
+  type GameRules,
+  type ItemId,
+  type WalkZoneId,
+} from '@2tamago/core';
 import type { ActionResponse, Notice, WalkEncounter, WalkResponse } from '@2tamago/core/contracts';
 import {
   aliasedTable,
@@ -17,15 +26,16 @@ import {
 } from 'drizzle-orm';
 import { AnnouncementService } from '../announcements/announcement.service.js';
 import { ActivityService } from '../activity/activity.service.js';
+import { EventsService } from '../events/events.service.js';
 import { GameRulesService } from '../game/game-rules.service.js';
 import type { Transaction } from '../database/database.js';
 import { encounters, pets, players, walks } from '../database/schema.js';
 import { toPetDto } from '../pets/pet-mapper.js';
 import { PetsService } from '../pets/pets.service.js';
 import { PlayersService } from '../players/players.service.js';
+import { CommunityService } from './community.service.js';
 
 const MAX_ENCOUNTERS = 3;
-const SNACKS = (Object.keys(ITEMS) as ItemId[]).filter(isSnack);
 
 /**
  * Walks: the pet goes out for a while, finds things, and meets the pets of
@@ -40,20 +50,23 @@ export class WalksService {
     private readonly players: PlayersService,
     private readonly activity: ActivityService,
     private readonly announcements: AnnouncementService,
+    private readonly community: CommunityService,
+    private readonly events: EventsService,
   ) {}
 
   private get rules(): GameRules {
     return this.gameRules.current;
   }
 
-  async start(playerId: string): Promise<ActionResponse> {
+  async start(playerId: string, zone: WalkZoneId = DEFAULT_ZONE): Promise<ActionResponse> {
     const result = await this.pets.mutate(
       eq(pets.ownerId, playerId),
       async (state, now, tx, row) => {
-        const change = applyAction(state, { type: 'startOuting' }, now, this.rules);
+        const change = applyAction(state, { type: 'startOuting', zone }, now, this.rules);
         const outing = change.state.outing!;
         await tx.insert(walks).values({
           petId: row.id,
+          zone,
           startedAt: new Date(outing.startedAt),
           endsAt: new Date(outing.endsAt),
         });
@@ -69,9 +82,13 @@ export class WalksService {
   }
 
   async return(playerId: string): Promise<WalkResponse> {
+    // Asked before the transaction: it uses the pool, which the transaction must not.
+    const walkBonus = await this.events.percent('walk_coins');
     const result = await this.pets.mutate(
       eq(pets.ownerId, playerId),
       async (state, now, tx, row) => {
+        // Walks begun before zones existed have none: they were in the meadow.
+        const zone = state.outing?.zone ?? DEFAULT_ZONE;
         const change = applyAction(state, { type: 'endOuting' }, now, this.rules);
         const [walk] = await tx
           .update(walks)
@@ -79,20 +96,28 @@ export class WalksService {
           .where(and(eq(walks.petId, row.id), isNull(walks.returnedAt)))
           .returning();
 
-        const found = { coins: 5 + Math.floor(Math.random() * 11), items: [] as ItemId[] };
-        if (Math.random() < 0.25)
-          found.items.push(SNACKS[Math.floor(Math.random() * SNACKS.length)]!);
+        const rolled = rollFinds(zone, Math.random);
+        // An accessory is kept once: finding one already owned brings nothing.
+        const items: ItemId[] = [];
+        for (const item of rolled.items) {
+          if (!isAccessory(item) || !(await this.players.hasItem(tx, playerId, item))) {
+            items.push(item);
+          }
+        }
+        const found = { coins: boosted(rolled.coins, walkBonus), items };
         await this.players.addCoins(tx, playerId, found.coins);
         for (const item of found.items) await this.players.addItem(tx, playerId, item);
 
         const meetings = walk
           ? await this.meet(tx, walk, row.id, state.name, playerId)
           : { met: [], first: new Set<string>() };
-        return { ...change, extra: { found, ...meetings } };
+        const goalReached = await this.community.walkCompleted(tx);
+        return { ...change, extra: { zone, found, goalReached, ...meetings } };
       },
     );
 
-    const { found, met, first } = result.extra!;
+    const { zone, found, met, first, goalReached } = result.extra!;
+    if (goalReached !== null) this.announcements.communityGoal(goalReached);
     // Once saved: only the first walk two players ever share is worth the channel's attention.
     for (const encounter of met) {
       if (!first.has(encounter.petId)) continue;
@@ -111,6 +136,7 @@ export class WalksService {
       events: result.events,
       coins: await this.players.coinsOf(playerId),
       notices,
+      zone,
       found,
       encounters: met,
     };

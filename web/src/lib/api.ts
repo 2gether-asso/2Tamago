@@ -1,4 +1,4 @@
-import type { GameRules } from '@2tamago/core';
+import type { ContestKind, GameRules, WalkZoneId } from '@2tamago/core';
 import type {
   ActionResponse,
   AdminRulesResponse,
@@ -17,6 +17,29 @@ import type {
   PlayerProfile,
   VillagePet,
   VisitResponse,
+  ContestBoard,
+  ContestClaimResponse,
+  ContestsOverview,
+  EventBody,
+  EventsOverview,
+  GameEventDto,
+  BlockedWordsBody,
+  ModerationLogEntry,
+  ModerationPerson,
+  GiftCodeBody,
+  GiftCodeDto,
+  RedeemResponse,
+  TradeBody,
+  TradeDto,
+  TradeOverview,
+  TradeResult,
+  CareActionBody,
+  DaycareDto,
+  DaycareOverview,
+  PushSubscriptionBody,
+  ClaimResponse,
+  CommunityGoal,
+  FavoriteResponse,
   WalkResponse,
 } from '@2tamago/core/contracts';
 
@@ -101,20 +124,68 @@ export const api = {
   me: () => call<MeResponse>('GET', '/me'),
   adopt: (body: AdoptBody) => call<PetDto>('POST', '/pet', body),
   act: (body: OwnerActionBody) => call<ActionResponse>('POST', '/pet/actions', body),
-  startWalk: () => call<ActionResponse>('POST', '/pet/walk'),
+  startWalk: (zone: WalkZoneId) => call<ActionResponse>('POST', '/pet/walk', { zone }),
   returnFromWalk: () => call<WalkResponse>('POST', '/pet/walk/return'),
   album: () => call<AlbumEntry[]>('GET', '/album'),
 
   buy: (body: BuyBody) => call<{ coins: number; inventory: Inventory }>('POST', '/shop/buy', body),
 
   playerProfile: (playerId: string) => call<PlayerProfile>('GET', `/players/${playerId}`),
+  setFavorite: (playerId: string, favorite: boolean) =>
+    call<FavoriteResponse>(favorite ? 'PUT' : 'DELETE', `/players/${playerId}/favorite`),
   village: () => call<VillagePet[]>('GET', '/village'),
   visit: (petId: string) => call<VisitResponse>('GET', `/village/${petId}`),
   caress: (petId: string) => call<ActionResponse>('POST', `/village/${petId}/caress`),
   gift: (petId: string, item: string) =>
     call<ActionResponse>('POST', `/village/${petId}/gift`, { item }),
 
+  communityGoal: () => call<CommunityGoal>('GET', '/community/goal'),
+  claimCommunityGoal: () => call<ClaimResponse>('POST', '/community/goal/claim'),
+
+  daycare: () => call<DaycareOverview>('GET', '/daycare'),
+  daycareInvite: (caretakerId: string) => call<DaycareDto>('POST', '/daycare', { caretakerId }),
+  daycareAccept: (id: string) => call<DaycareDto>('POST', `/daycare/${id}/accept`),
+  daycareDecline: (id: string) => call<void>('POST', `/daycare/${id}/decline`),
+  daycareEnd: (id: string) => call<void>('DELETE', `/daycare/${id}`),
+  daycareCare: (id: string, body: CareActionBody) =>
+    call<ActionResponse>('POST', `/daycare/${id}/care`, body),
+
+  trades: () => call<TradeOverview>('GET', '/trades'),
+  tradeOffer: (body: TradeBody) => call<TradeDto>('POST', '/trades', body),
+  tradeAccept: (id: string) => call<TradeResult>('POST', `/trades/${id}/accept`),
+  tradeDecline: (id: string) => call<void>('POST', `/trades/${id}/decline`),
+  tradeCancel: (id: string) => call<void>('DELETE', `/trades/${id}`),
+
+  pushSubscribe: (body: PushSubscriptionBody) => call<void>('PUT', '/push/subscription', body),
+  pushUnsubscribe: (endpoint: string) => call<void>('DELETE', '/push/subscription', { endpoint }),
+  pushTest: () => call<{ sent: number }>('POST', '/push/test'),
+
   activity: () => call<ActivityDto[]>('GET', '/activity'),
+  redeemCode: (code: string) => call<RedeemResponse>('POST', '/codes/redeem', { code }),
+  adminCodes: () => call<GiftCodeDto[]>('GET', '/admin/codes'),
+  adminCreateCode: (body: GiftCodeBody) => call<GiftCodeDto>('POST', '/admin/codes', body),
+  adminDisableCode: (id: string) => call<void>('DELETE', `/admin/codes/${id}`),
+  adminModerationSearch: (q: string) =>
+    call<ModerationPerson[]>('GET', `/admin/moderation/search?q=${encodeURIComponent(q)}`),
+  adminRenamePet: (petId: string, name: string) =>
+    call<void>('PUT', `/admin/moderation/pets/${petId}/name`, { name }),
+  adminRenamePlayer: (playerId: string, name: string) =>
+    call<void>('PUT', `/admin/moderation/players/${playerId}/name`, { name }),
+  adminUnlockPlayer: (playerId: string) =>
+    call<void>('DELETE', `/admin/moderation/players/${playerId}/name`),
+  adminBlockedWords: () => call<BlockedWordsBody>('GET', '/admin/moderation/blocked-words'),
+  adminSaveBlockedWords: (words: string[]) =>
+    call<BlockedWordsBody>('PUT', '/admin/moderation/blocked-words', { words }),
+  adminModerationLog: () => call<ModerationLogEntry[]>('GET', '/admin/moderation/log'),
+  events: () => call<EventsOverview>('GET', '/events'),
+  adminEvents: () => call<GameEventDto[]>('GET', '/admin/events'),
+  adminCreateEvent: (body: EventBody) => call<GameEventDto>('POST', '/admin/events', body),
+  adminCancelEvent: (id: string) => call<void>('DELETE', `/admin/events/${id}`),
+  contests: () => call<ContestsOverview>('GET', '/contests'),
+  contestEnter: (kind: ContestKind) => call<ContestBoard>('POST', '/contests/enter', { kind }),
+  contestVote: (playerId: string) => call<ContestBoard>('POST', '/contests/vote', { playerId }),
+  contestClaim: (kind: ContestKind) =>
+    call<ContestClaimResponse>('POST', `/contests/${kind}/claim`),
   adminStats: () => call<AdminStats>('GET', '/admin/stats'),
   adminRules: () => call<AdminRulesResponse>('GET', '/admin/rules'),
   saveAdminRules: (overrides: unknown) =>

@@ -1,5 +1,19 @@
 /** The shop. */
 export const shop = {
+  'promo.title': 'Événements',
+  'promo.walk_coins': '🚶 Promenades : +{percent} % de pièces trouvées',
+  'promo.daily_bonus': '🎁 Bonus du jour : +{percent} %',
+  'promo.caress_reward': '💞 Caresses de visite : +{percent} % de pièces',
+  'promo.shop_discount': '🛍️ Boutique : −{percent} %',
+  'promo.until': 'jusqu’au {date}',
+  'promo.from': 'à partir du {date}',
+  'shop.code_title': 'Code cadeau',
+  'shop.code_hint': 'Tu as reçu un code ? Entre-le ici.',
+  'shop.code_label': 'Code',
+  'shop.code_redeem': 'Utiliser',
+  'shop.code_coins_one': '{count} pièce',
+  'shop.code_coins_other': '{count} pièces',
+  'shop.code_done': 'Code accepté : {reward}.',
   'shop.title': 'Boutique',
   'shop.intro':
     'Gagne des pièces en jouant, en te promenant et en rendant visite aux autres compagnons.',

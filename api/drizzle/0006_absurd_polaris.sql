@@ -1,0 +1,1 @@
+ALTER TABLE "walks" ADD COLUMN "zone" text DEFAULT 'meadow' NOT NULL;

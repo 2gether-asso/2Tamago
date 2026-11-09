@@ -1,6 +1,7 @@
 /** The app chrome: navigation bar, header and theme switcher. */
 export const shell = {
   'nav.home': 'Maison',
+  'nav.contests': 'Concours',
   'nav.village': 'Village',
   'nav.shop': 'Boutique',
   'nav.journal': 'Journal',

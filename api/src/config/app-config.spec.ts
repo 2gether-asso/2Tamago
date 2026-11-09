@@ -8,6 +8,23 @@ describe('AppConfig', () => {
     expect(config.game.timeScale).toBe(1);
   });
 
+  it('turns Web Push on only with both VAPID keys', () => {
+    expect(new AppConfig({}).push).toBeNull();
+    expect(new AppConfig({ VAPID_PUBLIC_KEY: 'pub' }).push).toBeNull();
+    expect(new AppConfig({ VAPID_PUBLIC_KEY: 'pub', VAPID_PRIVATE_KEY: 'priv' }).push).toEqual({
+      publicKey: 'pub',
+      privateKey: 'priv',
+      subject: 'mailto:admin@example.com',
+    });
+    expect(
+      new AppConfig({
+        VAPID_PUBLIC_KEY: 'pub',
+        VAPID_PRIVATE_KEY: 'priv',
+        VAPID_SUBJECT: 'https://2tamago.example',
+      }).push?.subject,
+    ).toBe('https://2tamago.example');
+  });
+
   it('builds the database URL from its parts when DATABASE_URL is empty', () => {
     const config = new AppConfig({
       DATABASE_URL: '',

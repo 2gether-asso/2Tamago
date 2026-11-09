@@ -25,6 +25,7 @@ import { Clock } from '../common/clock.js';
 import { GameRulesService } from '../game/game-rules.service.js';
 import type { Database, Transaction } from '../database/database.js';
 import { pets, players, type PetRow } from '../database/schema.js';
+import { NameFilterService } from '../moderation/name-filter.service.js';
 import { PlayersService } from '../players/players.service.js';
 import { notableEvents, toPetDto } from './pet-mapper.js';
 
@@ -56,6 +57,7 @@ export class PetsService {
     private readonly players: PlayersService,
     private readonly activity: ActivityService,
     private readonly announcements: AnnouncementService,
+    private readonly nameFilter: NameFilterService,
   ) {}
 
   private get rules(): GameRules {
@@ -79,6 +81,7 @@ export class PetsService {
   }
 
   async adopt(playerId: string, body: AdoptBody) {
+    await this.nameFilter.assertAllowed(body.name);
     const now = this.now();
     const state = createPet({ ...body, seed: randomInt(2 ** 32), now }, this.rules);
     const inserted = await this.db

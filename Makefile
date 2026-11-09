@@ -5,7 +5,7 @@ COMPOSE      := docker compose
 COMPOSE_PROD := docker compose -f docker-compose.prod.yml
 
 .DEFAULT_GOAL := help
-.PHONY: help install dev build test test-e2e check lint format format-check ci db-generate \
+.PHONY: help install dev build test test-e2e check lint format format-check ci db-generate vapid-keys \
 	db-up db-down up down logs ps images prod-pull prod-up prod-down clean
 
 help: ## List the targets
@@ -44,6 +44,9 @@ ci: format-check lint build check test ## What the CI runs
 
 db-generate: ## Generate a SQL migration after editing api/src/database/schema.ts
 	pnpm --filter @2tamago/api db:generate
+
+vapid-keys: ## Generate the VAPID key pair for Web Push notifications (VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY)
+	pnpm --filter @2tamago/api exec web-push generate-vapid-keys
 
 # ---- Local Docker stack (docker-compose.yml) ----
 

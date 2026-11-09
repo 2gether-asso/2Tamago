@@ -1,6 +1,6 @@
 <script lang="ts">
   import { isSnack, type ItemId } from '@2tamago/core';
-  import type { VisitResponse } from '@2tamago/core/contracts';
+  import type { CareActionBody, VisitResponse } from '@2tamago/core/contracts';
   import PetSprite from '#lib/components/PetSprite.svelte';
   import StatBar from '#lib/components/StatBar.svelte';
   import { api } from '#lib/api.ts';
@@ -29,6 +29,13 @@
   );
   let isMine = $derived(visit?.pet.ownerId === game.player?.id);
 
+  /** Care given as the caretaker of this companion (a daycare stay). */
+  async function care(action: CareActionBody) {
+    const id = visit?.daycareId;
+    if (!id) return;
+    await interact(() => api.daycareCare(id, action));
+  }
+
   async function interact(
     task: () => Promise<import('@2tamago/core/contracts').ActionResponse>,
     after?: () => void,
@@ -37,7 +44,7 @@
     busy = true;
     try {
       const response = await task();
-      visit = { pet: response.pet, caressedToday: visit.caressedToday };
+      visit = { ...visit, pet: response.pet };
       game.applyResponse(response);
       after?.();
     } catch (e) {
@@ -73,7 +80,54 @@
     />
     <p><strong>{moodLabel(visit.pet.mood)}</strong></p>
 
-    {#if !isMine && pet.stage !== 'egg'}
+    {#if visit.daycareId}
+      <div class="care">
+        <h2>{t('daycare.care_title', { name: pet.name })}</h2>
+        <p class="muted">{t('daycare.care_intro')}</p>
+        <div class="actions">
+          <button disabled={busy} onclick={() => care({ type: 'feed' })}>{t('action.feed')}</button>
+          <button disabled={busy} onclick={() => care({ type: 'clean' })}
+            >{t('action.clean')}</button
+          >
+          {#if pet.sickSince !== null}
+            <button disabled={busy} onclick={() => care({ type: 'medicine' })}
+              >{t('action.medicine')}</button
+            >
+          {/if}
+          {#if pet.asleep}
+            <button disabled={busy} onclick={() => care({ type: 'wake' })}
+              >{t('action.wake')}</button
+            >
+          {:else}
+            <button disabled={busy} onclick={() => care({ type: 'sleep' })}
+              >{t('action.sleep')}</button
+            >
+          {/if}
+          {#if pet.lightsOff}
+            <button disabled={busy} onclick={() => care({ type: 'lights', on: true })}
+              >{t('action.lights_on')}</button
+            >
+          {:else}
+            <button disabled={busy} onclick={() => care({ type: 'lights', on: false })}
+              >{t('action.lights_off')}</button
+            >
+          {/if}
+          <button disabled={busy} onclick={() => care({ type: 'praise' })}
+            >{t('action.praise')}</button
+          >
+          <button disabled={busy} onclick={() => care({ type: 'scold' })}
+            >{t('action.scold')}</button
+          >
+          <button disabled={busy} onclick={() => care({ type: 'caress' })}
+            >{t('daycare.care_caress')}</button
+          >
+        </div>
+      </div>
+    {/if}
+
+    {#if !isMine && pet.vacationSince != null}
+      <p class="muted">{t('visit.on_vacation', { name: pet.name })}</p>
+    {:else if !isMine && pet.stage !== 'egg'}
       <div class="actions">
         <button
           class="primary"
@@ -106,6 +160,12 @@
     <section class="card">
       <StatBar icon="😊" label={t('stat.happiness')} value={pet.stats.happiness} />
       <StatBar icon="🍙" label={t('stat.satiety')} value={pet.stats.satiety} />
+      {#if visit.daycareId}
+        <StatBar icon="⚡" label={t('stat.energy')} value={pet.stats.energy} />
+        <StatBar icon="🛁" label={t('stat.hygiene')} value={pet.stats.hygiene} />
+        <StatBar icon="❤️" label={t('stat.health')} value={pet.stats.health} />
+        <StatBar icon="🎓" label={t('stat.discipline')} value={pet.stats.discipline} />
+      {/if}
     </section>
   {/if}
 {:else}

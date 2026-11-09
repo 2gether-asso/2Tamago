@@ -1,9 +1,10 @@
-import { Body, Controller, HttpCode, Inject, Post } from '@nestjs/common';
+import { Body, ConflictException, Controller, HttpCode, Inject, Post } from '@nestjs/common';
 import { InjectDrizzle } from '@nestjs/drizzle';
-import { ITEMS } from '@2tamago/core';
+import { isForSale, ITEMS } from '@2tamago/core';
 import { buyBody, type BuyBody, type Inventory } from '@2tamago/core/contracts';
 import { CurrentSession, type Session } from '../auth/session.js';
 import type { Database } from '../database/database.js';
+import { EventsService } from '../events/events.service.js';
 import { PlayersService } from '../players/players.service.js';
 
 @Controller('shop')
@@ -11,6 +12,7 @@ export class ShopController {
   constructor(
     @InjectDrizzle() private readonly db: Database,
     @Inject(PlayersService) private readonly players: PlayersService,
+    private readonly events: EventsService,
   ) {}
 
   @Post('buy')
@@ -19,7 +21,12 @@ export class ShopController {
     @CurrentSession() session: Session,
     @Body({ schema: buyBody }) body: BuyBody,
   ): Promise<{ coins: number; inventory: Inventory }> {
-    const price = ITEMS[body.item].price * body.quantity;
+    // Some items can only be found on walks.
+    if (!isForSale(body.item)) {
+      throw new ConflictException({ statusCode: 409, code: 'not_for_sale' });
+    }
+    // The discount of an event applies to each item, then to the quantity.
+    const price = (await this.events.price(ITEMS[body.item].price)) * body.quantity;
     return this.db.transaction(async (tx) => {
       const coins = await this.players.spendCoins(tx, session.playerId, price);
       await this.players.addItem(tx, session.playerId, body.item, body.quantity);

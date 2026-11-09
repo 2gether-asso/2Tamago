@@ -7,3 +7,8 @@ export * from './engine/actions.js';
 export * from './engine/view.js';
 export * from './engine/traits.js';
 export * from './engine/night.js';
+export * from './engine/zones.js';
+export * from './engine/trade.js';
+export * from './engine/names.js';
+export * from './engine/events.js';
+export * from './engine/contests.js';

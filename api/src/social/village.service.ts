@@ -19,15 +19,21 @@ import type { ActionResponse, VillagePet, VisitResponse } from '@2tamago/core/co
 import { and, desc, eq, ne } from 'drizzle-orm';
 import { ActivityService } from '../activity/activity.service.js';
 import { Clock } from '../common/clock.js';
+import { EventsService } from '../events/events.service.js';
 import { GameRulesService } from '../game/game-rules.service.js';
 import type { Database, Executor } from '../database/database.js';
 import { interactions, pets, players } from '../database/schema.js';
 import { toPetDto } from '../pets/pet-mapper.js';
 import { PetsService } from '../pets/pets.service.js';
 import { PlayersService } from '../players/players.service.js';
+import { affinityScore, compareVillage } from './affinity.js';
+import { DaycareService } from './daycare.service.js';
+import { FavoritesService } from './favorites.service.js';
 
 export const CARESS_REWARD = 3;
 const VILLAGE_SIZE = 60;
+/** Pets considered before ranking, so that favorites and close players are never cut off. */
+const VILLAGE_CANDIDATES = 500;
 
 /**
  * The village: the other players' pets. Visitors can caress a pet once a day
@@ -42,6 +48,9 @@ export class VillageService {
     private readonly pets: PetsService,
     private readonly players: PlayersService,
     private readonly activity: ActivityService,
+    private readonly favorites: FavoritesService,
+    private readonly daycare: DaycareService,
+    private readonly events: EventsService,
   ) {}
 
   private get rules(): GameRules {
@@ -55,10 +64,19 @@ export class VillageService {
       .innerJoin(players, eq(players.id, pets.ownerId))
       .where(and(eq(pets.status, 'alive'), ne(pets.ownerId, viewerId)))
       .orderBy(desc(pets.updatedAt))
-      .limit(VILLAGE_SIZE);
+      .limit(VILLAGE_CANDIDATES);
     const caressed = await this.caressedToday(this.db, viewerId);
+    const favorite = await this.favorites.ids(viewerId);
+    const contacts = await this.favorites.contacts(viewerId);
     const now = this.clock.now();
-    return rows.map(({ pet, ownerName }) => {
+    const ranked = rows.map((row) => ({
+      ...row,
+      favorite: favorite.has(row.pet.ownerId),
+      affinity: affinityScore(contacts.get(row.pet.ownerId) ?? { interactions: 0, encounters: 0 }),
+      updatedAt: row.pet.updatedAt.getTime(),
+    }));
+    ranked.sort(compareVillage);
+    return ranked.slice(0, VILLAGE_SIZE).map(({ pet, ownerName, favorite }) => {
       // Read-only preview: the owner's own visits persist the simulation.
       const state = simulate(pet.state, now, this.rules).state;
       return {
@@ -71,8 +89,10 @@ export class VillageService {
         traits: state.stage === 'egg' ? null : traitsOf(state),
         equipped: state.equipped,
         mood: moodOf(state),
+        ownerId: pet.ownerId,
         ownerName,
         caressedToday: caressed.has(pet.id),
+        favorite,
       };
     });
   }
@@ -81,11 +101,17 @@ export class VillageService {
     const pet = await this.pets.sync(eq(pets.id, petId));
     if (!pet) throw notFound();
     const caressed = await this.caressedToday(this.db, viewerId);
-    return { pet: toPetDto(pet.row, pet.ownerName), caressedToday: caressed.has(petId) };
+    return {
+      pet: toPetDto(pet.row, pet.ownerName),
+      caressedToday: caressed.has(petId),
+      daycareId: await this.daycare.activeFor(viewerId, petId),
+    };
   }
 
   async caress(viewerId: string, petId: string): Promise<ActionResponse> {
     const visitor = await this.players.get(this.db, viewerId);
+    // Asked before the transaction: it uses the pool, which the transaction must not.
+    const reward = await this.events.boost('caress_reward', CARESS_REWARD);
     const result = await this.pets.mutate(eq(pets.id, petId), async (state, now, tx, row) => {
       this.assertVisitable(row.ownerId, viewerId, row.status);
       const change = applyAction(state, { type: 'visitorCaress' }, now, this.rules);
@@ -101,7 +127,7 @@ export class VillageService {
           code: 'already_caressed',
         });
       }
-      await this.players.addCoins(tx, viewerId, CARESS_REWARD);
+      await this.players.addCoins(tx, viewerId, reward);
       await this.activity.record(tx, row.ownerId, 'visit_caress', {
         visitorName: visitor.displayName,
         petName: state.name,
@@ -114,7 +140,7 @@ export class VillageService {
       coins: await this.players.coinsOf(viewerId),
       notices: [
         { code: 'pet_happy', petName: result.row.state.name },
-        { code: 'coins_earned', count: CARESS_REWARD },
+        { code: 'coins_earned', count: reward },
       ],
     };
   }

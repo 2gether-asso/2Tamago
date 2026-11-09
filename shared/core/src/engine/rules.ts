@@ -64,6 +64,11 @@ export interface GameRules {
   tantrumWindowHours: number;
 
   outingHours: number;
+
+  /** A vacation ends by itself after this long (game hours): the pet is not left frozen for good. */
+  vacationMaxHours: number;
+  /** After a vacation, this long (game hours) before the next one can start. */
+  vacationCooldownHours: number;
   /** Minimum real seconds between two effective caresses. */
   caressCooldownSeconds: number;
 
@@ -131,6 +136,9 @@ export const DEFAULT_RULES: GameRules = {
   tantrumWindowHours: 0.5,
 
   outingHours: 0.5,
+
+  vacationMaxHours: 24 * 14,
+  vacationCooldownHours: 24 * 7,
   caressCooldownSeconds: 15,
 
   departureEnabled: true,

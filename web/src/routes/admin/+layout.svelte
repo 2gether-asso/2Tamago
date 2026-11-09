@@ -15,6 +15,15 @@
     <a href="/admin/stats" class:active={page.url.pathname === '/admin/stats'}
       >{t('admin.tab_stats')}</a
     >
+    <a href="/admin/codes" class:active={page.url.pathname === '/admin/codes'}
+      >{t('admin.tab_codes')}</a
+    >
+    <a href="/admin/moderation" class:active={page.url.pathname === '/admin/moderation'}
+      >{t('admin.tab_moderation')}</a
+    >
+    <a href="/admin/events" class:active={page.url.pathname === '/admin/events'}
+      >{t('admin.tab_events')}</a
+    >
   </div>
 {/if}
 
@@ -23,6 +32,7 @@
 <style>
   .tabs {
     display: flex;
+    flex-wrap: wrap;
     gap: 0.4rem;
     margin-bottom: 1rem;
   }
