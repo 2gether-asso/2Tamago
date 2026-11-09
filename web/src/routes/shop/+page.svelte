@@ -2,7 +2,10 @@
   import { isForSale, ITEMS, type ItemId } from '@2tamago/core';
   import { game } from '#lib/game.svelte.ts';
   import { t } from '#lib/i18n/index.svelte.ts';
+  import { bundleLabel } from '#lib/texts.ts';
   import { itemLabel } from '#lib/texts.ts';
+  import { api } from '#lib/api.ts';
+  import { toasts } from '#lib/toasts.svelte.ts';
 
   // Some items can only be found on walks.
   const items = Object.values(ITEMS).filter((item) => isForSale(item.id));
@@ -10,10 +13,49 @@
   const accessories = items.filter((item) => item.kind === 'accessory');
 
   let coins = $derived(game.player?.coins ?? 0);
+
+  let code = $state('');
+  let redeeming = $state(false);
+  async function redeem(event: SubmitEvent) {
+    event.preventDefault();
+    if (!code.trim() || redeeming) return;
+    redeeming = true;
+    try {
+      const gift = await api.redeemCode(code);
+      if (game.player) game.player.coins = gift.balance;
+      game.inventory = gift.inventory;
+      const parts = [
+        ...(gift.coins > 0 ? [t('shop.code_coins', { count: gift.coins })] : []),
+        ...(Object.keys(gift.items).length > 0 ? [bundleLabel(gift.items)] : []),
+      ];
+      toasts.push(t('shop.code_done', { reward: parts.join(', ') }));
+      code = '';
+    } catch (e) {
+      toasts.push((e as Error).message, 'error');
+    } finally {
+      redeeming = false;
+    }
+  }
 </script>
 
 <h1>{t('shop.title')}</h1>
 <p class="muted">{t('shop.intro')}</p>
+
+<form class="card code" onsubmit={redeem}>
+  <h2>{t('shop.code_title')}</h2>
+  <p class="muted">{t('shop.code_hint')}</p>
+  <div class="row">
+    <input
+      bind:value={code}
+      aria-label={t('shop.code_label')}
+      placeholder="WELCOME-2026"
+      autocomplete="off"
+      autocapitalize="characters"
+      maxlength="40"
+    />
+    <button class="primary" disabled={redeeming || !code.trim()}>{t('shop.code_redeem')}</button>
+  </div>
+</form>
 
 <h2>{t('shop.snacks')}</h2>
 <div class="grid">
@@ -52,6 +94,22 @@
 </div>
 
 <style>
+  .code {
+    margin: 1rem 0;
+  }
+  .code h2 {
+    margin: 0 0 0.3rem;
+  }
+  .code .row {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+  }
+  .code input {
+    flex: 1;
+    min-width: 12rem;
+    text-transform: uppercase;
+  }
   h2 {
     margin-top: 1.5rem;
   }

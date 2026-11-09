@@ -17,6 +17,9 @@ import type {
   PlayerProfile,
   VillagePet,
   VisitResponse,
+  GiftCodeBody,
+  GiftCodeDto,
+  RedeemResponse,
   TradeBody,
   TradeDto,
   TradeOverview,
@@ -149,6 +152,10 @@ export const api = {
   pushTest: () => call<{ sent: number }>('POST', '/push/test'),
 
   activity: () => call<ActivityDto[]>('GET', '/activity'),
+  redeemCode: (code: string) => call<RedeemResponse>('POST', '/codes/redeem', { code }),
+  adminCodes: () => call<GiftCodeDto[]>('GET', '/admin/codes'),
+  adminCreateCode: (body: GiftCodeBody) => call<GiftCodeDto>('POST', '/admin/codes', body),
+  adminDisableCode: (id: string) => call<void>('DELETE', `/admin/codes/${id}`),
   adminStats: () => call<AdminStats>('GET', '/admin/stats'),
   adminRules: () => call<AdminRulesResponse>('GET', '/admin/rules'),
   saveAdminRules: (overrides: unknown) =>
