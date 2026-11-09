@@ -126,21 +126,21 @@ Les corps de requête sont des schémas **Zod** dans `@2tamago/core/contracts`. 
 
 Un module Nest par domaine :
 
-| Module             | Contenu                                                                                                                                              |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `config/`          | `AppConfig` : toutes les variables d'environnement validées une fois au démarrage, `Clock`, `GET /config` (réglages publics du front)                |
-| `database/`        | Schéma Drizzle, ouverture de la base et migrations, `DrizzleModule`                                                                                  |
-| `auth/`            | Garde global, sessions (DPoP, rotation, contrôle de l'origine), Discord OAuth2, login de dev                                                         |
-| `announcements/`   | Annonces dans un salon Discord (webhook) : nouveaux joueurs, éclosions, croissance, premières rencontres                                             |
-| `players/`         | Joueurs, pièces (bonus quotidien, plafond journalier), inventaire                                                                                    |
-| `profile/`         | Profil public d'un joueur : statistiques calculées depuis les tables existantes, compagnon vivant                                                    |
-| `pets/`            | `GET /me`, adoption, actions du propriétaire, album, et `PetsService.mutate()`                                                                       |
-| `social/`          | Village (visites, caresses, cadeaux, tri par favoris et affinité), favoris, objectif communautaire de la semaine, garderie, promenades et rencontres |
-| `shop/`            | Achats                                                                                                                                               |
-| `activity/`        | Journal du joueur, écrit dans la transaction de l'action qui le produit                                                                              |
-| `feedback/`        | Avis des joueurs (bug, idée, autre), transmis à Sentry / GlitchTip                                                                                   |
-| `game/`, `health/` | Règles publiques et réglages admin, statistiques admin, sonde de santé                                                                               |
-| `common/`          | `Clock`, filtres d'exceptions (moteur, signalement des erreurs)                                                                                      |
+| Module             | Contenu                                                                                                                                                        |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `config/`          | `AppConfig` : toutes les variables d'environnement validées une fois au démarrage, `Clock`, `GET /config` (réglages publics du front)                          |
+| `database/`        | Schéma Drizzle, ouverture de la base et migrations, `DrizzleModule`                                                                                            |
+| `auth/`            | Garde global, sessions (DPoP, rotation, contrôle de l'origine), Discord OAuth2, login de dev                                                                   |
+| `announcements/`   | Annonces dans un salon Discord (webhook) : nouveaux joueurs, éclosions, croissance, premières rencontres                                                       |
+| `players/`         | Joueurs, pièces (bonus quotidien, plafond journalier), inventaire                                                                                              |
+| `profile/`         | Profil public d'un joueur : statistiques calculées depuis les tables existantes, compagnon vivant                                                              |
+| `pets/`            | `GET /me`, adoption, actions du propriétaire, album, et `PetsService.mutate()`                                                                                 |
+| `social/`          | Village (visites, caresses, cadeaux, tri par favoris et affinité), favoris, objectif communautaire de la semaine, garderie, échanges, promenades et rencontres |
+| `shop/`            | Achats                                                                                                                                                         |
+| `activity/`        | Journal du joueur, écrit dans la transaction de l'action qui le produit                                                                                        |
+| `feedback/`        | Avis des joueurs (bug, idée, autre), transmis à Sentry / GlitchTip                                                                                             |
+| `game/`, `health/` | Règles publiques et réglages admin, statistiques admin, sonde de santé                                                                                         |
+| `common/`          | `Clock`, filtres d'exceptions (moteur, signalement des erreurs)                                                                                                |
 
 `Clock` est injectable, ce qui permet aux tests e2e de **voyager dans le temps** (faire éclore un œuf, laisser partir un compagnon délaissé).
 
@@ -159,12 +159,13 @@ Un module Nest par domaine :
 | `POST /feedback`                                                                                                                                                                                           | Avis d'un joueur (bug, idée, autre), transmis à Sentry / GlitchTip                    |
 | `PUT` / `DELETE /push/subscription` · `POST /push/test`                                                                                                                                                    | Notifications                                                                         |
 | `GET /daycare` · `POST /daycare` · `POST /daycare/:id/accept` · `/decline` · `DELETE /daycare/:id` · `POST /daycare/:id/care`                                                                              | Garderie                                                                              |
+| `GET /trades` · `POST /trades` · `POST /trades/:id/accept` · `/decline` · `DELETE /trades/:id`                                                                                                             | Échanges                                                                              |
 | `GET /admin/stats`                                                                                                                                                                                         | Admin : chiffres du jeu entier (joueurs, compagnons, économie, activité, équilibrage) |
 | `GET /admin/rules` · `PUT /admin/rules`                                                                                                                                                                    | Admin : réglages du jeu en base                                                       |
 
 ### Modèle de données
 
-`players` · `pets` (état en JSONB, un seul vivant par joueur grâce à un index unique partiel) · `inventory` · `interactions` (caresses et cadeaux, une caresse par jour grâce à un index unique partiel) · `walks` · `encounters` (paires de promenades) · `activity` · `favorites` (joueurs suivis) · `community_goals` et `community_claims` (objectif de la semaine et récompenses prises) · `daycares` (compagnon confié : invitation, séjour, historique ; un seul séjour ouvert par compagnon grâce à un index unique partiel) · `push_subscriptions` et `push_alerts` (navigateurs abonnés aux notifications, alertes déjà envoyées).
+`players` · `pets` (état en JSONB, un seul vivant par joueur grâce à un index unique partiel) · `inventory` · `interactions` (caresses et cadeaux, une caresse par jour grâce à un index unique partiel) · `walks` · `encounters` (paires de promenades) · `activity` · `favorites` (joueurs suivis) · `community_goals` et `community_claims` (objectif de la semaine et récompenses prises) · `trades` (offres d'échange : objets donnés et demandés en JSON, état, expiration) · `daycares` (compagnon confié : invitation, séjour, historique ; un seul séjour ouvert par compagnon grâce à un index unique partiel) · `push_subscriptions` et `push_alerts` (navigateurs abonnés aux notifications, alertes déjà envoyées).
 
 ## Frontend (`web/src`)
 
@@ -203,7 +204,7 @@ Avec `VAPID_PUBLIC_KEY` et `VAPID_PRIVATE_KEY` (à générer avec `make vapid-ke
 - **Quoi, quand** : `PushNotifier` (`api/src/push/`) passe toutes les minutes sur les compagnons vivants des joueurs abonnés, calcule leur état à l'instant présent avec `simulate()` (aperçu, rien n'est écrit) et demande à `pushKindsOf()` ce qui mérite une alerte : promenade finie, maladie, caprice, faim. Un compagnon qui dort n'est jamais signalé, et le reste (ennui, saleté, fatigue) attend la prochaine visite.
 - **Une fois par épisode** : la table `push_alerts` garde les alertes déjà envoyées et encore en cours. Une alerte n'est envoyée qu'à son début, et peut repartir quand elle s'est arrêtée (le compagnon a mangé, puis a de nouveau faim). L'écriture de la ligne précède l'envoi : avec plusieurs instances de l'API, une seule envoie. Si personne n'a reçu le message, la ligne est supprimée et l'envoi est retenté à la passe suivante.
 - **Pas de phrase côté API** : le message ne contient que `{ kind, petName, locale }` (`PushPayload`). Le service worker (`web/src/service-worker.ts`) écrit le texte avec les mêmes messages que l'application (`push.msg.<kind>`, `translate()` est dans un module sans état Svelte pour cela), dans la langue envoyée par le navigateur à l'abonnement et mise à jour quand le joueur change de langue. Un nouveau type d'alerte demande donc un `PushKind`, son message dans les deux langues (un test le vérifie) et sa règle dans `pushKindsOf`.
-- **Notifications d'événement** : tout n'est pas une alerte qui dure. Une invitation à la garderie est un événement : `DaycareService` appelle `PushService.notify()` tout de suite (sans passer par `PushNotifier`, sans ligne dans `push_alerts`), avec `playerName` (le propriétaire) dans le message. L'envoi est un coup de pouce qui peut échouer sans gêner l'invitation, déjà dans le journal. Un clic sur la notification ouvre le village, où l'on répond.
+- **Notifications d'événement** : tout n'est pas une alerte qui dure. Une invitation à la garderie est un événement : `DaycareService` appelle `PushService.notify()` tout de suite (sans passer par `PushNotifier`, sans ligne dans `push_alerts`), avec `playerName` (le propriétaire) dans le message. L'envoi est un coup de pouce qui peut échouer sans gêner l'invitation, déjà dans le journal. Les offres d'échange (`trade_offer`) fonctionnent de même, avec le nom de celui qui propose. Un clic sur la notification ouvre le village, où l'on répond.
 - **Service worker** : il ne fait que cela (pas de cache hors ligne). SvelteKit l'enregistre tout seul ; la CSP l'autorise (`script-src 'self'`). Il est vérifié par un second `tsc` (`tsconfig.service-worker.json`), car ses globales ne sont pas celles de la page. Sur iPhone, les notifications ne fonctionnent que si 2Tamago est ajouté à l'écran d'accueil.
 
 ### Suivi des erreurs

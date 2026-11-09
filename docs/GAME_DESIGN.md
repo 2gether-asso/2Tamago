@@ -52,6 +52,18 @@ Pour s'absenter sans pause, on peut **confier son compagnon à un autre membre**
 - **Fin** : le propriétaire reprend son compagnon (ou annule l'invitation), le gardien le rend, ou le séjour se termine de lui-même après 14 jours. Il se termine aussi si le compagnon part ou prend sa retraite. L'autre personne est prévenue dans son journal.
 - **Pas de nouvelle règle du jeu** : le séjour est de la gestion d'accès (qui peut agir), pas de la simulation. Le moteur ne connaît que la liste des actions permises ; les durées (48 h, 14 jours, 2 compagnons) sont des constantes en temps réel de `api/src/social/daycare.ts`.
 
+## Échanges
+
+Deux membres peuvent s'échanger des objets (friandises, accessoires, et les objets qu'on ne trouve qu'en promenade) : bouton « Proposer un échange » sur le profil de l'autre. On ne s'échange pas de pièces.
+
+- **L'offre** : ce qu'on donne, et ce qu'on demande en échange (rien : c'est un cadeau). Jusqu'à 4 objets différents de chaque côté, 10 exemplaires au plus de chacun, un seul pour un accessoire (`TRADE_LIMITS`, `tradeProblem()` dans `shared/core/src/engine/trade.ts`). Il faut donner quelque chose, et pas le même objet des deux côtés.
+- **Mise de côté** : faire une offre retire tout de suite les objets donnés du sac, pour qu'ils ne puissent pas être dépensés ou offerts ailleurs pendant l'attente. Un manque refuse l'offre sans rien retirer (`missing_item`). On ne peut avoir que 3 offres en attente (`trade_full`).
+- **La réponse** : l'autre membre accepte ou refuse depuis la page du village ; le proposeur peut retirer son offre. Accepter échange les deux côtés **en une seule transaction** : si l'accepteur n'a pas ce qu'on lui demande (`missing_item`), rien ne bouge et l'offre reste ouverte. Deux réponses simultanées ne concluent qu'un échange (chaque changement d'état est pris par un `UPDATE … WHERE status = 'pending'`).
+- **Rendu** : un refus, un retrait, ou 72 h sans réponse rendent les objets au proposeur, qui en est informé dans son journal.
+- **Un accessoire ne se porte qu'une fois** : on ne donne pas un accessoire à quelqu'un qui l'a déjà, ni on n'en demande un qu'on a déjà (`trade_invalid`).
+- **Qui** : n'importe quel membre, pas seulement les favoris : les favoris sont privés et à sens unique (voir [FEATURES.md](FEATURES.md)), un échange demande l'accord de l'autre de toute façon, et les offres en attente sont plafonnées.
+- **Prévenir** : l'offre arrive dans le journal du destinataire et, s'il a activé les notifications, par un push (un clic ouvre le village).
+
 ## Promenades
 
 Avant de partir, le joueur choisit une **zone** (`WALK_ZONES`, dans `shared/core/src/engine/zones.ts`). Sans choix, c'est la prairie, comme avant l'arrivée des zones.
