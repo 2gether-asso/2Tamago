@@ -73,6 +73,16 @@ export const social = {
   'trade.accepted_toast': 'Échange conclu !',
   'trade.declined_toast': 'Offre refusée.',
   'trade.withdrawn_toast': 'Offre retirée : tes objets te sont rendus.',
+  'trade.coins_one': '{count} pièce',
+  'trade.coins_other': '{count} pièces',
+  'trade.coins_label': 'Pièces',
+  'trade.nothing_to_ask': '{name} n’a aucun objet à échanger pour l’instant.',
+  'trade.wish_they_want': 'Dans sa liste d’envies',
+  'trade.wish_their_list': 'Liste d’envies de {name} : {items}.',
+  'trade.wish_ask_title': 'Lui demander un objet',
+  'trade.wish_ask_hint':
+    'Prévient {name} que tu aimerais un objet de ta liste d’envies : elle ou il peut ensuite te le proposer en échange ou en cadeau.',
+  'trade.wish_asked_toast': '{name} est prévenu·e.',
 
   'contest.title': 'Concours',
   'contest.intro':

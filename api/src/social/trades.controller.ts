@@ -12,6 +12,11 @@ export class TradesController {
     return this.trades.overview(session.playerId);
   }
 
+  @Get('targets/:id')
+  target(@Param('id', { schema: uuidParam }) id: string) {
+    return this.trades.target(id);
+  }
+
   @Post()
   offer(@CurrentSession() session: Session, @Body({ schema: tradeBody }) body: TradeBody) {
     return this.trades.offer(session.playerId, body);

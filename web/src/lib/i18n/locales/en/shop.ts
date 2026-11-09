@@ -17,6 +17,12 @@ export const shop: Record<keyof typeof fr, string> = {
   'shop.code_coins_other': '{count} coins',
   'shop.code_done': 'Code accepted: {reward}.',
   'shop.title': 'Shop',
+  'shop.wish_title': 'My wishlist',
+  'shop.wish_hint':
+    'Mark the items you would like with 🤍 (up to {max}). Others see them on your profile, and you can ask for them from theirs.',
+  'shop.wish_empty': 'Nothing yet.',
+  'shop.wish_add': 'Add to my wishlist',
+  'shop.wish_remove': 'Remove from my wishlist',
   'shop.intro': 'Earn coins by playing, going for walks and visiting other companions.',
   'shop.snacks': 'Treats',
   'shop.meals': 'Meals',

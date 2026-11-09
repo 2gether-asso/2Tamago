@@ -74,6 +74,16 @@ export const social: Record<keyof typeof fr, string> = {
   'trade.accepted_toast': 'Trade done!',
   'trade.declined_toast': 'Offer declined.',
   'trade.withdrawn_toast': 'Offer withdrawn: your items are returned.',
+  'trade.coins_one': '{count} coin',
+  'trade.coins_other': '{count} coins',
+  'trade.coins_label': 'Coins',
+  'trade.nothing_to_ask': '{name} has no items to trade yet.',
+  'trade.wish_they_want': 'On their wishlist',
+  'trade.wish_their_list': '{name}’s wishlist: {items}.',
+  'trade.wish_ask_title': 'Ask them for an item',
+  'trade.wish_ask_hint':
+    'Lets {name} know you would like an item from your wishlist: they can then offer it to you as a swap or a gift.',
+  'trade.wish_asked_toast': '{name} has been told.',
 
   'contest.title': 'Contests',
   'contest.intro':

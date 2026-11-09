@@ -1,4 +1,4 @@
-import type { ContestKind, GameRules, WalkZoneId } from '@2tamago/core';
+import type { ContestKind, GameRules, ItemId, WalkZoneId } from '@2tamago/core';
 import type {
   ActionResponse,
   AdminRulesResponse,
@@ -36,6 +36,9 @@ import type {
   TradeDto,
   TradeOverview,
   TradeResult,
+  TradeTarget,
+  WishAskBody,
+  WishlistDto,
   CareActionBody,
   DaycareDto,
   DaycareOverview,
@@ -157,7 +160,12 @@ export const api = {
   tradeOffer: (body: TradeBody) => call<TradeDto>('POST', '/trades', body),
   tradeAccept: (id: string) => call<TradeResult>('POST', `/trades/${id}/accept`),
   tradeDecline: (id: string) => call<void>('POST', `/trades/${id}/decline`),
+  tradeTarget: (playerId: string) => call<TradeTarget>('GET', `/trades/targets/${playerId}`),
   tradeCancel: (id: string) => call<void>('DELETE', `/trades/${id}`),
+
+  wishlist: () => call<WishlistDto>('GET', '/wishlist'),
+  setWishlist: (items: ItemId[]) => call<WishlistDto>('PUT', '/wishlist', { items }),
+  wishAsk: (body: WishAskBody) => call<void>('POST', '/wishlist/ask', body),
 
   pushSubscribe: (body: PushSubscriptionBody) => call<void>('PUT', '/push/subscription', body),
   pushUnsubscribe: (endpoint: string) => call<void>('DELETE', '/push/subscription', { endpoint }),

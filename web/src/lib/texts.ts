@@ -33,6 +33,12 @@ export function bundleLabel(items: Partial<Record<ItemId, number>>): string {
     .map(([id, quantity]) => `${t(`item.${id}`)} ×${quantity}`)
     .join(', ');
 }
+/** An item bundle and coins: "Cookie ×2, 30 coins". Empty when there is nothing. */
+export function tradeSideLabel(items: Partial<Record<ItemId, number>>, coins: number): string {
+  return [bundleLabel(items), ...(coins > 0 ? [t('trade.coins', { count: coins })] : [])]
+    .filter(Boolean)
+    .join(', ');
+}
 export const itemLabel = (id: ItemId) => t(`item.${id}`);
 
 /** The story of a walk event (`rpg.event.<id>`). */
@@ -106,6 +112,11 @@ export function activityText(entry: ActivityDto): string {
     case 'trade_declined':
     case 'trade_expired':
       return t(`activity.${entry.kind}`, { playerName: String(d.playerName) });
+    case 'wish_request':
+      return t('activity.wish_request', {
+        playerName: String(d.playerName),
+        item: String(d.item) in ITEMS ? itemLabel(d.item as ItemId) : t('item.unknown'),
+      });
     case 'name_changed':
       return t(d.what === 'pet' ? 'activity.name_changed_pet' : 'activity.name_changed_player', {
         name: String(d.name),
