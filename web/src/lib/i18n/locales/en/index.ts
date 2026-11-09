@@ -14,6 +14,7 @@ import { admin } from './admin.ts';
 import { errors } from './errors.ts';
 import { feedback } from './feedback.ts';
 import { push } from './push.ts';
+import { rpg } from './rpg.ts';
 
 /** English: must have exactly the keys of `fr`. */
 export const en: Record<keyof typeof fr, string> = {
@@ -32,4 +33,5 @@ export const en: Record<keyof typeof fr, string> = {
   ...errors,
   ...feedback,
   ...push,
+  ...rpg,
 };

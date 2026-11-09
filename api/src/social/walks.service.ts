@@ -9,7 +9,13 @@ import {
   type ItemId,
   type WalkZoneId,
 } from '@2tamago/core';
-import type { ActionResponse, Notice, WalkEncounter, WalkResponse } from '@2tamago/core/contracts';
+import type {
+  ActionResponse,
+  Notice,
+  WalkEncounter,
+  WalkEventDto,
+  WalkResponse,
+} from '@2tamago/core/contracts';
 import {
   aliasedTable,
   and,
@@ -104,7 +110,19 @@ export class WalksService {
             items.push(item);
           }
         }
-        const found = { coins: boosted(rolled.coins, walkBonus), items };
+        // What the walk event brings (the engine only says it, the server hands it over).
+        const walkEvent = change.events.find((event) => event.type === 'walk_event')!
+          .data as unknown as WalkEventDto;
+        if (walkEvent.item) {
+          const kept = !isAccessory(walkEvent.item as ItemId);
+          if (kept || !(await this.players.hasItem(tx, playerId, walkEvent.item as ItemId))) {
+            items.push(walkEvent.item as ItemId);
+          }
+        }
+        const found = {
+          coins: boosted(rolled.coins + (walkEvent.coins ?? 0), walkBonus),
+          items,
+        };
         await this.players.addCoins(tx, playerId, found.coins);
         for (const item of found.items) await this.players.addItem(tx, playerId, item);
 
@@ -112,11 +130,11 @@ export class WalksService {
           ? await this.meet(tx, walk, row.id, state.name, playerId)
           : { met: [], first: new Set<string>() };
         const goalReached = await this.community.walkCompleted(tx);
-        return { ...change, extra: { zone, found, goalReached, ...meetings } };
+        return { ...change, extra: { zone, found, walkEvent, goalReached, ...meetings } };
       },
     );
 
-    const { zone, found, met, first, goalReached } = result.extra!;
+    const { zone, found, walkEvent, met, first, goalReached } = result.extra!;
     if (goalReached !== null) this.announcements.communityGoal(goalReached);
     // Once saved: only the first walk two players ever share is worth the channel's attention.
     for (const encounter of met) {
@@ -137,6 +155,7 @@ export class WalksService {
       coins: await this.players.coinsOf(playerId),
       notices,
       zone,
+      walkEvent,
       found,
       encounters: met,
     };

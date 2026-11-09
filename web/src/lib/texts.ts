@@ -6,9 +6,11 @@ import {
   type ItemId,
   type Mood,
   type PetEvent,
+  type RpgStat,
   type Stage,
   type Temperament,
   type TrickId,
+  type WalkEventId,
   type WalkZoneId,
 } from '@2tamago/core';
 import type { ActivityDto, Notice } from '@2tamago/core/contracts';
@@ -33,6 +35,9 @@ export function bundleLabel(items: Partial<Record<ItemId, number>>): string {
 }
 export const itemLabel = (id: ItemId) => t(`item.${id}`);
 
+/** The story of a walk event (`rpg.event.<id>`). */
+export const walkEventText = (id: WalkEventId, name: string) => t(`rpg.event.${id}`, { name });
+
 export function eventText(event: PetEvent, name: string): string | null {
   switch (event.type) {
     case 'hatched': {
@@ -56,6 +61,14 @@ export function eventText(event: PetEvent, name: string): string | null {
       });
     case 'trick_level_up':
       return t('event.trick_level_up', { name, trick: trickLabel(event.data?.trick as TrickId) });
+    case 'walk_event':
+      return walkEventText(event.data?.walk as WalkEventId, name);
+    case 'stat_up':
+      return t('event.stat_up', {
+        name,
+        stat: t(`rpg.stat.${event.data?.stat as RpgStat}`),
+        value: Number(event.data?.value),
+      });
     case 'fell_ill':
     case 'cured':
     case 'care_mistake':

@@ -32,6 +32,7 @@
     temperamentHint,
     temperamentLabel,
     trickLabel,
+    walkEventText,
     zoneHint,
     zoneLabel,
   } from '#lib/texts.ts';
@@ -391,6 +392,7 @@
         {ZONE_ICONS[walkResult.zone]}
         {t('walk.zone', { zone: zoneLabel(walkResult.zone) })}
       </p>
+      <p class="story">{walkEventText(walkResult.walkEvent.walk, pet?.name ?? '')}</p>
       <p>{t('walk.coins_found', { count: walkResult.found.coins })}</p>
       {#each walkResult.found.items as item, i (i)}<p>🎁 {itemLabel(item)}</p>{/each}
       {#if walkResult.encounters.length > 0}

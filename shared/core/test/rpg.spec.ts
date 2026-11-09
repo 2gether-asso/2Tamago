@@ -149,7 +149,7 @@ describe('walk events', () => {
     const state = pet('adult');
     const result = walk(state, 'beach', seedFor(state, 'beach', 'buried_treasure'));
     expect(eventOf(result.events)).toMatchObject({
-      event: 'buried_treasure',
+      walk: 'buried_treasure',
       coins: 30,
       item: 'starfish',
     });
@@ -205,7 +205,7 @@ describe('quest chain', () => {
     expect(walkEventPossible(state, 'meadow', 'hermit_riddle')).toBe(false);
     expect(walkEventPossible(state, 'meadow', 'hermit_riddle_failed')).toBe(true);
     const failed = walk(state, 'meadow', seedFor(state, 'meadow', 'hermit_riddle_failed'));
-    expect(eventOf(failed.events)).toMatchObject({ event: 'hermit_riddle_failed', step: 1 });
+    expect(eventOf(failed.events)).toMatchObject({ walk: 'hermit_riddle_failed', step: 1 });
     expect(failed.state.rpg!.quests.hermit).toBe(1);
     // It learned from it: clever enough for the next try.
     expect(statOf(failed.state, 'wit')).toBe(1);
@@ -223,7 +223,7 @@ describe('quest chain', () => {
     next.stats = { ...next.stats, energy: 100, satiety: 100 };
     const done = walk(next, 'meadow', seedFor(next, 'meadow', 'hermit_gift'));
     expect(eventOf(done.events)).toMatchObject({
-      event: 'hermit_gift',
+      walk: 'hermit_gift',
       quest: 'hermit',
       step: 3,
       questDone: true,
@@ -231,7 +231,12 @@ describe('quest chain', () => {
       item: 'flower_crown',
     });
     expect(characterSheet(done.state).quests[0]).toMatchObject({ done: true });
-    for (const id of ['hermit_meet', 'hermit_riddle', 'hermit_riddle_failed', 'hermit_gift'] as const) {
+    for (const id of [
+      'hermit_meet',
+      'hermit_riddle',
+      'hermit_riddle_failed',
+      'hermit_gift',
+    ] as const) {
       expect(walkEventPossible(done.state, 'meadow', id)).toBe(false);
     }
   });

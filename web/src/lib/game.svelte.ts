@@ -151,7 +151,8 @@ class Game {
   #announce(events: PetEvent[], name: string): void {
     for (const event of events) {
       const text = eventText(event, name);
-      if (text && event.type !== 'woke_up' && event.type !== 'fell_asleep') toasts.push(text);
+      // The story of a walk is told in the walk's own dialog.
+      if (text && !['woke_up', 'fell_asleep', 'walk_event'].includes(event.type)) toasts.push(text);
     }
   }
 

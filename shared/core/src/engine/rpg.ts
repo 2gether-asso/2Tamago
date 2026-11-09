@@ -225,7 +225,8 @@ export function characterSheet(state: Sheeted): CharacterSheet {
 }
 
 function sheetOf(state: PetState): RpgSheet {
-  return (state.rpg ??= { xp: {}, quests: {}, history: [] });
+  state.rpg ??= { xp: {}, quests: {}, history: [] };
+  return state.rpg;
 }
 
 /** Adds experience to a statistic (capped), and reports each point gained as a `stat_up` event. */
@@ -313,7 +314,7 @@ export function resolveWalkEvent(
   if (event.health) s.health = clamp(s.health + soften(event.health));
   if (event.bond) state.bond = clamp(state.bond + event.bond);
 
-  const data: NonNullable<PetEvent['data']> = { event: id, kind: event.kind, zone };
+  const data: NonNullable<PetEvent['data']> = { walk: id, kind: event.kind, zone };
   if (event.coins) data.coins = event.coins;
   if (event.item) data.item = event.item;
   const quest = event.quest ?? event.questHold;

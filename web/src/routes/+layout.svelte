@@ -24,6 +24,7 @@
   const NAV: { href: string; label: MessageKey; icon: string }[] = [
     { href: '/', label: 'nav.home', icon: '🏠' },
     { href: '/village', label: 'nav.village', icon: '🌳' },
+    { href: '/sheet', label: 'nav.sheet', icon: '📋' },
     { href: '/contests', label: 'nav.contests', icon: '🏆' },
     { href: '/shop', label: 'nav.shop', icon: '🛍️' },
     { href: '/journal', label: 'nav.journal', icon: '📜' },
