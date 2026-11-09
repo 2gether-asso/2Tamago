@@ -36,11 +36,36 @@ Un compagnon bien soigné vit donc environ 16 jours avant de devenir ancien.
 
 ## Santé, maladie, départ
 
-- **Pression de maladie** : chaque facteur (3 cacas ou plus, propreté < 20, satiété < 10, surpoids > 40) ajoute 1 par heure (0,5 pour le surpoids). À 2, il tombe malade. Sans facteur, la pression redescend.
-- **Malade** : −1 santé/h, guéri après 2 doses de médicament.
+- **Pression de maladie** : chaque facteur (3 cacas ou plus, propreté < 20, satiété < 10, surpoids > 40, alimentation déséquilibrée) ajoute 1 par heure (0,5 pour le surpoids et pour l'alimentation déséquilibrée). À 2, il tombe malade. Sans facteur, la pression redescend.
+- **Malade** : −1 santé/h, guéri par des médicaments (voir « Maladies et soins »).
 - **Affamé** (satiété à 0) : −1,5 santé/h.
-- **Bien portant** (pas malade, satiété > 40, bonheur > 30) : +2 santé/h.
+- **Bien portant** (pas malade, satiété > 40, bonheur > 30) : +2 santé/h (×1,5 avec une alimentation équilibrée).
 - **Santé à 0** : le compagnon part (statut `gone`), ou reste à 1 PV si `GAME_DEPARTURE=false`. Un bébé totalement délaissé tient environ deux jours (vérifié par les tests).
+
+## Repas et alimentation équilibrée
+
+Nourrir ouvre un choix (tickets #50 et #55) :
+
+- **Ration simple** (gratuite) : satiété +20 (`freeMealSatiety`), poids +1. Elle garde le jeu jouable sans objet, mais ne compte pas dans l'équilibre alimentaire.
+- **Repas du sac** (achetés à la boutique, retirés de l'inventaire) : bol de riz (céréales, 10 pièces, +35), ragoût de légumes (légumes, 14, +30), poisson grillé (protéines, 20, +40), salade de fruits (fruits, 12, +25). Un repas refuse d'être donné à partir de 80 de satiété (`fullSatiety`, erreur `not_hungry`) : c'est la saturation. Seuls les repas se donnent avec « Nourrir » ; les friandises restent un geste à part.
+- **Friandises** : comptent aussi dans l'équilibre (par défaut des sucreries ; fraise, mûre et noix de coco sont des fruits, le champignon un légume). Donner une friandise à un compagnon déjà rassasié (satiété ≥ 80) ajoute +2 au poids (`overfeedWeight`).
+- **Équilibre** : le moteur garde les 6 derniers repas et friandises (`diet`, `dietWindow`). _Équilibrée_ : au moins 3 groupes sains différents et au plus un tiers de sucreries, la régénération de santé est ×1,5. _Déséquilibrée_ : plus de la moitié de sucreries (à partir de 4 repas), ce qui ajoute un facteur de pression de maladie. Sinon _moyenne_.
+- Un gardien nourrit toujours avec la ration simple (il n'a pas accès au sac du propriétaire).
+
+## Maladies et soins
+
+Chaque maladie a une cause (celle qui pèse le plus au moment de tomber malade, ticket #54) et un remède :
+
+| Maladie     | Cause                                               | Remède                             |
+| ----------- | --------------------------------------------------- | ---------------------------------- |
+| Infection   | Saleté (cacas, propreté basse)                      | Antibiotique (30 pièces)           |
+| Indigestion | Surpoids ou alimentation déséquilibrée              | Tisane digestive (20 pièces)       |
+| Faiblesse   | Faim                                                | Vitamines (20 pièces)              |
+
+- Le **bon remède** guérit tout de suite. Un remède d'une autre maladie compte pour 0,5 dose (`wrongMedicineDose`).
+- Le **sirop** (15 pièces) soigne toutes les maladies mais compte pour 1 dose : il en faut 2 (`medicineDoses`).
+- Les **soins de base** (« Soigner » sans objet, gratuits) comptent pour 0,5 dose (`freeMedicineDose`), soit 4 soins, bonheur −5 chacun, contre −2 avec un remède. C'est le chemin des joueurs sans pièces, et celui des gardiens.
+- Un animal tombé malade avant cette mise à jour n'a pas de maladie connue : seuls le sirop et les soins de base le soignent.
 
 ## Garderie
 
@@ -163,11 +188,11 @@ Les valeurs sont la règle `temperaments` de `GameRules` : un admin peut les mod
 
 | Action                 | Effet                                                                                                                          |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| Nourrir                | Satiété +35, poids +1. Refusé à partir de 95 de satiété                                                                        |
+| Nourrir                | Ration simple (satiété +20) ou repas du sac, voir « Repas ». Refusé à partir de 80 de satiété                                  |
 | Friandise              | Selon l'objet (voir la boutique), lien +1                                                                                      |
 | Jouer (score de 0 à 3) | Bonheur +10 + 5 × score, énergie −10, satiété −3, poids −1, lien +2. Il faut au moins 10 d'énergie                             |
 | Nettoyer               | Retire les cacas, propreté +40                                                                                                 |
-| Médicament             | Une dose (bonheur −5)                                                                                                          |
+| Soigner                | Soins de base ou remède du sac, voir « Maladies et soins »                                                                     |
 | Coucher / Réveiller    | Coucher seulement si énergie < 90. Réveiller coûte −10 bonheur                                                                 |
 | Lumière                | Éteindre : seulement la nuit. Rallumer : à tout moment (voir « Jour et nuit »)                                                 |
 | Caresser               | Bonheur +3, lien +1, au plus une fois toutes les 15 s                                                                          |
@@ -185,7 +210,7 @@ Les valeurs sont la règle `temperaments` de `GameRules` : un admin peut les mod
 | Promenade                                                             | 5 à 15 (prairie) à 20 à 40 (plage) |
 | Caresser le compagnon d'un autre (une fois par jour et par compagnon) | 3                                  |
 
-Prix : biscuit 8, fraise 12, lait chaud 15, gâteau 30, nœud 50, chapeau 80, lunettes 120, couronne 300. Les objets qu'on ne trouve qu'en promenade (mûre, champignon, noix de coco, glace, couronne de fleurs, étoile de mer) ne sont pas vendus : la boutique les refuse (`not_for_sale`).
+Repas : bol de riz 10, ragoût 14, poisson 20, salade de fruits 12. Remèdes : sirop 15, antibiotique 30, tisane digestive 20, vitamines 20. Prix : biscuit 8, fraise 12, lait chaud 15, gâteau 30, nœud 50, chapeau 80, lunettes 120, couronne 300. Les objets qu'on ne trouve qu'en promenade (mûre, champignon, noix de coco, glace, couronne de fleurs, étoile de mer) ne sont pas vendus : la boutique les refuse (`not_for_sale`).
 
 ## Concours
 
