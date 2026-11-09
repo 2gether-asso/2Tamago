@@ -39,6 +39,11 @@ export const home = {
   'action.lights_on': '💡 Rallumer la lumière',
   'action.lights_off': '🕯️ Éteindre la lumière',
   'action.praise': '👏 Féliciter',
+  'home.play_tired':
+    '{name} en a assez de jouer : un jeu revient toutes les 30 min (prochain vers {time}).',
+  'home.praise_wait': 'Tu l’as déjà félicité : prochaine félicitation vers {time}.',
+  'home.scold_tip':
+    '{name} fait un caprice : c’est le moment de le gronder (discipline +). Le féliciter ou le gronder sans raison fait perdre en discipline ou en lien.',
   'action.scold': '☝️ Gronder',
   'action.train': '🎓 Entraîner',
   'action.return': '🏠 Ramener',

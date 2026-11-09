@@ -41,6 +41,11 @@ export const home: Record<keyof typeof fr, string> = {
   'action.lights_on': '💡 Turn the light on',
   'action.lights_off': '🕯️ Turn the light off',
   'action.praise': '👏 Praise',
+  'home.play_tired':
+    '{name} is tired of playing: one game comes back every 30 min (next around {time}).',
+  'home.praise_wait': 'You already praised it: next praise around {time}.',
+  'home.scold_tip':
+    '{name} is throwing a tantrum: now is the time to scold (discipline up). Praising it, or scolding for nothing, costs discipline or bond.',
   'action.scold': '☝️ Scold',
   'action.train': '🎓 Train',
   'action.return': '🏠 Bring home',

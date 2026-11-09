@@ -103,6 +103,9 @@ export const rulesOverridesBody = z
     vacationMaxHours: positive,
     vacationCooldownHours: nonNegative,
     caressCooldownSeconds: nonNegative,
+    playMaxCharges: nonNegative,
+    playRefillSeconds: nonNegative,
+    praiseCooldownSeconds: nonNegative,
     departureEnabled: z.boolean(),
     night: z
       .object({

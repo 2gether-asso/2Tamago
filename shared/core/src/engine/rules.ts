@@ -71,6 +71,12 @@ export interface GameRules {
   vacationCooldownHours: number;
   /** Minimum real seconds between two effective caresses. */
   caressCooldownSeconds: number;
+  /** Games in a row before the pet is tired of playing. */
+  playMaxCharges: number;
+  /** Real seconds to get one game back. */
+  playRefillSeconds: number;
+  /** Minimum real seconds between two praises. */
+  praiseCooldownSeconds: number;
 
   /**
    * When health reaches 0: `true` the pet leaves for good (status `gone`),
@@ -140,6 +146,9 @@ export const DEFAULT_RULES: GameRules = {
   vacationMaxHours: 24 * 14,
   vacationCooldownHours: 24 * 7,
   caressCooldownSeconds: 15,
+  playMaxCharges: 3,
+  playRefillSeconds: 1800,
+  praiseCooldownSeconds: 1800,
 
   departureEnabled: true,
 
