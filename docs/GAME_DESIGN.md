@@ -187,6 +187,17 @@ Les valeurs sont la règle `temperaments` de `GameRules` : un admin peut les mod
 
 Prix : biscuit 8, fraise 12, lait chaud 15, gâteau 30, nœud 50, chapeau 80, lunettes 120, couronne 300. Les objets qu'on ne trouve qu'en promenade (mûre, champignon, noix de coco, glace, couronne de fleurs, étoile de mer) ne sont pas vendus : la boutique les refuse (`not_for_sale`).
 
+## Concours
+
+Chaque semaine (du lundi au dimanche, fuseau `GAME_TIMEZONE`, comme l'objectif communautaire), deux concours, à l'écran « Concours » :
+
+- **Tours** : le score est la somme des progrès du compagnon dans les 4 tours (de 0 à 400), **figée à l'inscription** (`trickScore`). On peut se réinscrire quand on veut jusqu'à dimanche : le score est mis à jour, la place d'inscription (qui départage les égalités) reste la première. Pas pour un bébé, qui ne peut pas être dressé.
+- **Beauté** : la communauté vote. Un vote par semaine et par membre, pour le compagnon de quelqu'un d'autre (pas le sien), parmi les inscrits ; on peut changer d'avis et le vote se déplace. Le score est le nombre de votes ; on peut voter sans être inscrit. Les accessoires, qu'on voit sur le compagnon, y aident.
+- **Conditions** : un compagnon vivant, éclos et pas en vacances (`still_an_egg`, `too_young`, `on_vacation`, `pet_gone`).
+- **Classement** : par score, puis par ordre d'inscription (deux inscrits n'ont jamais la même place, `rankEntries`). Chaque classement montre les 20 premiers et, toujours, la place du joueur. Les compagnons sont affichés à leur état du moment, pas à celui de l'inscription.
+- **Récompenses** : les trois premiers de chaque concours de la semaine **précédente** gagnent 50, 30 et 15 pièces (`CONTEST_PRIZES`), à récupérer une fois (`already_claimed` ensuite, `no_prize` hors podium). La prise est décidée par une seule instruction : deux demandes simultanées ne paient qu'une fois.
+- **Limites assumées** : la communauté est fermée (des membres d'un serveur Discord) et le vote est public pour l'application, mais rien n'empêche des comptes multiples de voter ; ce n'est pas protégé. Les résultats ne sont pas annoncés dans le salon Discord.
+
 ## Codes cadeaux et événements
 
 Deux outils d'animation, réservés aux admins (écran Admin) :

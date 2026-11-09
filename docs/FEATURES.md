@@ -48,7 +48,7 @@ Le jeu s'inspire de trois sources :
 | 🔜  | Commandes de tours à la voix ou au geste (dessiner un motif)                                                                                                                                           | Le principe des commandes vocales de Nintendogs               |
 | ✅  | Zones de promenade (prairie, forêt, plage), ouvertes au fil de la croissance, avec leur durée, leur coût et leurs objets trouvés ; objets qu'on ne trouve qu'en promenade, dont deux accessoires rares | Voir « Promenades » dans [GAME_DESIGN.md](GAME_DESIGN.md)     |
 | 💡  | Plus de zones et d'objets à collectionner, événements de promenade (météo, trouvailles rares)                                                                                                          |                                                               |
-| 💡  | Concours (tours, beauté) avec classement hebdomadaire                                                                                                                                                  |                                                               |
+| ✅  | Concours hebdomadaires : tours (score figé à l'inscription, qu'on peut mettre à jour) et beauté (un vote par semaine) ; classements, et pièces pour le podium de la semaine précédente                 | Voir « Concours » dans [GAME_DESIGN.md](GAME_DESIGN.md)       |
 | 💡  | Décoration de la chambre                                                                                                                                                                               |                                                               |
 
 ## 3. Multijoueur asynchrone
