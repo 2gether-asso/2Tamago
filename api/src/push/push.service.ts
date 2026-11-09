@@ -41,7 +41,13 @@ export class PushService {
   }
 
   /** Sends one message to every browser of the player. Returns how many accepted it. */
-  async notify(playerId: string, kind: PushKind, petName: string): Promise<number> {
+  async notify(
+    playerId: string,
+    kind: PushKind,
+    petName: string,
+    playerName?: string,
+  ): Promise<number> {
+    if (!this.sender.enabled) return 0;
     const subscriptions = await this.db
       .select()
       .from(pushSubscriptions)
@@ -49,7 +55,12 @@ export class PushService {
     let sent = 0;
     const gone: string[] = [];
     for (const subscription of subscriptions) {
-      const payload: PushPayload = { kind, petName, locale: subscription.locale };
+      const payload: PushPayload = {
+        kind,
+        petName,
+        ...(playerName === undefined ? {} : { playerName }),
+        locale: subscription.locale,
+      };
       const result = await this.sender.send(subscription, payload);
       if (result === 'sent') sent += 1;
       else if (result === 'gone') gone.push(subscription.id);

@@ -258,13 +258,22 @@ export const pushUnsubscribeBody = z.object({ endpoint: z.url().max(2048) });
 export type PushUnsubscribeBody = z.infer<typeof pushUnsubscribeBody>;
 
 /** Why a push is sent. The API sends the code, the service worker writes the sentence. */
-export const PUSH_KINDS = ['hungry', 'sick', 'calling', 'walk_done', 'test'] as const;
+export const PUSH_KINDS = [
+  'hungry',
+  'sick',
+  'calling',
+  'walk_done',
+  'daycare_invite',
+  'test',
+] as const;
 export type PushKind = (typeof PUSH_KINDS)[number];
 
 /** The data of a push message, as the service worker receives it. */
 export interface PushPayload {
   kind: PushKind;
   petName: string;
+  /** The other player, for what another player did (the owner who entrusts their companion). */
+  playerName?: string;
   locale: PushLocale;
 }
 

@@ -1,8 +1,9 @@
 import type { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { gameHours, withRules } from '@2tamago/core';
-import type { PushPayload } from '@2tamago/core/contracts';
+import type { MeResponse, PushPayload } from '@2tamago/core/contracts';
 import request from 'supertest';
+import { vi } from 'vitest';
 import type { App } from 'supertest/types.js';
 import { AppModule } from '../src/app.module.js';
 import { Clock } from '../src/common/clock.js';
@@ -193,6 +194,42 @@ describe('Web Push notifications (e2e)', () => {
     const refused = await bob.put('/api/push/subscription').send(subscription('bob')).expect(409);
     expect(refused.body.code).toBe('push_disabled');
     expect((await bob.post('/api/push/test').expect(409)).body.code).toBe('push_disabled');
+  });
+
+  it('nudges a member who is invited to look after a companion', async () => {
+    await start(VAPID);
+    const alice = await signIn('Alice');
+    const bob = await signIn('Bob');
+    const carol = await signIn('Carol');
+    await adopt(alice, 'Pompon');
+    await bob.put('/api/push/subscription').send(subscription('bob', 'en')).expect(204);
+    const bobId = ((await bob.get('/api/me').expect(200)).body as MeResponse).player.id;
+    const carolId = ((await carol.get('/api/me').expect(200)).body as MeResponse).player.id;
+
+    await alice.post('/api/daycare').send({ caretakerId: bobId }).expect(201);
+    await vi.waitFor(() => expect(sender.sent).toHaveLength(1));
+    expect(sender.sent[0]).toEqual({
+      endpoint: 'https://push.example.test/bob',
+      payload: { kind: 'daycare_invite', petName: 'Pompon', playerName: 'Alice', locale: 'en' },
+    });
+
+    // Someone with no subscribed browser only has the journal; nothing else is sent.
+    await alice.delete(
+      `/api/daycare/${(await alice.get('/api/daycare').expect(200)).body.entrusted.id}`,
+    );
+    await alice.post('/api/daycare').send({ caretakerId: carolId }).expect(201);
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(sender.sent).toHaveLength(1);
+  });
+
+  it('still takes an invitation when notifications are off on the server', async () => {
+    await start();
+    const alice = await signIn('Alice');
+    const bob = await signIn('Bob');
+    await adopt(alice, 'Pompon');
+    const bobId = ((await bob.get('/api/me').expect(200)).body as MeResponse).player.id;
+    await alice.post('/api/daycare').send({ caretakerId: bobId }).expect(201);
+    expect(sender.sent).toEqual([]);
   });
 
   it('shares the public key with the web app', async () => {

@@ -7,5 +7,6 @@ import { PushService } from './push.service.js';
 @Module({
   controllers: [PushController],
   providers: [{ provide: PushSender, useClass: WebPushSender }, PushService, PushNotifier],
+  exports: [PushService],
 })
 export class PushModule {}

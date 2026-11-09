@@ -22,6 +22,7 @@ import { GameRulesService } from '../game/game-rules.service.js';
 import { toPetDto } from '../pets/pet-mapper.js';
 import { PetsService } from '../pets/pets.service.js';
 import { PlayersService } from '../players/players.service.js';
+import { PushService } from '../push/push.service.js';
 import { DAYCARE, HOUR_MS, isJournaled, REWARDED_CARE } from './daycare.js';
 
 const noDaycare = () => new NotFoundException({ statusCode: 404, code: 'no_daycare' });
@@ -40,6 +41,7 @@ export class DaycareService {
     private readonly pets: PetsService,
     private readonly players: PlayersService,
     private readonly activity: ActivityService,
+    private readonly push: PushService,
   ) {}
 
   private get rules(): GameRules {
@@ -116,6 +118,10 @@ export class DaycareService {
       ownerName: owner.displayName,
       petName: pet.state.name,
     });
+    // The invitation is in their journal either way; the push is only a nudge, and may fail.
+    void this.push
+      .notify(caretakerId, 'daycare_invite', pet.state.name, owner.displayName)
+      .catch(() => {});
     return (await this.dtos(eq(daycares.id, inserted[0]!.id)))[0]!;
   }
 
