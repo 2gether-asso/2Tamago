@@ -31,6 +31,10 @@ export const errors = {
   'error.trade_invalid':
     'Cet échange n’est pas possible (un accessoire que l’autre possède déjà, par exemple).',
   'error.no_trade': 'Cet échange n’existe plus.',
+  'error.no_code': 'Ce code n’existe pas.',
+  'error.code_expired': 'Ce code a expiré.',
+  'error.code_used_up': 'Ce code a déjà été utilisé autant de fois qu’il pouvait l’être.',
+  'error.code_already_redeemed': 'Tu as déjà utilisé ce code.',
   'error.already_caressed': 'Tu as déjà caressé ce compagnon aujourd’hui.',
   'error.already_claimed': 'Tu as déjà récupéré la récompense de cette semaine.',
   'error.goal_not_reached': 'Le village n’a pas encore atteint son objectif.',

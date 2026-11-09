@@ -235,6 +235,55 @@ export const tradeBody = z
   });
 export type TradeBody = z.infer<typeof tradeBody>;
 
+const rewardItems = z.partialRecord(itemId, z.number().int().min(1).max(20));
+
+/** A gift code an admin creates: what it gives, how often it can be used, until when. */
+export const giftCodeBody = z
+  .object({
+    /** Letters, digits and dashes; stored in capitals, so that players need not care about case. */
+    code: z
+      .string()
+      .trim()
+      .toUpperCase()
+      .regex(/^[A-Z0-9-]{4,24}$/),
+    coins: z.number().int().min(0).max(1000).default(0),
+    items: rewardItems.default({}),
+    /** How many members can use it, in all. */
+    maxUses: z.number().int().min(1).max(10_000),
+    /** Epoch ms; `null`: no end. */
+    expiresAt: z.number().int().nullable().default(null),
+  })
+  .refine((gift) => gift.coins > 0 || Object.keys(gift.items).length > 0, {
+    message: 'empty_gift',
+  })
+  .refine((gift) => Object.keys(gift.items).length <= 4, { message: 'too_many_items' });
+export type GiftCodeBody = z.infer<typeof giftCodeBody>;
+
+export const redeemBody = z.object({ code: z.string().trim().min(1).max(40) });
+export type RedeemBody = z.infer<typeof redeemBody>;
+
+export interface GiftCodeDto {
+  id: string;
+  code: string;
+  coins: number;
+  items: Partial<Record<ItemId, number>>;
+  maxUses: number;
+  uses: number;
+  expiresAt: number | null;
+  /** Switched off by an admin. */
+  disabled: boolean;
+  createdAt: number;
+}
+
+export interface RedeemResponse {
+  /** What the code gave. */
+  coins: number;
+  items: Partial<Record<ItemId, number>>;
+  /** The balance and the bag, after. */
+  balance: number;
+  inventory: Inventory;
+}
+
 /** Entrusting one's companion to another member. */
 export const daycareBody = z.object({ caretakerId: z.uuid() });
 export type DaycareBody = z.infer<typeof daycareBody>;
@@ -631,11 +680,15 @@ export const API_ERROR_CODES = [
   'already_caressed',
   'already_claimed',
   'already_has_pet',
+  'code_already_redeemed',
+  'code_expired',
+  'code_used_up',
   'daycare_exists',
   'daycare_full',
   'feedback_disabled',
   'goal_not_reached',
   'missing_item',
+  'no_code',
   'no_contribution',
   'no_daycare',
   'no_trade',

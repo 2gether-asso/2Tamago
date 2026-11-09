@@ -33,6 +33,10 @@ export const errors: Record<keyof typeof fr, string> = {
   'error.trade_invalid':
     'This trade is not possible (an accessory the other already owns, for instance).',
   'error.no_trade': 'This trade no longer exists.',
+  'error.no_code': 'This code does not exist.',
+  'error.code_expired': 'This code has expired.',
+  'error.code_used_up': 'This code has already been used as many times as it could be.',
+  'error.code_already_redeemed': 'You have already used this code.',
   'error.already_caressed': 'You already petted this companion today.',
   'error.already_claimed': 'You already collected this week’s reward.',
   'error.goal_not_reached': 'The village has not reached its goal yet.',

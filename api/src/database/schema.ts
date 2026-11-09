@@ -253,6 +253,35 @@ export const trades = pgTable(
   ],
 );
 
+/** A code that gives coins and items to whoever enters it (once per player), made by an admin. */
+export const giftCodes = pgTable('gift_codes', {
+  id: uuid().primaryKey().defaultRandom(),
+  /** In capitals. */
+  code: text().notNull().unique(),
+  coins: integer().notNull().default(0),
+  items: jsonb().$type<TradeItems>().notNull(),
+  maxUses: integer('max_uses').notNull(),
+  uses: integer().notNull().default(0),
+  expiresAt: timestamp('expires_at', { withTimezone: true }),
+  disabledAt: timestamp('disabled_at', { withTimezone: true }),
+  createdBy: uuid('created_by').references(() => players.id, { onDelete: 'set null' }),
+  createdAt: createdAt(),
+});
+
+export const giftCodeRedemptions = pgTable(
+  'gift_code_redemptions',
+  {
+    codeId: uuid('code_id')
+      .notNull()
+      .references(() => giftCodes.id, { onDelete: 'cascade' }),
+    playerId: uuid('player_id')
+      .notNull()
+      .references(() => players.id, { onDelete: 'cascade' }),
+    createdAt: createdAt(),
+  },
+  (t) => [primaryKey({ columns: [t.codeId, t.playerId] })],
+);
+
 /** What happened to a player: their pet's life events and other players' actions. */
 export const activity = pgTable(
   'activity',
