@@ -1,4 +1,4 @@
-import type { EventKind, WalkZoneId } from '@2tamago/core';
+import type { ContestKind, EventKind, WalkZoneId } from '@2tamago/core';
 import type {
   ActivityKind,
   ModerationAction,
@@ -305,6 +305,46 @@ export const gameEvents = pgTable(
     createdAt: createdAt(),
   },
   (t) => [index('game_events_time_idx').on(t.startsAt, t.endsAt)],
+);
+
+/** A companion in a week's contest (one entry per member, per week and per contest). */
+export const contestEntries = pgTable(
+  'contest_entries',
+  {
+    /** Monday of the week, see `weekOf`. */
+    week: text().notNull(),
+    kind: text().$type<ContestKind>().notNull(),
+    playerId: uuid('player_id')
+      .notNull()
+      .references(() => players.id, { onDelete: 'cascade' }),
+    petId: uuid('pet_id')
+      .notNull()
+      .references(() => pets.id, { onDelete: 'cascade' }),
+    /** The trick score when entering (`tricks`); beauty is scored by votes instead. */
+    score: integer().notNull().default(0),
+    createdAt: createdAt(),
+    claimedAt: timestamp('claimed_at', { withTimezone: true }),
+  },
+  (t) => [primaryKey({ columns: [t.week, t.kind, t.playerId] })],
+);
+
+/** A member's vote in the week's beauty contest: one a week, for someone else's entry. */
+export const contestVotes = pgTable(
+  'contest_votes',
+  {
+    week: text().notNull(),
+    voterId: uuid('voter_id')
+      .notNull()
+      .references(() => players.id, { onDelete: 'cascade' }),
+    candidateId: uuid('candidate_id')
+      .notNull()
+      .references(() => players.id, { onDelete: 'cascade' }),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.week, t.voterId] }),
+    index('contest_votes_candidate_idx').on(t.week, t.candidateId),
+  ],
 );
 
 /** What admins did to names, for accountability. */

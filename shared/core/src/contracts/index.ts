@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { ITEM_IDS, type ItemId } from '../engine/catalog.js';
 import { WALK_ZONE_IDS, type WalkZoneId } from '../engine/zones.js';
 import { TRADE_LIMITS, tradeProblem } from '../engine/trade.js';
+import { CONTEST_KINDS, type ContestKind, type ContestProblem } from '../engine/contests.js';
 import { EVENT_KINDS, EVENT_LIMITS, maxPercent, type EventKind } from '../engine/events.js';
 import type { GameErrorCode } from '../engine/errors.js';
 import type { Alert, Mood } from '../engine/view.js';
@@ -353,6 +354,70 @@ export interface GameEventDto {
 export interface EventsOverview {
   active: GameEventDto[];
   upcoming: GameEventDto[];
+}
+
+export const contestBody = z.object({ kind: z.enum(CONTEST_KINDS) });
+export type ContestBody = z.infer<typeof contestBody>;
+
+/** A member votes for a companion in the week's beauty contest. */
+export const voteBody = z.object({ playerId: z.uuid() });
+export type VoteBody = z.infer<typeof voteBody>;
+
+export interface ContestEntryDto {
+  /** 1 for the best. */
+  rank: number;
+  playerId: string;
+  playerName: string;
+  petId: string;
+  petName: string;
+  species: Species;
+  stage: Stage;
+  form: Form | null;
+  color: number;
+  traits: PetTraits | null;
+  equipped: string | null;
+  mood: Mood;
+  /** What the pet had learned when it entered (`tricks`), or the votes it got (`beauty`). */
+  score: number;
+  isMine: boolean;
+  /** Beauty: the viewer's vote this week is for this entry. */
+  votedByMe: boolean;
+}
+
+export interface ContestBoard {
+  kind: ContestKind;
+  /** The best entries, best first. */
+  entries: ContestEntryDto[];
+  /** The viewer's own entry, wherever it ranks. */
+  mine: ContestEntryDto | null;
+  /** Why the viewer's companion cannot enter right now (`null`: it can, or has). */
+  problem: ContestProblem | null;
+}
+
+export interface ContestResults {
+  kind: ContestKind;
+  /** The first three. */
+  podium: ContestEntryDto[];
+  mine: ContestEntryDto | null;
+  /** Coins the viewer can take for their rank (0: none). */
+  prize: number;
+  claimed: boolean;
+}
+
+export interface ContestsOverview {
+  /** Monday of the week (YYYY-MM-DD). */
+  week: string;
+  /** When the week ends and the contests start again (epoch ms). */
+  endsAt: number;
+  tricks: ContestBoard;
+  beauty: ContestBoard;
+  /** Last week's results, when anyone took part. */
+  last: { week: string; results: ContestResults[] } | null;
+}
+
+export interface ContestClaimResponse {
+  prize: number;
+  coins: number;
 }
 
 /** Entrusting one's companion to another member. */
@@ -764,6 +829,8 @@ export const API_ERROR_CODES = [
   'name_not_allowed',
   'no_code',
   'no_contribution',
+  'no_entry',
+  'no_prize',
   'no_event',
   'no_daycare',
   'no_trade',
