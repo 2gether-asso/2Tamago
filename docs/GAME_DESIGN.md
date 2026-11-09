@@ -54,7 +54,7 @@ Pour s'absenter sans pause, on peut **confier son compagnon à un autre membre**
 
 ## Échanges
 
-Deux membres peuvent s'échanger des objets (friandises, accessoires, et les objets qu'on ne trouve qu'en promenade) : bouton « Proposer un échange » sur le profil de l'autre. On ne s'échange pas de pièces.
+Deux membres peuvent s'échanger des objets (friandises, accessoires, et les objets qu'on ne trouve qu'en promenade) : bouton « Proposer un échange » sur le profil de l'autre. Les pièces font partie de l'échange (voir plus bas).
 
 - **L'offre** : ce qu'on donne, et ce qu'on demande en échange (rien : c'est un cadeau). Jusqu'à 4 objets différents de chaque côté, 10 exemplaires au plus de chacun, un seul pour un accessoire (`TRADE_LIMITS`, `tradeProblem()` dans `shared/core/src/engine/trade.ts`). Il faut donner quelque chose, et pas le même objet des deux côtés.
 - **Mise de côté** : faire une offre retire tout de suite les objets donnés du sac, pour qu'ils ne puissent pas être dépensés ou offerts ailleurs pendant l'attente. Un manque refuse l'offre sans rien retirer (`missing_item`). On ne peut avoir que 3 offres en attente (`trade_full`).
@@ -62,7 +62,18 @@ Deux membres peuvent s'échanger des objets (friandises, accessoires, et les obj
 - **Rendu** : un refus, un retrait, ou 72 h sans réponse rendent les objets au proposeur, qui en est informé dans son journal.
 - **Un accessoire ne se porte qu'une fois** : on ne donne pas un accessoire à quelqu'un qui l'a déjà, ni on n'en demande un qu'on a déjà (`trade_invalid`).
 - **Qui** : n'importe quel membre, pas seulement les favoris : les favoris sont privés et à sens unique (voir [FEATURES.md](FEATURES.md)), un échange demande l'accord de l'autre de toute façon, et les offres en attente sont plafonnées.
+- **On ne demande que ce que l'autre a** : le formulaire n'affiche, côté « demandé », que le sac de l'autre membre (`GET /trades/targets/:id`, qui renvoie aussi sa liste d'envies, jamais son solde). Le serveur le vérifie aussi à l'offre : quantité insuffisante, `missing_item`. Rien n'est mis de côté chez l'autre : au moment d'accepter, c'est encore le sac qui décide.
+- **Pièces** : un côté peut comporter des pièces (`offerCoins`, `requestCoins`, 1000 au plus, `TRADE_LIMITS.maxCoins`), sur **un seul côté** (`coins_both_sides` : on échange la différence). Donner uniquement des pièces est un cadeau valide, et acheter un objet 30 pièces = `offerCoins: 30` + l'objet demandé. Les pièces données sont retirées à l'offre (`not_enough_coins` si le solde manque) et rendues avec les objets en cas de refus, retrait ou expiration. Les pièces demandées doivent exister chez l'autre à l'offre, et sont de nouveau vérifiées à l'acceptation, dans la même transaction (un manque annule tout, l'offre reste ouverte). Choix : les pièces sont deux champs à part et non un « objet » du catalogue, pour que le sac et ses règles (accessoires, quantités) n'aient pas à les connaître.
 - **Prévenir** : l'offre arrive dans le journal du destinataire et, s'il a activé les notifications, par un push (un clic ouvre le village).
+
+### Liste d'envies
+
+Sur la boutique, un cœur 🤍 sur chaque objet l'ajoute à sa liste d'envies (12 objets au plus, `TRADE_LIMITS.maxWishlist` ; `GET`/`PUT /wishlist`). Sur le profil d'un autre membre, dans le formulaire d'échange :
+
+- les objets de **sa** liste que l'on possède sont marqués 💖 côté « tu donnes », et sa liste est rappelée côté « tu demandes » ;
+- **« Lui demander un objet »** propose les objets de **notre** liste que l'autre possède (`POST /wishlist/ask`). L'autre reçoit une entrée de journal (`wish_request`, avec le nom et l'objet) et peut alors proposer un échange ou un cadeau depuis notre profil. Une demande par objet et par paire de membres toutes les 24 h (`wish_already_asked`, table `wish_asks`), pour que ce ne soit pas du harcèlement. Pas de push : c'est une envie, pas une alerte.
+
+Choix : la boutique est le seul « marché » ; elle ne vend que des objets en vente, la liste peut tout de même contenir n'importe quel objet depuis l'API.
 
 ## Promenades
 

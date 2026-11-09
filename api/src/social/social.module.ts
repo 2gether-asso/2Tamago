@@ -19,7 +19,13 @@ import { WalksService } from './walks.service.js';
 
 @Module({
   imports: [PetsModule, PlayersModule, ActivityModule, PushModule, EventsModule],
-  controllers: [SocialController, CommunityController, DaycareController, TradesController, WishlistController],
+  controllers: [
+    SocialController,
+    CommunityController,
+    DaycareController,
+    TradesController,
+    WishlistController,
+  ],
   providers: [
     VillageService,
     WalksService,
