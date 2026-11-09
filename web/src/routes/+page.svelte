@@ -5,6 +5,9 @@
     bedtimeOf,
     isAccessory,
     isNight,
+    nextPlayChargeAt,
+    playChargesLeft,
+    praiseReady,
     isSnack,
     SPECIES_LABELS,
     TRICKS,
@@ -63,6 +66,15 @@
       ([id, n]) => n > 0 && isAccessory(id),
     ),
   );
+  let playsLeft = $derived(game.rules && pet ? playChargesLeft(pet, now, game.rules) : 0);
+  let nextPlayAt = $derived(game.rules && pet ? nextPlayChargeAt(pet, now, game.rules) : null);
+  let canPraise = $derived(game.rules && pet ? praiseReady(pet, now, game.rules) : false);
+  let praiseAt = $derived(
+    game.rules && pet?.lastPraiseAt != null
+      ? pet.lastPraiseAt + game.rules.praiseCooldownSeconds * 1000
+      : null,
+  );
+  let timeFormat = $derived(new Intl.DateTimeFormat(intlTag(), { timeStyle: 'short' }));
   let dateFormat = $derived(new Intl.DateTimeFormat(intlTag(), { dateStyle: 'long' }));
   /** When the pet may go on vacation again, if it came back recently (otherwise `null`). */
   let vacationAvailableOn = $derived.by(() => {
@@ -202,8 +214,8 @@
         <button disabled={!awake || game.busy} onclick={() => game.act({ type: 'feed' })}
           >{t('action.feed')}</button
         >
-        <button disabled={!awake || game.busy} onclick={() => (playing = true)}
-          >{t('action.play')}</button
+        <button disabled={!awake || game.busy || playsLeft < 1} onclick={() => (playing = true)}
+          >{t('action.play')} ({playsLeft})</button
         >
         <button disabled={!free || game.busy} onclick={() => game.act({ type: 'clean' })}
           >{t('action.clean')}</button
@@ -233,13 +245,25 @@
             onclick={() => game.act({ type: 'lights', on: false })}>{t('action.lights_off')}</button
           >
         {/if}
-        <button disabled={!awake || game.busy} onclick={() => game.act({ type: 'praise' })}
-          >{t('action.praise')}</button
+        <button
+          disabled={!awake || game.busy || !canPraise}
+          onclick={() => game.act({ type: 'praise' })}>{t('action.praise')}</button
         >
         <button disabled={!awake || game.busy} onclick={() => game.act({ type: 'scold' })}
           >{t('action.scold')}</button
         >
       </div>
+      {#if awake && playsLeft < 1 && nextPlayAt}
+        <p class="muted">
+          {t('home.play_tired', { name: pet.name, time: timeFormat.format(nextPlayAt) })}
+        </p>
+      {/if}
+      {#if awake && !canPraise && praiseAt}
+        <p class="muted">{t('home.praise_wait', { time: timeFormat.format(praiseAt) })}</p>
+      {/if}
+      {#if awake && pet.tantrumSince !== null}
+        <p class="muted">{t('home.scold_tip', { name: pet.name })}</p>
+      {/if}
 
       {#if snacks.length > 0}
         <h4>{t('home.treats')}</h4>

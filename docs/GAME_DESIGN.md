@@ -125,11 +125,17 @@ L'œuf n'a pas de nuit. Les heures générales de la règle `night` (`startHour`
 - **Réveiller** un compagnon rallume la lumière (sinon il se rendormirait aussitôt). Coucher, réveiller et l'épuisement fonctionnent comme avant.
 - Tout est réglable depuis l'écran Admin (`night`) : heures générales, heures de chaque stade (`stages`), décalage horaire, facteur. Si le début et la fin sont égaux, il n'y a pas de nuit. Les surcharges sont **fusionnées clé par clé, à tous les niveaux** : `{ "night": { "stages": { "baby": { "startHour": 18 } } } }` ne change que le coucher des bébés.
 
+## Limites des soins (anti-spam)
+
+- **Jouer** : un quota de **3 jeux d'affilée** (`playMaxCharges`) ; ensuite le compagnon « en a assez de jouer » (`tired_of_playing`) et **un jeu revient toutes les 30 minutes** réelles (`playRefillSeconds`). L'état est `playCharges` / `playChargesAt` (absents = quota plein, donc compatible avec les compagnons existants). Le moteur expose `playChargesLeft()` et `nextPlayChargeAt()` ; le quota est en temps réel, pas en temps de jeu. Le mini-jeu est tiré au hasard côté web parmi trois (gauche/droite, plus/moins, pierre-feuille-ciseaux) ; le score 0-3 envoyé reste le même.
+- **Féliciter** : **une fois toutes les 30 minutes** (`praiseCooldownSeconds`, erreur `praise_cooldown`, état `lastPraiseAt`), gardien en garderie compris. Les boutons sont grisés avec l'heure de retour.
+- **Nourrir** reste limité par la satiété (`not_hungry`) ; son coût en pièces/stock est traité à part (inventaire).
+
 ## Caprices et discipline
 
 À partir du stade enfant, il réclame de l'attention sans raison environ toutes les 10 h. On a 30 minutes pour réagir :
 
-- **Gronder** pendant un caprice : discipline +25.
+- **Gronder** pendant un caprice : discipline +25. C'est la seule façon de gagner de la discipline (qui décroît avec le temps) : elle accélère le dressage (+1 % de gain par point) et oriente l'évolution (`radiant` à partir de 50, `unruly` sous 25). Gronder n'a donc de sens que face à un caprice, et l'accueil l'indique alors par un message ; sans caprice, c'est puni (bonheur −10, lien −3). Décision (ticket #53) : on garde l'action avec ce compromis, sans nouvelle règle.
 - **Gronder** sans caprice : bonheur −10, lien −3.
 - **Féliciter** pendant un caprice : discipline −5.
 - **Ignorer** le caprice : discipline −10.
