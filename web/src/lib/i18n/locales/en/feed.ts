@@ -51,5 +51,7 @@ export const feed: Record<keyof typeof fr, string> = {
   'activity.trade_accepted': '{playerName} accepted your trade.',
   'activity.trade_declined': '{playerName} declined your trade: your items are returned.',
   'activity.trade_expired': 'Your trade with {playerName} expired: your items are returned.',
+  'activity.name_changed_pet': 'A moderator renamed your companion: “{name}”.',
+  'activity.name_changed_player': 'A moderator changed your name: “{name}”.',
   'activity.encounter': 'Met {otherPetName} ({otherOwnerName}) on a walk.',
 };

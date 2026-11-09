@@ -71,6 +71,13 @@
       "when": 1794184232067,
       "tag": "0009_giant_dazzler",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1794184413047,
+      "tag": "0010_solid_red_hulk",
+      "breakpoints": true
     }
   ]
 }

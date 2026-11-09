@@ -284,6 +284,40 @@ export interface RedeemResponse {
   inventory: Inventory;
 }
 
+/** An admin sets a name (of a companion, or of a member). */
+export const renameBody = z.object({ name: z.string().trim().min(2).max(32) });
+export type RenameBody = z.infer<typeof renameBody>;
+
+/** Words that cannot be in a companion's name (see `blockedTerm`). */
+export const blockedWordsBody = z.object({
+  words: z.array(z.string().trim().min(2).max(32)).max(200),
+});
+export type BlockedWordsBody = z.infer<typeof blockedWordsBody>;
+
+/** A member found by the admin search, with their living companion. */
+export interface ModerationPerson {
+  playerId: string;
+  playerName: string;
+  /** An admin set the name: signing in with Discord no longer changes it. */
+  nameLocked: boolean;
+  petId: string | null;
+  petName: string | null;
+}
+
+export type ModerationAction =
+  'rename_pet' | 'rename_player' | 'unlock_player_name' | 'blocked_words';
+
+export interface ModerationLogEntry {
+  id: string;
+  adminName: string;
+  action: ModerationAction;
+  /** Whom it was about (the member), when it was about someone. */
+  targetName: string | null;
+  before: string | null;
+  after: string | null;
+  createdAt: number;
+}
+
 /** Entrusting one's companion to another member. */
 export const daycareBody = z.object({ caretakerId: z.uuid() });
 export type DaycareBody = z.infer<typeof daycareBody>;
@@ -649,7 +683,8 @@ export type ActivityKind =
   | 'trade_offer'
   | 'trade_accepted'
   | 'trade_declined'
-  | 'trade_expired';
+  | 'trade_expired'
+  | 'name_changed';
 
 export interface ActivityDto {
   id: string;
@@ -689,6 +724,7 @@ export const API_ERROR_CODES = [
   'feedback_disabled',
   'goal_not_reached',
   'missing_item',
+  'name_not_allowed',
   'no_code',
   'no_contribution',
   'no_daycare',

@@ -1,8 +1,15 @@
 import type { WalkZoneId } from '@2tamago/core';
-import type { ActivityKind, PushKind, PushLocale, TradeItems } from '@2tamago/core/contracts';
+import type {
+  ActivityKind,
+  ModerationAction,
+  PushKind,
+  PushLocale,
+  TradeItems,
+} from '@2tamago/core/contracts';
 import type { PetState } from '@2tamago/core';
 import { sql } from 'drizzle-orm';
 import {
+  boolean,
   index,
   integer,
   jsonb,
@@ -21,6 +28,8 @@ export const players = pgTable('players', {
   /** Discord user id, or `dev:<name>` for development accounts. */
   discordId: text('discord_id').notNull().unique(),
   displayName: text('display_name').notNull(),
+  /** An admin set the name: the Discord name no longer replaces it at sign-in. */
+  nameLocked: boolean('name_locked').notNull().default(false),
   avatarUrl: text('avatar_url'),
   coins: integer().notNull().default(50),
   lastDailyBonusDay: text('last_daily_bonus_day'),
@@ -280,6 +289,23 @@ export const giftCodeRedemptions = pgTable(
     createdAt: createdAt(),
   },
   (t) => [primaryKey({ columns: [t.codeId, t.playerId] })],
+);
+
+/** What admins did to names, for accountability. */
+export const moderationLog = pgTable(
+  'moderation_log',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    adminId: uuid('admin_id').references(() => players.id, { onDelete: 'set null' }),
+    action: text().$type<ModerationAction>().notNull(),
+    targetPlayerId: uuid('target_player_id').references(() => players.id, {
+      onDelete: 'set null',
+    }),
+    before: text(),
+    after: text(),
+    createdAt: createdAt(),
+  },
+  (t) => [index('moderation_log_time_idx').on(t.createdAt)],
 );
 
 /** What happened to a player: their pet's life events and other players' actions. */

@@ -51,5 +51,7 @@ export const feed = {
   'activity.trade_accepted': '{playerName} a accepté ton échange.',
   'activity.trade_declined': '{playerName} a refusé ton échange : tes objets te sont rendus.',
   'activity.trade_expired': 'Ton échange avec {playerName} a expiré : tes objets te sont rendus.',
+  'activity.name_changed_pet': 'Un modérateur a renommé ton compagnon : « {name} ».',
+  'activity.name_changed_player': 'Un modérateur a changé ton nom : « {name} ».',
   'activity.encounter': 'Rencontre en promenade avec {otherPetName} ({otherOwnerName}).',
 } as const;

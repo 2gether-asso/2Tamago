@@ -93,6 +93,10 @@ export function activityText(entry: ActivityDto): string {
     case 'trade_declined':
     case 'trade_expired':
       return t(`activity.${entry.kind}`, { playerName: String(d.playerName) });
+    case 'name_changed':
+      return t(d.what === 'pet' ? 'activity.name_changed_pet' : 'activity.name_changed_player', {
+        name: String(d.name),
+      });
     case 'daycare_invite':
       return t('activity.daycare_invite', {
         ownerName: String(d.ownerName),
