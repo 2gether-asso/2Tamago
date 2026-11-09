@@ -21,6 +21,8 @@ export interface WalkZone {
   energyCost: number;
   satietyCost: number;
   bondGain: number;
+  /** Experience in vigor earned by walking there. */
+  vigorXp: number;
   /** Coins brought back, whole numbers from `min` to `max`. */
   coins: { min: number; max: number };
   /** Chance (0 to 1) of coming back with one item. */
@@ -37,6 +39,7 @@ export const WALK_ZONES: Record<WalkZoneId, WalkZone> = {
     energyCost: 15,
     satietyCost: 10,
     bondGain: 3,
+    vigorXp: 2,
     coins: { min: 5, max: 15 },
     itemChance: 0.25,
     items: [
@@ -54,6 +57,7 @@ export const WALK_ZONES: Record<WalkZoneId, WalkZone> = {
     energyCost: 25,
     satietyCost: 15,
     bondGain: 4,
+    vigorXp: 3,
     coins: { min: 10, max: 22 },
     itemChance: 0.45,
     items: [
@@ -71,6 +75,7 @@ export const WALK_ZONES: Record<WalkZoneId, WalkZone> = {
     energyCost: 35,
     satietyCost: 20,
     bondGain: 5,
+    vigorXp: 4,
     coins: { min: 20, max: 40 },
     itemChance: 0.3,
     items: [

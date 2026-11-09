@@ -4,6 +4,7 @@
  * All timestamps are epoch milliseconds (real time).
  */
 
+import type { RpgSheet } from './rpg.js';
 import type { WalkZoneId } from './zones.js';
 
 export const SPECIES = ['mochi', 'pyon', 'kumo', 'koro', 'nyao', 'toge'] as const;
@@ -131,6 +132,9 @@ export interface PetState {
   vacationSince?: number | null;
   /** When the last vacation ended, for the cooldown before the next one. */
   vacationEndedAt?: number | null;
+
+  /** Character sheet: experience, quests and walk log (see `rpg.ts`). Absent until the first gain. */
+  rpg?: RpgSheet;
 }
 
 export type PetEventType =
@@ -148,7 +152,9 @@ export type PetEventType =
   | 'departed'
   | 'retired'
   | 'vacation_started'
-  | 'vacation_ended';
+  | 'vacation_ended'
+  | 'walk_event'
+  | 'stat_up';
 
 export interface PetEvent {
   type: PetEventType;
