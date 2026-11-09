@@ -1,4 +1,4 @@
-import type { GameRules, WalkZoneId } from '@2tamago/core';
+import type { ContestKind, GameRules, WalkZoneId } from '@2tamago/core';
 import type {
   ActionResponse,
   AdminRulesResponse,
@@ -17,6 +17,9 @@ import type {
   PlayerProfile,
   VillagePet,
   VisitResponse,
+  ContestBoard,
+  ContestClaimResponse,
+  ContestsOverview,
   EventBody,
   EventsOverview,
   GameEventDto,
@@ -178,6 +181,11 @@ export const api = {
   adminEvents: () => call<GameEventDto[]>('GET', '/admin/events'),
   adminCreateEvent: (body: EventBody) => call<GameEventDto>('POST', '/admin/events', body),
   adminCancelEvent: (id: string) => call<void>('DELETE', `/admin/events/${id}`),
+  contests: () => call<ContestsOverview>('GET', '/contests'),
+  contestEnter: (kind: ContestKind) => call<ContestBoard>('POST', '/contests/enter', { kind }),
+  contestVote: (playerId: string) => call<ContestBoard>('POST', '/contests/vote', { playerId }),
+  contestClaim: (kind: ContestKind) =>
+    call<ContestClaimResponse>('POST', `/contests/${kind}/claim`),
   adminStats: () => call<AdminStats>('GET', '/admin/stats'),
   adminRules: () => call<AdminRulesResponse>('GET', '/admin/rules'),
   saveAdminRules: (overrides: unknown) =>
