@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import {
   applyAction,
+  boosted,
   DEFAULT_ZONE,
   isAccessory,
   rollFinds,
@@ -25,6 +26,7 @@ import {
 } from 'drizzle-orm';
 import { AnnouncementService } from '../announcements/announcement.service.js';
 import { ActivityService } from '../activity/activity.service.js';
+import { EventsService } from '../events/events.service.js';
 import { GameRulesService } from '../game/game-rules.service.js';
 import type { Transaction } from '../database/database.js';
 import { encounters, pets, players, walks } from '../database/schema.js';
@@ -49,6 +51,7 @@ export class WalksService {
     private readonly activity: ActivityService,
     private readonly announcements: AnnouncementService,
     private readonly community: CommunityService,
+    private readonly events: EventsService,
   ) {}
 
   private get rules(): GameRules {
@@ -79,6 +82,8 @@ export class WalksService {
   }
 
   async return(playerId: string): Promise<WalkResponse> {
+    // Asked before the transaction: it uses the pool, which the transaction must not.
+    const walkBonus = await this.events.percent('walk_coins');
     const result = await this.pets.mutate(
       eq(pets.ownerId, playerId),
       async (state, now, tx, row) => {
@@ -99,7 +104,7 @@ export class WalksService {
             items.push(item);
           }
         }
-        const found = { coins: rolled.coins, items };
+        const found = { coins: boosted(rolled.coins, walkBonus), items };
         await this.players.addCoins(tx, playerId, found.coins);
         for (const item of found.items) await this.players.addItem(tx, playerId, item);
 

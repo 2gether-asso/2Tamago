@@ -10,6 +10,7 @@ import type { Inventory, PlayerDto } from '@2tamago/core/contracts';
 import { and, eq, gt, gte, sql } from 'drizzle-orm';
 import { AnnouncementService } from '../announcements/announcement.service.js';
 import { ActivityService } from '../activity/activity.service.js';
+import { EventsService } from '../events/events.service.js';
 import { Clock, dayOf } from '../common/clock.js';
 import { AppConfig } from '../config/app-config.js';
 import type { Database, Executor } from '../database/database.js';
@@ -34,6 +35,7 @@ export class PlayersService {
     private readonly clock: Clock,
     private readonly activity: ActivityService,
     private readonly announcements: AnnouncementService,
+    private readonly events: EventsService,
   ) {}
 
   async upsertFromLogin(input: {
@@ -86,11 +88,13 @@ export class PlayersService {
   /** Gives the daily bonus once per calendar day. Returns the coins given. */
   async claimDailyBonus(playerId: string): Promise<number> {
     const today = this.today();
+    // Asked before the transaction: it uses the pool, which the transaction must not.
+    const bonus = await this.events.boost('daily_bonus', DAILY_BONUS);
     return this.db.transaction(async (tx) => {
       const updated = await tx
         .update(players)
         .set({
-          coins: sql`${players.coins} + ${DAILY_BONUS}`,
+          coins: sql`${players.coins} + ${bonus}`,
           lastDailyBonusDay: today,
           lastSeenAt: new Date(),
         })
@@ -102,8 +106,8 @@ export class PlayersService {
         )
         .returning({ id: players.id });
       if (updated.length === 0) return 0;
-      await this.activity.record(tx, playerId, 'daily_bonus', { coins: DAILY_BONUS });
-      return DAILY_BONUS;
+      await this.activity.record(tx, playerId, 'daily_bonus', { coins: bonus });
+      return bonus;
     });
   }
 

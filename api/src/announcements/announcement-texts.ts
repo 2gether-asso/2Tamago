@@ -1,4 +1,4 @@
-import { SPECIES_LABELS, type Form, type Species, type Stage } from '@2tamago/core';
+import { SPECIES_LABELS, type EventKind, type Form, type Species, type Stage } from '@2tamago/core';
 
 /**
  * The announcements are written for the community channel, in French (the language of the
@@ -26,6 +26,13 @@ export function plain(name: string): string {
   return short.replace(/[\\*_~`|>@<:[\]()#]/g, (char) => `\\${char}`);
 }
 
+const EVENT_EFFECTS: Record<EventKind, (percent: number) => string> = {
+  walk_coins: (p) => `🚶 promenades : +${p} % de pièces trouvées`,
+  daily_bonus: (p) => `🎁 bonus du jour : +${p} %`,
+  caress_reward: (p) => `💞 caresses de visite : +${p} % de pièces`,
+  shop_discount: (p) => `🛍️ boutique : −${p} % sur tout`,
+};
+
 const bold = (name: string) => `**${plain(name)}**`;
 
 export const texts = {
@@ -41,6 +48,10 @@ export const texts = {
 
   firstMeeting: (petA: string, ownerA: string, petB: string, ownerB: string) =>
     `🤝 ${bold(petA)} (${plain(ownerA)}) et ${bold(petB)} (${plain(ownerB)}) se sont croisés en promenade pour la première fois !`,
+
+  /** Discord shows `<t:…>` in the time zone of each reader. */
+  event: (kind: EventKind, percent: number, startsAt: number, endsAt: number) =>
+    `🎉 Événement ! ${EVENT_EFFECTS[kind](percent)}, du <t:${Math.floor(startsAt / 1000)}:f> au <t:${Math.floor(endsAt / 1000)}:f>.`,
 
   communityGoal: (walks: number) =>
     `🎉 Le village a atteint son objectif de la semaine : ${walks} promenades ! Chaque membre qui a promené son compagnon peut récupérer sa récompense.`,

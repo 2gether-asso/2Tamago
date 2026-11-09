@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import type { Form, PetEvent, Species, Stage } from '@2tamago/core';
+import type { EventKind, Form, PetEvent, Species, Stage } from '@2tamago/core';
 import { Clock } from '../common/clock.js';
 import { AnnouncementSender } from './announcement-sender.js';
 import { texts } from './announcement-texts.js';
@@ -50,6 +50,11 @@ export class AnnouncementService {
   /** Only for two players who had never met on a walk before. */
   firstMeeting(a: PetRef, b: PetRef): void {
     this.post(texts.firstMeeting(a.petName, a.ownerName, b.petName, b.ownerName));
+  }
+
+  /** An admin scheduled an event: the community should know. */
+  event(kind: EventKind, percent: number, startsAt: number, endsAt: number): void {
+    this.post(texts.event(kind, percent, startsAt, endsAt));
   }
 
   /** The village reached its weekly walk target. */

@@ -9,6 +9,7 @@ import { GameErrorFilter } from './common/game-error.filter.js';
 import { CodesModule } from './codes/codes.module.js';
 import { ConfigModule } from './config/config.module.js';
 import { DatabaseModule } from './database/database.module.js';
+import { EventsModule } from './events/events.module.js';
 import { FeedbackModule } from './feedback/feedback.module.js';
 import { GameModule } from './game/game.module.js';
 import { HealthController } from './health/health.controller.js';
@@ -28,6 +29,7 @@ import { SocialModule } from './social/social.module.js';
     GameModule,
     AuthModule,
     CodesModule,
+    EventsModule,
     ActivityModule,
     FeedbackModule,
     PetsModule,

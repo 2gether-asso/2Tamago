@@ -19,6 +19,7 @@ import type { ActionResponse, VillagePet, VisitResponse } from '@2tamago/core/co
 import { and, desc, eq, ne } from 'drizzle-orm';
 import { ActivityService } from '../activity/activity.service.js';
 import { Clock } from '../common/clock.js';
+import { EventsService } from '../events/events.service.js';
 import { GameRulesService } from '../game/game-rules.service.js';
 import type { Database, Executor } from '../database/database.js';
 import { interactions, pets, players } from '../database/schema.js';
@@ -49,6 +50,7 @@ export class VillageService {
     private readonly activity: ActivityService,
     private readonly favorites: FavoritesService,
     private readonly daycare: DaycareService,
+    private readonly events: EventsService,
   ) {}
 
   private get rules(): GameRules {
@@ -108,6 +110,8 @@ export class VillageService {
 
   async caress(viewerId: string, petId: string): Promise<ActionResponse> {
     const visitor = await this.players.get(this.db, viewerId);
+    // Asked before the transaction: it uses the pool, which the transaction must not.
+    const reward = await this.events.boost('caress_reward', CARESS_REWARD);
     const result = await this.pets.mutate(eq(pets.id, petId), async (state, now, tx, row) => {
       this.assertVisitable(row.ownerId, viewerId, row.status);
       const change = applyAction(state, { type: 'visitorCaress' }, now, this.rules);
@@ -123,7 +127,7 @@ export class VillageService {
           code: 'already_caressed',
         });
       }
-      await this.players.addCoins(tx, viewerId, CARESS_REWARD);
+      await this.players.addCoins(tx, viewerId, reward);
       await this.activity.record(tx, row.ownerId, 'visit_caress', {
         visitorName: visitor.displayName,
         petName: state.name,
@@ -136,7 +140,7 @@ export class VillageService {
       coins: await this.players.coinsOf(viewerId),
       notices: [
         { code: 'pet_happy', petName: result.row.state.name },
-        { code: 'coins_earned', count: CARESS_REWARD },
+        { code: 'coins_earned', count: reward },
       ],
     };
   }
