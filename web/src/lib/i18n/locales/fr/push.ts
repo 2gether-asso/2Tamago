@@ -2,7 +2,7 @@
 export const push = {
   'push.title': 'Notifications',
   'push.intro':
-    'Reçois une alerte sur cet appareil quand ton compagnon a faim, est malade, fait un caprice ou a fini sa promenade (jamais pendant qu’il dort).',
+    'Reçois une alerte sur cet appareil quand ton compagnon a faim, est malade, fait un caprice ou a fini sa promenade (jamais pendant qu’il dort), ou quand un membre te propose de garder le sien.',
   'push.enable': '🔔 Activer les notifications',
   'push.disable': '🔕 Désactiver les notifications',
   'push.test': 'Envoyer une notification de test',
@@ -20,5 +20,6 @@ export const push = {
   'push.msg.sick': '{petName} est malade.',
   'push.msg.calling': '{petName} fait un caprice !',
   'push.msg.walk_done': '{petName} a fini sa promenade.',
+  'push.msg.daycare_invite': '{playerName} aimerait te confier {petName}.',
   'push.msg.test': 'Ça marche : tu recevras les alertes de ton compagnon ici.',
 } as const;

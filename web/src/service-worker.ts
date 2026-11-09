@@ -18,7 +18,12 @@ function readPayload(event: PushEvent): PushPayload | null {
   try {
     const data = event.data?.json() as Partial<PushPayload> | undefined;
     if (!data?.kind || (data.locale !== 'fr' && data.locale !== 'en')) return null;
-    return { kind: data.kind, petName: data.petName ?? '', locale: data.locale };
+    return {
+      kind: data.kind,
+      petName: data.petName ?? '',
+      playerName: data.playerName ?? '',
+      locale: data.locale,
+    };
   } catch {
     return null;
   }
@@ -29,6 +34,7 @@ sw.addEventListener('push', (event) => {
   if (!payload) return;
   const body = translate(payload.locale, `push.msg.${payload.kind}` as MessageKey, {
     petName: payload.petName,
+    playerName: payload.playerName ?? '',
   });
   event.waitUntil(
     sw.registration.showNotification('2Tamago', {
@@ -36,6 +42,7 @@ sw.addEventListener('push', (event) => {
       lang: payload.locale,
       // A newer alert of the same kind replaces the one still on screen.
       tag: payload.kind,
+      data: { url: payload.kind === 'daycare_invite' ? '/village' : '/' },
     }),
   );
 });
@@ -46,8 +53,14 @@ sw.addEventListener('notificationclick', (event) => {
     (async () => {
       const windows = await sw.clients.matchAll({ type: 'window', includeUncontrolled: true });
       const open = windows.find((client) => new URL(client.url).origin === sw.location.origin);
-      if (open) await open.focus();
-      else await sw.clients.openWindow('/');
+      const url = (event.notification.data as { url?: string } | null)?.url ?? '/';
+      if (open) {
+        await open.focus();
+        // Only a page that is already open is told where to go: opening one starts there.
+        if (url !== '/' && 'navigate' in open) await (open as WindowClient).navigate(url);
+      } else {
+        await sw.clients.openWindow(url);
+      }
     })(),
   );
 });

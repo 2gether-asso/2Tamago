@@ -4,7 +4,7 @@ import type { push as fr } from '../fr/push.ts';
 export const push: Record<keyof typeof fr, string> = {
   'push.title': 'Notifications',
   'push.intro':
-    'Get an alert on this device when your companion is hungry, sick, throwing a tantrum or back from its walk (never while it sleeps).',
+    'Get an alert on this device when your companion is hungry, sick, throwing a tantrum or back from its walk (never while it sleeps), or when a member asks you to look after theirs.',
   'push.enable': '🔔 Turn on notifications',
   'push.disable': '🔕 Turn off notifications',
   'push.test': 'Send a test notification',
@@ -21,5 +21,6 @@ export const push: Record<keyof typeof fr, string> = {
   'push.msg.sick': '{petName} is sick.',
   'push.msg.calling': '{petName} is throwing a tantrum!',
   'push.msg.walk_done': '{petName} is back from its walk.',
+  'push.msg.daycare_invite': '{playerName} would like to entrust you with {petName}.',
   'push.msg.test': 'It works: you will get your companion’s alerts here.',
 };
