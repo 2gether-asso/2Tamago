@@ -56,11 +56,11 @@ Nourrir ouvre un choix (tickets #50 et #55) :
 
 Chaque maladie a une cause (celle qui pèse le plus au moment de tomber malade, ticket #54) et un remède :
 
-| Maladie     | Cause                                               | Remède                             |
-| ----------- | --------------------------------------------------- | ---------------------------------- |
-| Infection   | Saleté (cacas, propreté basse)                      | Antibiotique (30 pièces)           |
-| Indigestion | Surpoids ou alimentation déséquilibrée              | Tisane digestive (20 pièces)       |
-| Faiblesse   | Faim                                                | Vitamines (20 pièces)              |
+| Maladie     | Cause                                  | Remède                       |
+| ----------- | -------------------------------------- | ---------------------------- |
+| Infection   | Saleté (cacas, propreté basse)         | Antibiotique (30 pièces)     |
+| Indigestion | Surpoids ou alimentation déséquilibrée | Tisane digestive (20 pièces) |
+| Faiblesse   | Faim                                   | Vitamines (20 pièces)        |
 
 - Le **bon remède** guérit tout de suite. Un remède d'une autre maladie compte pour 0,5 dose (`wrongMedicineDose`).
 - Le **sirop** (15 pièces) soigne toutes les maladies mais compte pour 1 dose : il en faut 2 (`medicineDoses`).
