@@ -28,19 +28,24 @@
     oncaress,
   }: Props = $props();
 
-  const SCALE: Record<Stage, number> = {
-    egg: 0.8,
-    baby: 0.55,
-    child: 0.7,
-    teen: 0.85,
-    adult: 1,
-    elder: 0.95,
+  /**
+   * The look of each age: overall size, body proportions (`wide` / `tall` stretch the body) and
+   * how big the face is drawn (babies have a big face on a small, round body).
+   */
+  const LOOK: Record<Stage, { size: number; wide: number; tall: number; face: number }> = {
+    egg: { size: 0.8, wide: 1, tall: 1, face: 1 },
+    baby: { size: 0.55, wide: 1.12, tall: 0.92, face: 1.3 },
+    child: { size: 0.7, wide: 1.05, tall: 0.97, face: 1.15 },
+    teen: { size: 0.85, wide: 0.95, tall: 1.06, face: 1.05 },
+    adult: { size: 1, wide: 1, tall: 1, face: 1 },
+    elder: { size: 0.95, wide: 1.06, tall: 0.94, face: 0.95 },
   };
 
   const uid = $props.id();
   /** Drawn in this order: the parts behind the body first, so the body outline stays on top. */
   const PARTS = ['back', 'front'] as const;
-  let scale = $derived(SCALE[stage]);
+  let look = $derived(LOOK[stage]);
+  let scale = $derived(look.size);
   let pattern = $derived(traits?.pattern ?? 'plain');
   let eyes = $derived(traits?.eyes ?? 'round');
   let sat = $derived(stage === 'elder' ? 35 : mood === 'sick' ? 25 : 70);
@@ -291,7 +296,8 @@
     {:else}
       <g
         class="body"
-        style:transform="translate(100px, 180px) scale({scale}) translate(-100px, -180px)"
+        style:transform="translate(100px, 180px) scale({scale * look.wide}, {scale * look.tall})
+        translate(-100px, -180px)"
       >
         {#each PARTS as part (part)}
           {@render silhouette(part)}
@@ -305,7 +311,13 @@
         <ellipse cx="126" cy="178" rx="14" ry="7" fill={shade} stroke={line} stroke-width="3" />
 
         <!-- Face -->
-        <g stroke={line} stroke-width="4" stroke-linecap="round" fill="none">
+        <g
+          style:transform="translate(100px, 125px) scale({look.face}) translate(-100px, -125px)"
+          stroke={line}
+          stroke-width="4"
+          stroke-linecap="round"
+          fill="none"
+        >
           {#if closedEyes}
             <path d="M 70 118 q 8 6 16 0" />
             <path d="M 114 118 q 8 6 16 0" />

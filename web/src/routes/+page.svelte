@@ -150,90 +150,94 @@
   </div>
   <AdoptForm />
 {:else}
-  <section class="card pet">
-    <div class="heading">
-      <h1>{pet.name}</h1>
-      <p class="muted">
-        {SPECIES_LABELS[pet.species]} · {stageLabel(pet.stage)}
-        {#if pet.form}· {formLabel(pet.form)}{/if}
-        · {t('duration.days', { count: game.rules ? ageInDays(pet, now, game.rules) : 0 })}
-      </p>
-      {#if pet.traits}
-        {@const hint = temperamentHint(pet.traits.temperament)}
-        <p class="temperament" title={hint}>
-          {temperamentLabel(pet.traits.temperament)} <span class="muted">· {hint}</span>
+  <div class="top" class:with-status={hatched}>
+    <section class="card pet">
+      <div class="heading">
+        <h1>{pet.name}</h1>
+        <p class="muted">
+          {SPECIES_LABELS[pet.species]} · {stageLabel(pet.stage)}
+          {#if pet.form}· {formLabel(pet.form)}{/if}
+          · {t('duration.days', { count: game.rules ? ageInDays(pet, now, game.rules) : 0 })}
         </p>
-      {/if}
-      {#if bedtime && hatched}
-        <p class="muted bedtime">
-          {t('home.bedtime', { start: bedtime.startHour, end: bedtime.endHour })}
-        </p>
-      {/if}
-      <p class="mood">{moodLabel(game.mood ?? 'ok')}</p>
-      <div class="alerts">
-        {#each game.alerts as alert (alert)}<span class="chip">{alertLabel(alert)}</span>{/each}
-        {#if needsLightsOff}<span class="chip">{t('home.bedtime_hint')}</span>{/if}
-      </div>
-    </div>
-
-    <div class="scene" class:night={night || pet.asleep}>
-      {#if pet.outing}
-        <p class="away">
-          {t('home.away', {
-            zone: zoneLabel(pet.outing.zone ?? 'meadow'),
-            time: formatDuration(walkLeft),
-          })}
-        </p>
-      {:else}
-        <PetSprite
-          species={pet.species}
-          stage={pet.stage}
-          form={pet.form}
-          color={pet.color}
-          traits={pet.traits}
-          mood={game.mood ?? 'ok'}
-          equipped={pet.equipped}
-          oncaress={awake ? caress : undefined}
-        />
-        <div class="poops" aria-label={t('home.poops', { count: pet.poops })}>
-          {#each Array(pet.poops) as _, i (i)}<span>💩</span>{/each}
+        {#if pet.traits}
+          {@const hint = temperamentHint(pet.traits.temperament)}
+          <p class="temperament" title={hint}>
+            {temperamentLabel(pet.traits.temperament)} <span class="muted">· {hint}</span>
+          </p>
+        {/if}
+        {#if bedtime && hatched}
+          <p class="muted bedtime">
+            {t('home.bedtime', { start: bedtime.startHour, end: bedtime.endHour })}
+          </p>
+        {/if}
+        <p class="mood">{moodLabel(game.mood ?? 'ok')}</p>
+        <div class="alerts">
+          {#each game.alerts as alert (alert)}<span class="chip">{alertLabel(alert)}</span>{/each}
+          {#if needsLightsOff}<span class="chip">{t('home.bedtime_hint')}</span>{/if}
         </div>
-      {/if}
-    </div>
-    {#if pet.stage === 'egg'}
-      <p class="muted center">{t('home.egg_hint')}</p>
-    {:else if awake}
-      <p class="muted center">{t('home.caress_tip', { name: pet.name })}</p>
-    {/if}
-  </section>
-
-  {#if hatched}
-    <section class="card">
-      <h3>{t('home.status')}</h3>
-      <div class="stats">
-        <StatBar icon="🍙" label={t('stat.satiety')} value={pet.stats.satiety} />
-        <StatBar icon="😊" label={t('stat.happiness')} value={pet.stats.happiness} />
-        <StatBar icon="⚡" label={t('stat.energy')} value={pet.stats.energy} />
-        <StatBar icon="🛁" label={t('stat.hygiene')} value={pet.stats.hygiene} />
-        <StatBar icon="❤️" label={t('stat.health')} value={pet.stats.health} />
-        <StatBar icon="🎓" label={t('stat.discipline')} value={pet.stats.discipline} />
-        <StatBar icon="💞" label={t('stat.bond')} value={pet.bond} />
       </div>
-      {#if game.rules}
-        {@const diet = dietOf(pet, game.rules)}
-        <p class="diet" title={t(`diet.${diet}.hint`)}>
-          {t('home.diet', { status: t(`diet.${diet}`) })}
-          <span class="muted">· {t(`diet.${diet}.hint`)}</span>
-        </p>
-      {/if}
-      {#if pet.sickSince !== null && pet.illness}
-        <p class="diet" title={t(`illness.${pet.illness as Illness}.hint`)}>
-          {t('home.illness', { illness: t(`illness.${pet.illness as Illness}`) })}
-          <span class="muted">· {t(`illness.${pet.illness as Illness}.hint`)}</span>
-        </p>
+
+      <div class="scene" class:night={night || pet.asleep}>
+        {#if pet.outing}
+          <p class="away">
+            {t('home.away', {
+              zone: zoneLabel(pet.outing.zone ?? 'meadow'),
+              time: formatDuration(walkLeft),
+            })}
+          </p>
+        {:else}
+          <PetSprite
+            species={pet.species}
+            stage={pet.stage}
+            form={pet.form}
+            color={pet.color}
+            traits={pet.traits}
+            mood={game.mood ?? 'ok'}
+            equipped={pet.equipped}
+            oncaress={awake ? caress : undefined}
+          />
+          <div class="poops" aria-label={t('home.poops', { count: pet.poops })}>
+            {#each Array(pet.poops) as _, i (i)}<span>💩</span>{/each}
+          </div>
+        {/if}
+      </div>
+      {#if pet.stage === 'egg'}
+        <p class="muted center">{t('home.egg_hint')}</p>
+      {:else if awake}
+        <p class="muted center">{t('home.caress_tip', { name: pet.name })}</p>
       {/if}
     </section>
 
+    {#if hatched}
+      <section class="card status">
+        <h3>{t('home.status')}</h3>
+        <div class="stats">
+          <StatBar icon="🍙" label={t('stat.satiety')} value={pet.stats.satiety} />
+          <StatBar icon="😊" label={t('stat.happiness')} value={pet.stats.happiness} />
+          <StatBar icon="⚡" label={t('stat.energy')} value={pet.stats.energy} />
+          <StatBar icon="🛁" label={t('stat.hygiene')} value={pet.stats.hygiene} />
+          <StatBar icon="❤️" label={t('stat.health')} value={pet.stats.health} />
+          <StatBar icon="🎓" label={t('stat.discipline')} value={pet.stats.discipline} />
+          <StatBar icon="💞" label={t('stat.bond')} value={pet.bond} />
+        </div>
+        {#if game.rules}
+          {@const diet = dietOf(pet, game.rules)}
+          <p class="diet" title={t(`diet.${diet}.hint`)}>
+            {t('home.diet', { status: t(`diet.${diet}`) })}
+            <span class="muted">· {t(`diet.${diet}.hint`)}</span>
+          </p>
+        {/if}
+        {#if pet.sickSince !== null && pet.illness}
+          <p class="diet" title={t(`illness.${pet.illness as Illness}.hint`)}>
+            {t('home.illness', { illness: t(`illness.${pet.illness as Illness}`) })}
+            <span class="muted">· {t(`illness.${pet.illness as Illness}.hint`)}</span>
+          </p>
+        {/if}
+      </section>
+    {/if}
+  </div>
+
+  {#if hatched}
     <section class="card">
       <h3>{t('home.care')}</h3>
       <div class="actions">
@@ -500,6 +504,15 @@
 
   section {
     margin-bottom: 1rem;
+  }
+  /* Desktop: the status sits to the right of the pet, so the care actions stay in view. */
+  @media (min-width: 52rem) {
+    .top.with-status {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+      gap: 1rem;
+      align-items: start;
+    }
   }
   .pet {
     text-align: center;
