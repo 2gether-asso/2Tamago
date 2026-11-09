@@ -356,7 +356,8 @@ export interface EventsOverview {
   upcoming: GameEventDto[];
 }
 
-export const contestBody = z.object({ kind: z.enum(CONTEST_KINDS) });
+export const contestKind = z.enum(CONTEST_KINDS);
+export const contestBody = z.object({ kind: contestKind });
 export type ContestBody = z.infer<typeof contestBody>;
 
 /** A member votes for a companion in the week's beauty contest. */
