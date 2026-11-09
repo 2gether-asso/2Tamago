@@ -1,5 +1,10 @@
 import type { WalkZoneId } from '@2tamago/core';
-import type { ActivityKind, PushKind, PushLocale } from '@2tamago/core/contracts';
+import type {
+  ActivityKind,
+  PushKind,
+  PushLocale,
+  TradeItems,
+} from '@2tamago/core/contracts';
 import type { PetState } from '@2tamago/core';
 import { sql } from 'drizzle-orm';
 import {
@@ -223,6 +228,35 @@ export const daycares = pgTable(
       .where(sql`${t.status} <> 'ended'`),
     index('daycares_caretaker_idx').on(t.caretakerId, t.status),
     index('daycares_owner_idx').on(t.ownerId, t.status),
+  ],
+);
+
+/**
+ * An offer to swap items. The offered items are taken from the proposer when the offer is made
+ * (set aside, so that they cannot be spent meanwhile) and given back unless it is accepted.
+ */
+export const trades = pgTable(
+  'trades',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    proposerId: uuid('proposer_id')
+      .notNull()
+      .references(() => players.id, { onDelete: 'cascade' }),
+    targetId: uuid('target_id')
+      .notNull()
+      .references(() => players.id, { onDelete: 'cascade' }),
+    offer: jsonb().$type<TradeItems>().notNull(),
+    request: jsonb().$type<TradeItems>().notNull(),
+    status: text()
+      .$type<'pending' | 'accepted' | 'declined' | 'cancelled' | 'expired'>()
+      .notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    createdAt: createdAt(),
+    resolvedAt: timestamp('resolved_at', { withTimezone: true }),
+  },
+  (t) => [
+    index('trades_target_idx').on(t.targetId, t.status),
+    index('trades_proposer_idx').on(t.proposerId, t.status),
   ],
 );
 
