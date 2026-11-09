@@ -1,4 +1,4 @@
-import type { ContestKind, EventKind, WalkZoneId } from '@2tamago/core';
+import type { ContestKind, EventKind, ItemId, WalkZoneId } from '@2tamago/core';
 import type {
   ActivityKind,
   ModerationAction,
@@ -251,6 +251,9 @@ export const trades = pgTable(
       .references(() => players.id, { onDelete: 'cascade' }),
     offer: jsonb().$type<TradeItems>().notNull(),
     request: jsonb().$type<TradeItems>().notNull(),
+    /** Coins given (set aside while the offer waits) and coins asked for. */
+    offerCoins: integer('offer_coins').notNull().default(0),
+    requestCoins: integer('request_coins').notNull().default(0),
     status: text().$type<'pending' | 'accepted' | 'declined' | 'cancelled' | 'expired'>().notNull(),
     expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
     createdAt: createdAt(),
@@ -260,6 +263,35 @@ export const trades = pgTable(
     index('trades_target_idx').on(t.targetId, t.status),
     index('trades_proposer_idx').on(t.proposerId, t.status),
   ],
+);
+
+/** The items a player would like to get, shown on their profile. */
+export const wishlist = pgTable(
+  'wishlist',
+  {
+    playerId: uuid('player_id')
+      .notNull()
+      .references(() => players.id, { onDelete: 'cascade' }),
+    itemId: text('item_id').$type<ItemId>().notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [primaryKey({ columns: [t.playerId, t.itemId] })],
+);
+
+/** "Could you part with this item?": one ask per item and pair of players per day. */
+export const wishAsks = pgTable(
+  'wish_asks',
+  {
+    askerId: uuid('asker_id')
+      .notNull()
+      .references(() => players.id, { onDelete: 'cascade' }),
+    targetId: uuid('target_id')
+      .notNull()
+      .references(() => players.id, { onDelete: 'cascade' }),
+    itemId: text('item_id').$type<ItemId>().notNull(),
+    askedAt: timestamp('asked_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.askerId, t.targetId, t.itemId] })],
 );
 
 /** A code that gives coins and items to whoever enters it (once per player), made by an admin. */

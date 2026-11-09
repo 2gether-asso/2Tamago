@@ -6,13 +6,19 @@ import {
 } from '@nestjs/common';
 import { InjectDrizzle } from '@nestjs/drizzle';
 import { bundleEntries, isAccessory, type Bundle } from '@2tamago/core';
-import type { TradeBody, TradeDto, TradeOverview, TradeResult } from '@2tamago/core/contracts';
+import type {
+  TradeBody,
+  TradeDto,
+  TradeOverview,
+  TradeResult,
+  TradeTarget,
+} from '@2tamago/core/contracts';
 import { aliasedTable, and, count, eq, lte, or, type SQL } from 'drizzle-orm';
 import { ActivityService } from '../activity/activity.service.js';
 import { Clock } from '../common/clock.js';
 import type { Database, Transaction } from '../database/database.js';
-import { players, trades } from '../database/schema.js';
-import { PlayersService } from '../players/players.service.js';
+import { players, trades, wishlist } from '../database/schema.js';
+import { NotEnoughCoinsError, PlayersService } from '../players/players.service.js';
 import { PushService } from '../push/push.service.js';
 import { TRADE } from './trade.js';
 
@@ -51,6 +57,20 @@ export class TradesService {
     };
   }
 
+  /** What a member owns and wishes for: the offer form only lets one ask for what is there. */
+  async target(targetId: string): Promise<TradeTarget> {
+    const [target] = await this.db.select().from(players).where(eq(players.id, targetId));
+    if (!target) throw new NotFoundException({ statusCode: 404, code: 'no_player' });
+    const rows = await this.db
+      .select({ item: wishlist.itemId })
+      .from(wishlist)
+      .where(eq(wishlist.playerId, targetId));
+    return {
+      inventory: await this.players.inventory(this.db, targetId),
+      wishlist: rows.map((row) => row.item),
+    };
+  }
+
   async offer(proposerId: string, body: TradeBody): Promise<TradeDto> {
     await this.expireStale();
     if (proposerId === body.targetId) {
@@ -75,7 +95,16 @@ export class TradesService {
       ) {
         throw invalidTrade();
       }
+      // Only what the target owns can be asked for, and the coins asked must exist.
+      const theirs = await this.players.inventory(tx, body.targetId);
+      for (const [item, quantity] of bundleEntries(body.request)) {
+        if ((theirs[item] ?? 0) < quantity) throw missingItem();
+      }
+      if (body.requestCoins > 0 && target.coins < body.requestCoins) {
+        throw new NotEnoughCoinsError();
+      }
       await this.take(tx, proposerId, body.offer);
+      if (body.offerCoins > 0) await this.players.spendCoins(tx, proposerId, body.offerCoins);
       const [row] = await tx
         .insert(trades)
         .values({
@@ -83,6 +112,8 @@ export class TradesService {
           targetId: body.targetId,
           offer: body.offer,
           request: body.request,
+          offerCoins: body.offerCoins,
+          requestCoins: body.requestCoins,
           status: 'pending',
           expiresAt: new Date(this.clock.now() + TRADE.expireHours * 3_600_000),
         })
@@ -116,14 +147,19 @@ export class TradesService {
       }
       // A shortage rolls back everything above, the claim included: the offer stays open.
       await this.take(tx, targetId, trade.request);
+      if (trade.requestCoins > 0) await this.players.spendCoins(tx, targetId, trade.requestCoins);
       await this.give(tx, targetId, trade.offer);
       await this.give(tx, trade.proposerId, trade.request);
+      if (trade.requestCoins > 0) {
+        await this.players.addCoins(tx, trade.proposerId, trade.requestCoins);
+      }
+      if (trade.offerCoins > 0) await this.players.addCoins(tx, targetId, trade.offerCoins);
       await this.activity.record(tx, trade.proposerId, 'trade_accepted', {
         playerName: target.displayName,
       });
     });
     return {
-      coins: target.coins,
+      coins: await this.players.coinsOf(targetId),
       inventory: await this.players.inventory(this.db, targetId),
     };
   }
@@ -138,7 +174,7 @@ export class TradesService {
         'declined',
       );
       if (!trade) throw noTrade();
-      await this.give(tx, trade.proposerId, trade.offer);
+      await this.refund(tx, trade);
       await this.activity.record(tx, trade.proposerId, 'trade_declined', {
         playerName: target.displayName,
       });
@@ -155,7 +191,7 @@ export class TradesService {
         'cancelled',
       );
       if (!trade) throw noTrade();
-      await this.give(tx, proposerId, trade.offer);
+      await this.refund(tx, trade);
     });
   }
 
@@ -171,7 +207,7 @@ export class TradesService {
         const trade = await this.claim(tx, eq(trades.id, id), 'expired');
         if (!trade) return; // answered, or expired by someone else, in the meantime
         const [target] = await tx.select().from(players).where(eq(players.id, trade.targetId));
-        await this.give(tx, trade.proposerId, trade.offer);
+        await this.refund(tx, trade);
         await this.activity.record(tx, trade.proposerId, 'trade_expired', {
           playerName: target?.displayName ?? '',
         });
@@ -187,6 +223,15 @@ export class TradesService {
       .where(and(where, eq(trades.status, 'pending')))
       .returning();
     return trade;
+  }
+
+  /** Gives the proposer back what was set aside: items and coins. */
+  private async refund(
+    tx: Transaction,
+    trade: { proposerId: string; offer: Bundle; offerCoins: number },
+  ): Promise<void> {
+    await this.give(tx, trade.proposerId, trade.offer);
+    if (trade.offerCoins > 0) await this.players.addCoins(tx, trade.proposerId, trade.offerCoins);
   }
 
   private async take(tx: Transaction, playerId: string, bundle: Bundle): Promise<void> {
@@ -226,6 +271,8 @@ export class TradesService {
         targetName,
         offer: trade.offer,
         request: trade.request,
+        offerCoins: trade.offerCoins,
+        requestCoins: trade.requestCoins,
         expiresAt: trade.expiresAt.getTime(),
       }))
       .sort((a, b) => a.expiresAt - b.expiresAt);

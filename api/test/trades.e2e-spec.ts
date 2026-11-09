@@ -9,11 +9,13 @@ import type {
   TradeOverview,
   TradeResult,
 } from '@2tamago/core/contracts';
+import { ITEMS } from '@2tamago/core';
 import request from 'supertest';
 import type { App } from 'supertest/types.js';
 import { vi } from 'vitest';
 import { AppModule } from '../src/app.module.js';
 import { Clock } from '../src/common/clock.js';
+import { DAILY_BONUS } from '../src/players/players.service.js';
 import { AppConfig } from '../src/config/app-config.js';
 import { PushSender, type PushResult, type PushTarget } from '../src/push/push-sender.js';
 import { setupApp } from '../src/setup-app.js';
@@ -94,7 +96,8 @@ describe('Trades (e2e)', () => {
     const carol = await signIn('Carol');
     const [bobId, aliceId] = [(await me(bob)).player.id, (await me(alice)).player.id];
     await buy(alice, 'cookie', 3);
-    await buy(bob, 'cake'); // not the strawberry Alice will ask for
+    await buy(bob, 'cake');
+    await buy(bob, 'strawberry');
 
     // The offer sets the items aside at once: Alice cannot spend them meanwhile.
     const proposal: TradeDto = (
@@ -125,7 +128,10 @@ describe('Trades (e2e)', () => {
     }
     await bob.delete(`/api/trades/${proposal.id}`).expect(404);
 
-    // Bob has no strawberry: nothing moves, the offer stays open.
+    // Bob sets his strawberry aside for Carol meanwhile: nothing moves, the offer stays open.
+    const aside: TradeDto = (
+      await offer(bob, (await me(carol)).player.id, { strawberry: 1 }).expect(201)
+    ).body;
     expect((await bob.post(`/api/trades/${proposal.id}/accept`).expect(409)).body.code).toBe(
       'missing_item',
     );
@@ -133,7 +139,7 @@ describe('Trades (e2e)', () => {
     expect(await bag(bob)).toEqual({ cake: 1 });
     expect((await bag(alice)).cookie).toBe(1);
 
-    await buy(bob, 'strawberry');
+    await bob.delete(`/api/trades/${aside.id}`).expect(204);
     const done: TradeResult = (await bob.post(`/api/trades/${proposal.id}/accept`).expect(200))
       .body;
     expect(done.inventory).toEqual({ cake: 1, cookie: 2 });
@@ -148,6 +154,126 @@ describe('Trades (e2e)', () => {
     );
     expect(await bag(alice)).toEqual({ cookie: 1, strawberry: 1 });
     expect(aliceId).not.toBe(bobId);
+  });
+
+  it('only lets one ask for what the other member owns', async () => {
+    const alice = await signIn('Alice');
+    const bob = await signIn('Bob');
+    const bobId = (await me(bob)).player.id;
+    await buy(alice, 'cookie', 2);
+    await buy(bob, 'cake', 2);
+
+    const target = (await alice.get(`/api/trades/targets/${bobId}`).expect(200)).body;
+    expect(target).toEqual({ inventory: { cake: 2 }, wishlist: [] });
+    await alice.get('/api/trades/targets/00000000-0000-4000-8000-000000000000').expect(404);
+
+    expect((await offer(alice, bobId, { cookie: 1 }, { cake: 3 }).expect(409)).body.code).toBe(
+      'missing_item',
+    );
+    expect(
+      (await offer(alice, bobId, { cookie: 1 }, { strawberry: 1 }).expect(409)).body.code,
+    ).toBe('missing_item');
+    expect(await bag(alice)).toEqual({ cookie: 2 });
+    await offer(alice, bobId, { cookie: 1 }, { cake: 2 }).expect(201);
+  });
+
+  it('trades coins as part of the bundle, set aside and settled atomically', async () => {
+    const alice = await signIn('Alice');
+    const bob = await signIn('Bob');
+    const bobId = (await me(bob)).player.id;
+    const coins = async (agent: Agent) => (await me(agent)).player.coins;
+    const [a0, b0] = [await coins(alice), await coins(bob)];
+    await buy(bob, 'cake');
+    const withCoins = (from: Agent, give: object, ask: object, offerCoins = 0, requestCoins = 0) =>
+      from
+        .post('/api/trades')
+        .send({ targetId: bobId, offer: give, request: ask, offerCoins, requestCoins });
+
+    // Coins against an item: Alice buys Bob's cake for 30 coins, set aside at once.
+    const sale: TradeDto = (await withCoins(alice, {}, { cake: 1 }, 30).expect(201)).body;
+    expect(sale).toMatchObject({ offerCoins: 30, requestCoins: 0 });
+    expect(await coins(alice)).toBe(a0 - 30);
+    await bob.post(`/api/trades/${sale.id}/accept`).expect(200);
+    expect(await coins(bob)).toBe(b0 - ITEMS.cake.price + 30);
+    expect(await coins(alice)).toBe(a0 - 30);
+    expect(await bag(alice)).toEqual({ cake: 1 });
+    expect(await bag(bob)).toEqual({});
+
+    // Item against coins: Alice sells the cake back for 20, Bob pays only if he accepts.
+    const back: TradeDto = (await withCoins(alice, { cake: 1 }, {}, 0, 20).expect(201)).body;
+    const bobBefore = await coins(bob);
+    await bob.post(`/api/trades/${back.id}/accept`).expect(200);
+    expect(await coins(bob)).toBe(bobBefore - 20);
+    expect(await coins(alice)).toBe(a0 - 30 + 20);
+    expect(await bag(bob)).toEqual({ cake: 1 });
+
+    // Refused: more than one owns, coins on both sides, beyond the limit, or too much asked.
+    expect((await withCoins(alice, {}, { cake: 1 }, 100_000).expect(400)).body).toBeDefined();
+    await withCoins(alice, { cookie: 1 }, {}, 5, 5).expect(400);
+    await withCoins(alice, {}, {}, 0, 0).expect(400);
+    expect((await withCoins(alice, {}, { cake: 1 }, 1000).expect(409)).body.code).toBe(
+      'not_enough_coins',
+    );
+    expect((await withCoins(alice, { cookie: 1 }, {}, 0, 1000).expect(409)).body.code).toBe(
+      'not_enough_coins',
+    );
+    expect(await coins(alice)).toBe(a0 - 10);
+
+    // Declining or withdrawing gives the coins back.
+    const gift: TradeDto = (await withCoins(alice, {}, { cake: 1 }, 15).expect(201)).body;
+    expect(await coins(alice)).toBe(a0 - 25);
+    await bob.post(`/api/trades/${gift.id}/decline`).expect(204);
+    expect(await coins(alice)).toBe(a0 - 10);
+    const withdrawn: TradeDto = (await withCoins(alice, {}, { cake: 1 }, 15).expect(201)).body;
+    await alice.delete(`/api/trades/${withdrawn.id}`).expect(204);
+    expect(await coins(alice)).toBe(a0 - 10);
+    await withCoins(alice, {}, { cake: 1 }, 15).expect(201);
+    clock.advance(TRADE.expireHours * HOUR + 1000);
+    await overview(bob);
+    // Refunded (the new day brings Alice her daily bonus on top).
+    expect(await coins(alice)).toBe(a0 - 10 + DAILY_BONUS);
+  });
+
+  it('keeps a wishlist and lets one ask for an item once a day', async () => {
+    const alice = await signIn('Alice');
+    const bob = await signIn('Bob');
+    const bobId = (await me(bob)).player.id;
+    const aliceId = (await me(alice)).player.id;
+    await buy(bob, 'cake');
+
+    expect((await alice.get('/api/wishlist').expect(200)).body.items).toEqual([]);
+    const saved = (
+      await alice
+        .put('/api/wishlist')
+        .send({ items: ['cake', 'cake', 'ribbon'] })
+        .expect(200)
+    ).body;
+    expect(saved.items.sort()).toEqual(['cake', 'ribbon']);
+    await alice
+      .put('/api/wishlist')
+      .send({ items: ['gold'] })
+      .expect(400);
+    const tooMany = Array.from({ length: 13 }, (_, i) => (i % 2 ? 'cake' : 'cookie'));
+    await alice.put('/api/wishlist').send({ items: tooMany }).expect(400);
+    expect(
+      (await alice.get(`/api/trades/targets/${aliceId}`).expect(200)).body.wishlist.sort(),
+    ).toEqual(['cake', 'ribbon']);
+
+    const ask = (item: string, target = bobId) =>
+      alice.post('/api/wishlist/ask').send({ targetId: target, item });
+    // Only an item of the wishlist, that the member owns.
+    expect((await ask('cookie').expect(409)).body.code).toBe('missing_item');
+    expect((await ask('ribbon').expect(409)).body.code).toBe('missing_item');
+    await ask('cake', aliceId).expect(400);
+    await ask('cake').expect(204);
+    const feed = (await bob.get('/api/activity').expect(200)).body as ActivityDto[];
+    expect(feed.find((e) => e.kind === 'wish_request')?.data).toEqual({
+      playerName: 'Alice',
+      item: 'cake',
+    });
+    expect((await ask('cake').expect(409)).body.code).toBe('wish_already_asked');
+    clock.advance(25 * HOUR);
+    await ask('cake').expect(204);
   });
 
   it('gives the items back when the offer is declined, withdrawn or lapses', async () => {

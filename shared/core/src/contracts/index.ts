@@ -230,12 +230,29 @@ const tradeBundle = z.partialRecord(itemId, z.number().int().min(1).max(TRADE_LI
 
 /** An offer to swap items with another member: what is given, and what is asked in return. */
 export const tradeBody = z
-  .object({ targetId: z.uuid(), offer: tradeBundle, request: tradeBundle })
+  .object({
+    targetId: z.uuid(),
+    offer: tradeBundle,
+    request: tradeBundle,
+    /** Coins given, and coins asked: one side at most. */
+    offerCoins: z.number().int().min(0).max(TRADE_LIMITS.maxCoins).default(0),
+    requestCoins: z.number().int().min(0).max(TRADE_LIMITS.maxCoins).default(0),
+  })
   .superRefine((trade, ctx) => {
-    const problem = tradeProblem(trade.offer, trade.request);
+    const problem = tradeProblem(trade.offer, trade.request, trade.offerCoins, trade.requestCoins);
     if (problem) ctx.addIssue({ code: 'custom', message: problem, path: ['offer'] });
   });
 export type TradeBody = z.infer<typeof tradeBody>;
+
+/** `PUT /wishlist`: the items the viewer would like to get (replaces the list). */
+export const wishlistBody = z.object({
+  items: z.array(itemId).max(TRADE_LIMITS.maxWishlist),
+});
+export type WishlistBody = z.infer<typeof wishlistBody>;
+
+/** `POST /wishlist/ask`: asks a member for an item of the viewer's wishlist. */
+export const wishAskBody = z.object({ targetId: z.uuid(), item: itemId });
+export type WishAskBody = z.infer<typeof wishAskBody>;
 
 const rewardItems = z.partialRecord(itemId, z.number().int().min(1).max(20));
 
@@ -740,6 +757,9 @@ export interface TradeDto {
   offer: TradeItems;
   /** What the proposer asks the target for. */
   request: TradeItems;
+  /** Coins the proposer gives (already set aside), and coins they ask for. */
+  offerCoins: number;
+  requestCoins: number;
   /** The offer lapses at this time (epoch ms), and the proposer gets their items back. */
   expiresAt: number;
 }
@@ -753,6 +773,18 @@ export interface TradeOverview {
   incoming: TradeDto[];
   /** The viewer's own offers, waiting for an answer. */
   outgoing: TradeDto[];
+}
+
+/** What a member can be asked for, and what they would like to get. */
+export interface TradeTarget {
+  /** Their bag: only these items can be requested from them. */
+  inventory: Inventory;
+  wishlist: ItemId[];
+}
+
+export interface WishlistDto {
+  items: ItemId[];
+  max: number;
 }
 
 export interface TradeResult {
@@ -787,6 +819,7 @@ export type ActivityKind =
   | 'trade_accepted'
   | 'trade_declined'
   | 'trade_expired'
+  | 'wish_request'
   | 'name_changed';
 
 export interface ActivityDto {
@@ -841,6 +874,7 @@ export const API_ERROR_CODES = [
   'not_for_sale',
   'trade_full',
   'trade_invalid',
+  'wish_already_asked',
   'not_giftable',
   'own_pet',
   'own_profile',
