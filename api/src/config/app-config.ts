@@ -15,6 +15,17 @@ const csv = z
       .filter(Boolean),
   );
 
+/** A hop count (`2`) stays a number; anything else is passed to Express as is. */
+function parseTrustProxy(value: string | undefined): number | string {
+  const text = (value ?? '').trim();
+  if (text === '') return 1;
+  if (/^\d+$/.test(text)) return Number(text);
+  if (/^(true|false)$/i.test(text)) {
+    throw new Error('TRUST_PROXY: use a hop count or addresses, not true/false');
+  }
+  return text;
+}
+
 const optionalUrl = z.url().optional();
 
 const envSchema = z
@@ -45,6 +56,23 @@ const envSchema = z
     AUTH_SESSION_MAX_DAYS: z.coerce.number().positive().default(30),
     /** How long a session keeps refreshing after it moved to another network than its sign-in's. */
     AUTH_ROAMING_HOURS: z.coerce.number().positive().default(6),
+    /**
+     * Reverse proxies between the internet and the API (each one adds an `X-Forwarded-For` entry):
+     * a hop count, or a list of addresses/subnets Express understands (`loopback, 10.99.0.0/16`).
+     * `0` trusts no header at all.
+     */
+    TRUST_PROXY: z
+      .string()
+      .optional()
+      .transform((value) => parseTrustProxy(value)),
+    /**
+     * A header set by an edge you trust and that carries the player's IP alone, such as
+     * `CF-Connecting-IP` behind Cloudflare. Ignored when unset: anyone can send a header.
+     */
+    CLIENT_IP_HEADER: z
+      .string()
+      .regex(/^[a-z0-9-]+$/i, 'CLIENT_IP_HEADER must be a header name')
+      .optional(),
     /** Sentry or GlitchTip DSN; error reporting is off without it. */
     SENTRY_DSN: z.string().optional(),
     /** DSN of the browser project (a public value, sent to the web app); web tracking is off without it. */
@@ -113,6 +141,8 @@ export class AppConfig {
     roamingSeconds: number;
     adminDiscordIds: string[];
   };
+  /** How the client IP is found behind the reverse proxies (see `client-ip.ts`). */
+  readonly network: { trustProxy: number | string; clientIpHeader: string | undefined };
   readonly webOrigin: string;
   readonly sentryDsn: string | undefined;
   readonly sentryWebDsn: string | undefined;
@@ -145,6 +175,10 @@ export class AppConfig {
       sessionMaxSeconds: Math.round(env.AUTH_SESSION_MAX_DAYS * 86_400),
       roamingSeconds: Math.round(env.AUTH_ROAMING_HOURS * 3_600),
       adminDiscordIds: env.ADMIN_DISCORD_IDS,
+    };
+    this.network = {
+      trustProxy: env.TRUST_PROXY,
+      clientIpHeader: env.CLIENT_IP_HEADER?.toLowerCase(),
     };
     this.webOrigin = env.WEB_ORIGIN;
     this.sentryDsn = env.SENTRY_DSN || undefined;
