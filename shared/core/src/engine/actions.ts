@@ -4,6 +4,7 @@ import { GameError } from './errors.js';
 import { alignToGrid, gameHours, type GameRules } from './rules.js';
 import { clamp, endVacation, simulate } from './simulate.js';
 import { isNight } from './night.js';
+import { WORK } from './work.js';
 import { hashSeed, modOf, rollTraits } from './traits.js';
 import { DEFAULT_ZONE, WALK_ZONES, zoneOpenTo, type WalkZoneId } from './zones.js';
 import { type PetEvent, type PetState, type Species, type TrickId, TRICKS } from './types.js';
@@ -70,6 +71,8 @@ export type OwnerAction =
   | { type: 'scold' }
   | { type: 'caress' }
   | { type: 'train'; trick: TrickId }
+  /** A job: the server pays it (see `petWage`) and keeps the cooldown; not sent by clients. */
+  | { type: 'work' }
   | { type: 'equip'; item: ItemId | null }
   | { type: 'retire' }
   | { type: 'startVacation' }
@@ -294,6 +297,17 @@ export function applyAction(
       if (after > before) {
         events.push({ type: 'trick_level_up', at, data: { trick: action.trick, level: after } });
       }
+      break;
+    }
+    case 'work': {
+      requireAwake();
+      if (state.stage === 'baby') throw new GameError('too_young');
+      if (s.energy < WORK.petMinEnergy) throw new GameError('too_tired');
+      if (s.satiety < WORK.petMinSatiety) throw new GameError('too_hungry');
+      add('energy', -WORK.petCost.energy);
+      add('satiety', -WORK.petCost.satiety);
+      add('happiness', -WORK.petCost.happiness);
+      add('hygiene', -WORK.petCost.hygiene);
       break;
     }
     case 'equip': {

@@ -36,6 +36,9 @@ export const players = pgTable('players', {
   /** Coins earned today by playing and training, capped per day. */
   rewardDay: text('reward_day'),
   rewardCoins: integer('reward_coins').notNull().default(0),
+  /** Last job of the player, and of their companion (one per cooldown, see `WORK`). */
+  lastWorkAt: timestamp('last_work_at', { withTimezone: true }),
+  lastPetWorkAt: timestamp('last_pet_work_at', { withTimezone: true }),
   createdAt: createdAt(),
   lastSeenAt: timestamp('last_seen_at', { withTimezone: true }).notNull().defaultNow(),
 });
