@@ -118,6 +118,12 @@ export interface PetState {
   /** Training progress per trick, 0-100 (100 = mastered). */
   tricks: Record<TrickId, number>;
   lastCaressAt: number | null;
+  /** Games left before the pet is tired of playing, as of `playChargesAt`. Absent = full. */
+  playCharges?: number;
+  /** When `playCharges` was last settled (real ms); the quota refills from there. */
+  playChargesAt?: number;
+  /** When the pet was last praised (real ms). Absent (or null) = never. */
+  lastPraiseAt?: number | null;
 
   equipped: string | null;
 

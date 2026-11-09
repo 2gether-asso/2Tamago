@@ -156,6 +156,11 @@ export function applyAction(
     case 'play': {
       requireAwake();
       if (s.energy < 10) throw new GameError('too_tired');
+      const left = playChargesLeft(state, at, rules);
+      if (left < 1) throw new GameError('tired_of_playing');
+      // Settle the refill, then spend one game.
+      state.playCharges = left - 1;
+      state.playChargesAt = at;
       const score = clamp(Math.round(action.score), 0, 3);
       add('happiness', 10 + score * 5);
       add('energy', -10);
@@ -211,6 +216,8 @@ export function applyAction(
     }
     case 'praise': {
       requireAwake();
+      if (!praiseReady(state, at, rules)) throw new GameError('praise_cooldown');
+      state.lastPraiseAt = at;
       add('happiness', 5);
       state.bond = clamp(state.bond + 1);
       // Rewarding a tantrum teaches the wrong lesson.
@@ -328,6 +335,32 @@ export function applyAction(
 export function caressReady(state: PetState, now: number, rules: GameRules): boolean {
   return (
     state.lastCaressAt === null || now - state.lastCaressAt >= rules.caressCooldownSeconds * 1000
+  );
+}
+
+/** Games the pet is still willing to play at `now` (the quota refills one by one over time). */
+export function playChargesLeft(state: PetState, now: number, rules: GameRules): number {
+  const max = rules.playMaxCharges;
+  if (state.playCharges === undefined || state.playChargesAt === undefined) return max;
+  const refill = rules.playRefillSeconds * 1000;
+  const back = refill > 0 ? Math.floor(Math.max(0, now - state.playChargesAt) / refill) : max;
+  return Math.min(max, state.playCharges + back);
+}
+
+/**
+ * When the next game comes back (real ms), or null when the quota is full. Counted from the last
+ * time a game was played, so waiting only works in whole steps.
+ */
+export function nextPlayChargeAt(state: PetState, now: number, rules: GameRules): number | null {
+  if (playChargesLeft(state, now, rules) >= rules.playMaxCharges) return null;
+  const refill = rules.playRefillSeconds * 1000;
+  const at = state.playChargesAt ?? now;
+  return at + (Math.floor(Math.max(0, now - at) / refill) + 1) * refill;
+}
+
+export function praiseReady(state: PetState, now: number, rules: GameRules): boolean {
+  return (
+    state.lastPraiseAt == null || now - state.lastPraiseAt >= rules.praiseCooldownSeconds * 1000
   );
 }
 

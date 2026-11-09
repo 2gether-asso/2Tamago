@@ -6,6 +6,9 @@ import {
   gameHours,
   GameError,
   moodOf,
+  nextPlayChargeAt,
+  playChargesLeft,
+  praiseReady,
   simulate,
   withRules,
   type PetState,
@@ -137,6 +140,36 @@ describe('applyAction', () => {
     const fair = applyAction(calling, { type: 'scold' }, now, rules).state;
     expect(fair.stats.discipline).toBe(pet.stats.discipline + 25);
     expect(fair.tantrumSince).toBeNull();
+  });
+
+  it('limits games in a row and refills one every 30 minutes', () => {
+    let pet = hatched();
+    const now = pet.simulatedAt;
+    for (let i = 0; i < 3; i++)
+      pet = applyAction(pet, { type: 'play', score: 3 }, now, rules).state;
+    pet.stats.energy = 100;
+    expect(() => applyAction(pet, { type: 'play', score: 3 }, now, rules)).toThrowError(
+      expect.objectContaining({ code: 'tired_of_playing' }),
+    );
+    expect(playChargesLeft(pet, now + 1_800_000 - 1, rules)).toBe(0);
+    expect(nextPlayChargeAt(pet, now, rules)).toBe(now + 1_800_000);
+    const later = now + 1_800_000;
+    expect(playChargesLeft(pet, later, rules)).toBe(1);
+    pet = applyAction(pet, { type: 'play', score: 3 }, later, rules).state;
+    expect(playChargesLeft(pet, later, rules)).toBe(0);
+    // Never above the maximum.
+    expect(playChargesLeft(pet, later + 100 * 3_600_000, rules)).toBe(3);
+  });
+
+  it('limits praise to one per 30 minutes', () => {
+    const pet = hatched();
+    const now = pet.simulatedAt;
+    const once = applyAction(pet, { type: 'praise' }, now, rules).state;
+    expect(() => applyAction(once, { type: 'praise' }, now + 60_000, rules)).toThrowError(
+      expect.objectContaining({ code: 'praise_cooldown' }),
+    );
+    expect(praiseReady(once, now + 1_800_000, rules)).toBe(true);
+    expect(() => applyAction(once, { type: 'praise' }, now + 1_800_000, rules)).not.toThrow();
   });
 
   it('runs an outing from start to return', () => {
