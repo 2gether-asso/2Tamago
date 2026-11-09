@@ -51,11 +51,30 @@ export interface GameRules {
 
   /** Hours of exposure to sickness factors before the pet falls ill. */
   sicknessThresholdHours: number;
+  /**
+   * Doses that cure a pet with no specific medicine: a syrup is worth 1, the free care
+   * (`freeMedicineDose`) a fraction of it. The medicine of the right illness cures at once.
+   */
   medicineDoses: number;
+  /** What one free dose (no medicine in the bag) is worth, in doses. */
+  freeMedicineDose: number;
+  /** What a medicine for another illness is worth, in doses. */
+  wrongMedicineDose: number;
   sickHealthLossPerHour: number;
   starvingHealthLossPerHour: number;
   healthRegenPerHour: number;
   overweightThreshold: number;
+
+  /** Satiety the free ration gives (a meal from the bag gives its own, bigger, amount). */
+  freeMealSatiety: number;
+  /** Satiety above which the pet refuses a meal: it is full. */
+  fullSatiety: number;
+  /** Eating a treat while at or above `fullSatiety` makes it put on this much weight more. */
+  overfeedWeight: number;
+  /** How many of the latest meals and treats the diet balance looks at. */
+  dietWindow: number;
+  /** Health regeneration multiplier with a balanced diet. */
+  balancedRegenFactor: number;
 
   /** A need left unattended for this long becomes a care mistake. */
   mistakeGraceHours: number;
@@ -71,6 +90,12 @@ export interface GameRules {
   vacationCooldownHours: number;
   /** Minimum real seconds between two effective caresses. */
   caressCooldownSeconds: number;
+  /** Games in a row before the pet is tired of playing. */
+  playMaxCharges: number;
+  /** Real seconds to get one game back. */
+  playRefillSeconds: number;
+  /** Minimum real seconds between two praises. */
+  praiseCooldownSeconds: number;
 
   /**
    * When health reaches 0: `true` the pet leaves for good (status `gone`),
@@ -125,10 +150,18 @@ export const DEFAULT_RULES: GameRules = {
 
   sicknessThresholdHours: 2,
   medicineDoses: 2,
+  freeMedicineDose: 0.5,
+  wrongMedicineDose: 0.5,
   sickHealthLossPerHour: 1,
   starvingHealthLossPerHour: 1.5,
   healthRegenPerHour: 2,
   overweightThreshold: 40,
+
+  freeMealSatiety: 20,
+  fullSatiety: 80,
+  overfeedWeight: 2,
+  dietWindow: 6,
+  balancedRegenFactor: 1.5,
 
   mistakeGraceHours: 1,
 
@@ -140,6 +173,9 @@ export const DEFAULT_RULES: GameRules = {
   vacationMaxHours: 24 * 14,
   vacationCooldownHours: 24 * 7,
   caressCooldownSeconds: 15,
+  playMaxCharges: 3,
+  playRefillSeconds: 1800,
+  praiseCooldownSeconds: 1800,
 
   departureEnabled: true,
 

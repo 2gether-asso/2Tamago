@@ -9,6 +9,7 @@ import { WALK_ZONE_IDS, type WalkZoneId } from '../engine/zones.js';
 import { TRADE_LIMITS, tradeProblem } from '../engine/trade.js';
 import { CONTEST_KINDS, type ContestKind, type ContestProblem } from '../engine/contests.js';
 import { EVENT_KINDS, EVENT_LIMITS, maxPercent, type EventKind } from '../engine/events.js';
+import { WORK } from '../engine/work.js';
 import type { GameErrorCode } from '../engine/errors.js';
 import type { Alert, Mood } from '../engine/view.js';
 import type { GameRules, RulesOverrides } from '../engine/rules.js';
@@ -97,6 +98,13 @@ export const rulesOverridesBody = z
     starvingHealthLossPerHour: nonNegative,
     healthRegenPerHour: nonNegative,
     overweightThreshold: nonNegative,
+    freeMealSatiety: z.number().min(0).max(100),
+    fullSatiety: z.number().min(0).max(100),
+    overfeedWeight: nonNegative,
+    dietWindow: z.number().int().min(1).max(20),
+    balancedRegenFactor: nonNegative,
+    freeMedicineDose: nonNegative,
+    wrongMedicineDose: nonNegative,
     mistakeGraceHours: nonNegative,
     tantrumIntervalHours: positive,
     tantrumWindowHours: nonNegative,
@@ -104,6 +112,9 @@ export const rulesOverridesBody = z
     vacationMaxHours: positive,
     vacationCooldownHours: nonNegative,
     caressCooldownSeconds: nonNegative,
+    playMaxCharges: nonNegative,
+    playRefillSeconds: nonNegative,
+    praiseCooldownSeconds: nonNegative,
     departureEnabled: z.boolean(),
     night: z
       .object({
@@ -194,11 +205,13 @@ export const adoptBody = z.object({
 export type AdoptBody = z.infer<typeof adoptBody>;
 
 export const ownerActionBody = z.discriminatedUnion('type', [
-  z.object({ type: z.literal('feed') }),
+  /** Without an item: the free (small) ration. With one: a meal from the bag. */
+  z.object({ type: z.literal('feed'), item: itemId.optional() }),
   z.object({ type: z.literal('treat'), item: itemId }),
   z.object({ type: z.literal('play'), score: z.number().int().min(0).max(3) }),
   z.object({ type: z.literal('clean') }),
-  z.object({ type: z.literal('medicine') }),
+  /** Without an item: the free (weak) care. With one: a medicine from the bag. */
+  z.object({ type: z.literal('medicine'), item: itemId.optional() }),
   z.object({ type: z.literal('sleep') }),
   z.object({ type: z.literal('wake') }),
   z.object({ type: z.literal('lights'), on: z.boolean() }),
@@ -420,6 +433,30 @@ export interface ContestsOverview {
 export interface ContestClaimResponse {
   prize: number;
   coins: number;
+}
+
+/** The score of the player's skill game (the server pays it, once per hour). */
+export const workBody = z.object({ score: z.number().int().min(0).max(WORK.rounds) });
+export type WorkBody = z.infer<typeof workBody>;
+
+/** When each job can be done again (epoch ms; 0 or in the past: now). */
+export interface WorkStatus {
+  playerAvailableAt: number;
+  petAvailableAt: number;
+  /** What the companion would earn at best and at worst, from its ability today. */
+  petWageRange: { min: number; max: number };
+}
+
+export interface WorkResponse {
+  /** Coins earned by this job. */
+  earned: number;
+  coins: number;
+  status: WorkStatus;
+}
+
+export interface PetWorkResponse extends WorkResponse {
+  pet: PetDto;
+  events: PetEvent[];
 }
 
 /** Entrusting one's companion to another member. */
@@ -855,6 +892,7 @@ export const API_ERROR_CODES = [
   'not_enough_coins',
   'not_for_sale',
   'trade_full',
+  'work_cooldown',
   'trade_invalid',
   'not_giftable',
   'own_pet',

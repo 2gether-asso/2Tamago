@@ -1,9 +1,11 @@
 import { alignToGrid, gameHours, stepMs, type GameRules } from './rules.js';
+import { dietOf } from './diet.js';
 import { isNight } from './night.js';
 import { modOf, traitsOf } from './traits.js';
 import {
   STAGES,
   type Form,
+  type Illness,
   type Need,
   type PetEvent,
   type PetState,
@@ -190,11 +192,12 @@ function sickness(
 ): void {
   if (state.sickSince !== null) return;
   const s = state.stats;
-  const factors =
-    (state.poops >= 3 ? 1 : 0) +
-    (s.hygiene < 20 ? 1 : 0) +
-    (s.satiety < 10 ? 1 : 0) +
-    (state.weight > rules.overweightThreshold ? 0.5 : 0);
+  const diet = dietOf(state, rules);
+  const filth = (state.poops >= 3 ? 1 : 0) + (s.hygiene < 20 ? 1 : 0);
+  const hunger = s.satiety < 10 ? 1 : 0;
+  const excess =
+    (state.weight > rules.overweightThreshold ? 0.5 : 0) + (diet === 'unbalanced' ? 0.5 : 0);
+  const factors = filth + hunger + excess;
   if (factors === 0) {
     state.sicknessPressure = Math.max(0, state.sicknessPressure - dtH);
     return;
@@ -202,10 +205,18 @@ function sickness(
   state.sicknessPressure += factors * dtH;
   if (state.sicknessPressure >= rules.sicknessThresholdHours) {
     state.sickSince = t;
+    // The biggest factor decides what it catches.
+    state.illness = illnessFor(filth, hunger, excess);
     state.medicineDoses = 0;
     state.sicknessPressure = 0;
-    events.push({ type: 'fell_ill', at: t });
+    events.push({ type: 'fell_ill', at: t, data: { illness: state.illness } });
   }
+}
+
+function illnessFor(filth: number, hunger: number, excess: number): Illness {
+  if (filth >= hunger && filth >= excess && filth > 0) return 'infection';
+  if (excess >= hunger && excess > 0) return 'indigestion';
+  return 'weakness';
 }
 
 function health(
@@ -220,7 +231,8 @@ function health(
     s.health -= rules.sickHealthLossPerHour * modOf(state, rules, 'sickHealthLoss') * dtH;
   if (s.satiety <= 0) s.health -= rules.starvingHealthLossPerHour * dtH;
   if (state.sickSince === null && s.satiety > 40 && s.happiness > 30) {
-    s.health += rules.healthRegenPerHour * dtH;
+    const balanced = dietOf(state, rules) === 'balanced';
+    s.health += rules.healthRegenPerHour * (balanced ? rules.balancedRegenFactor : 1) * dtH;
   }
   clampStats(s);
 

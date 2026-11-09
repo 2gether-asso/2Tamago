@@ -18,6 +18,9 @@ import type {
   VillagePet,
   VisitResponse,
   ContestBoard,
+  PetWorkResponse,
+  WorkResponse,
+  WorkStatus,
   ContestClaimResponse,
   ContestsOverview,
   EventBody,
@@ -186,6 +189,9 @@ export const api = {
   contestVote: (playerId: string) => call<ContestBoard>('POST', '/contests/vote', { playerId }),
   contestClaim: (kind: ContestKind) =>
     call<ContestClaimResponse>('POST', `/contests/${kind}/claim`),
+  work: () => call<WorkStatus>('GET', '/work'),
+  workPlayer: (score: number) => call<WorkResponse>('POST', '/work/player', { score }),
+  workPet: () => call<PetWorkResponse>('POST', '/work/pet'),
   adminStats: () => call<AdminStats>('GET', '/admin/stats'),
   adminRules: () => call<AdminRulesResponse>('GET', '/admin/rules'),
   saveAdminRules: (overrides: unknown) =>

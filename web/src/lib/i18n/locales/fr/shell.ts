@@ -2,6 +2,7 @@
 export const shell = {
   'nav.home': 'Maison',
   'nav.contests': 'Concours',
+  'nav.work': 'Travail',
   'nav.village': 'Village',
   'nav.shop': 'Boutique',
   'nav.journal': 'Journal',

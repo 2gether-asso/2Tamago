@@ -26,6 +26,7 @@
     { href: '/village', label: 'nav.village', icon: '🌳' },
     { href: '/sheet', label: 'nav.sheet', icon: '📋' },
     { href: '/contests', label: 'nav.contests', icon: '🏆' },
+    { href: '/work', label: 'nav.work', icon: '💼' },
     { href: '/shop', label: 'nav.shop', icon: '🛍️' },
     { href: '/journal', label: 'nav.journal', icon: '📜' },
     { href: '/album', label: 'nav.album', icon: '📔' },
