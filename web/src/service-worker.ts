@@ -42,7 +42,9 @@ sw.addEventListener('push', (event) => {
       lang: payload.locale,
       // A newer alert of the same kind replaces the one still on screen.
       tag: payload.kind,
-      data: { url: payload.kind === 'daycare_invite' ? '/village' : '/' },
+      data: {
+        url: payload.kind === 'daycare_invite' || payload.kind === 'trade_offer' ? '/village' : '/',
+      },
     }),
   );
 });

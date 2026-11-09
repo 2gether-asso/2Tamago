@@ -47,5 +47,9 @@ export const feed = {
   'activity.daycare_care.lights': '{caretakerName} a réglé la lumière de {petName}.',
   'activity.daycare_care.praise': '{caretakerName} a félicité {petName}.',
   'activity.daycare_care.scold': '{caretakerName} a grondé {petName}.',
+  'activity.trade_offer': '{playerName} te propose un échange : réponds depuis le village.',
+  'activity.trade_accepted': '{playerName} a accepté ton échange.',
+  'activity.trade_declined': '{playerName} a refusé ton échange : tes objets te sont rendus.',
+  'activity.trade_expired': 'Ton échange avec {playerName} a expiré : tes objets te sont rendus.',
   'activity.encounter': 'Rencontre en promenade avec {otherPetName} ({otherOwnerName}).',
 } as const;

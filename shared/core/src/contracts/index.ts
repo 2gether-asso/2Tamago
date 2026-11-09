@@ -5,6 +5,7 @@
 import { z } from 'zod';
 import { ITEM_IDS, type ItemId } from '../engine/catalog.js';
 import { WALK_ZONE_IDS, type WalkZoneId } from '../engine/zones.js';
+import { TRADE_LIMITS, tradeProblem } from '../engine/trade.js';
 import type { GameErrorCode } from '../engine/errors.js';
 import type { Alert, Mood } from '../engine/view.js';
 import type { GameRules, RulesOverrides } from '../engine/rules.js';
@@ -223,6 +224,17 @@ export const careActionBody = z.discriminatedUnion('type', [
 ]);
 export type CareActionBody = z.infer<typeof careActionBody>;
 
+const tradeBundle = z.partialRecord(itemId, z.number().int().min(1).max(TRADE_LIMITS.maxQuantity));
+
+/** An offer to swap items with another member: what is given, and what is asked in return. */
+export const tradeBody = z
+  .object({ targetId: z.uuid(), offer: tradeBundle, request: tradeBundle })
+  .superRefine((trade, ctx) => {
+    const problem = tradeProblem(trade.offer, trade.request);
+    if (problem) ctx.addIssue({ code: 'custom', message: problem, path: ['offer'] });
+  });
+export type TradeBody = z.infer<typeof tradeBody>;
+
 /** Entrusting one's companion to another member. */
 export const daycareBody = z.object({ caretakerId: z.uuid() });
 export type DaycareBody = z.infer<typeof daycareBody>;
@@ -264,6 +276,7 @@ export const PUSH_KINDS = [
   'calling',
   'walk_done',
   'daycare_invite',
+  'trade_offer',
   'test',
 ] as const;
 export type PushKind = (typeof PUSH_KINDS)[number];
@@ -528,6 +541,35 @@ export interface DaycareDto {
   expiresAt: number;
 }
 
+/** What is swapped, as the API sends it: item id to quantity. */
+export type TradeItems = Partial<Record<ItemId, number>>;
+
+export interface TradeDto {
+  id: string;
+  proposerId: string;
+  proposerName: string;
+  targetId: string;
+  targetName: string;
+  /** What the proposer gives (already set aside for the trade). */
+  offer: TradeItems;
+  /** What the proposer asks the target for. */
+  request: TradeItems;
+  /** The offer lapses at this time (epoch ms), and the proposer gets their items back. */
+  expiresAt: number;
+}
+
+export interface TradeOverview {
+  /** Offers waiting for the viewer's answer. */
+  incoming: TradeDto[];
+  /** The viewer's own offers, waiting for an answer. */
+  outgoing: TradeDto[];
+}
+
+export interface TradeResult {
+  coins: number;
+  inventory: Inventory;
+}
+
 export interface DaycareOverview {
   /** How long a stay lasts at most, in days (it ends by itself after that). */
   maxDays: number;
@@ -550,7 +592,11 @@ export type ActivityKind =
   | 'daycare_accepted'
   | 'daycare_declined'
   | 'daycare_ended'
-  | 'daycare_care';
+  | 'daycare_care'
+  | 'trade_offer'
+  | 'trade_accepted'
+  | 'trade_declined'
+  | 'trade_expired';
 
 export interface ActivityDto {
   id: string;
@@ -588,10 +634,13 @@ export const API_ERROR_CODES = [
   'missing_item',
   'no_contribution',
   'no_daycare',
+  'no_trade',
   'no_pet',
   'no_player',
   'not_enough_coins',
   'not_for_sale',
+  'trade_full',
+  'trade_invalid',
   'not_giftable',
   'own_pet',
   'own_profile',

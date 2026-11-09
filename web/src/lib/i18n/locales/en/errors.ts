@@ -29,6 +29,10 @@ export const errors: Record<keyof typeof fr, string> = {
   'error.daycare_exists': 'This companion is already entrusted, or an invitation is pending.',
   'error.daycare_full': 'This person already looks after as many companions as they can.',
   'error.no_daycare': 'This daycare no longer exists.',
+  'error.trade_full': 'You already have too many trades waiting.',
+  'error.trade_invalid':
+    'This trade is not possible (an accessory the other already owns, for instance).',
+  'error.no_trade': 'This trade no longer exists.',
   'error.already_caressed': 'You already petted this companion today.',
   'error.already_claimed': 'You already collected this week’s reward.',
   'error.goal_not_reached': 'The village has not reached its goal yet.',

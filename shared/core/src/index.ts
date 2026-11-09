@@ -8,3 +8,4 @@ export * from './engine/view.js';
 export * from './engine/traits.js';
 export * from './engine/night.js';
 export * from './engine/zones.js';
+export * from './engine/trade.js';

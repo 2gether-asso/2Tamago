@@ -47,5 +47,9 @@ export const feed: Record<keyof typeof fr, string> = {
   'activity.daycare_care.lights': '{caretakerName} adjusted {petName}’s light.',
   'activity.daycare_care.praise': '{caretakerName} praised {petName}.',
   'activity.daycare_care.scold': '{caretakerName} scolded {petName}.',
+  'activity.trade_offer': '{playerName} offers you a trade: answer from the village.',
+  'activity.trade_accepted': '{playerName} accepted your trade.',
+  'activity.trade_declined': '{playerName} declined your trade: your items are returned.',
+  'activity.trade_expired': 'Your trade with {playerName} expired: your items are returned.',
   'activity.encounter': 'Met {otherPetName} ({otherOwnerName}) on a walk.',
 };

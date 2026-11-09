@@ -21,5 +21,6 @@ export const push = {
   'push.msg.calling': '{petName} fait un caprice !',
   'push.msg.walk_done': '{petName} a fini sa promenade.',
   'push.msg.daycare_invite': '{playerName} aimerait te confier {petName}.',
+  'push.msg.trade_offer': '{playerName} te propose un échange.',
   'push.msg.test': 'Ça marche : tu recevras les alertes de ton compagnon ici.',
 } as const;

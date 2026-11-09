@@ -22,5 +22,6 @@ export const push: Record<keyof typeof fr, string> = {
   'push.msg.calling': '{petName} is throwing a tantrum!',
   'push.msg.walk_done': '{petName} is back from its walk.',
   'push.msg.daycare_invite': '{playerName} would like to entrust you with {petName}.',
+  'push.msg.trade_offer': '{playerName} offers you a trade.',
   'push.msg.test': 'It works: you will get your companion’s alerts here.',
 };

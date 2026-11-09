@@ -81,6 +81,11 @@ export function activityText(entry: ActivityDto): string {
       });
     case 'community_reward':
       return t('activity.community_reward', { count: Number(d.coins) });
+    case 'trade_offer':
+    case 'trade_accepted':
+    case 'trade_declined':
+    case 'trade_expired':
+      return t(`activity.${entry.kind}`, { playerName: String(d.playerName) });
     case 'daycare_invite':
       return t('activity.daycare_invite', {
         ownerName: String(d.ownerName),
