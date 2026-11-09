@@ -66,7 +66,7 @@ describe('2Tamago API (e2e)', () => {
     const client = new pg.Client({ connectionString: databaseUrl });
     await client.connect();
     try {
-      await client.query('TRUNCATE players, community_goals RESTART IDENTITY CASCADE');
+      await client.query('TRUNCATE players, community_goals, game_settings RESTART IDENTITY CASCADE');
     } finally {
       await client.end();
     }
