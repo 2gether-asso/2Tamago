@@ -17,6 +17,9 @@ import type {
   PlayerProfile,
   VillagePet,
   VisitResponse,
+  BlockedWordsBody,
+  ModerationLogEntry,
+  ModerationPerson,
   GiftCodeBody,
   GiftCodeDto,
   RedeemResponse,
@@ -156,6 +159,18 @@ export const api = {
   adminCodes: () => call<GiftCodeDto[]>('GET', '/admin/codes'),
   adminCreateCode: (body: GiftCodeBody) => call<GiftCodeDto>('POST', '/admin/codes', body),
   adminDisableCode: (id: string) => call<void>('DELETE', `/admin/codes/${id}`),
+  adminModerationSearch: (q: string) =>
+    call<ModerationPerson[]>('GET', `/admin/moderation/search?q=${encodeURIComponent(q)}`),
+  adminRenamePet: (petId: string, name: string) =>
+    call<void>('PUT', `/admin/moderation/pets/${petId}/name`, { name }),
+  adminRenamePlayer: (playerId: string, name: string) =>
+    call<void>('PUT', `/admin/moderation/players/${playerId}/name`, { name }),
+  adminUnlockPlayer: (playerId: string) =>
+    call<void>('DELETE', `/admin/moderation/players/${playerId}/name`),
+  adminBlockedWords: () => call<BlockedWordsBody>('GET', '/admin/moderation/blocked-words'),
+  adminSaveBlockedWords: (words: string[]) =>
+    call<BlockedWordsBody>('PUT', '/admin/moderation/blocked-words', { words }),
+  adminModerationLog: () => call<ModerationLogEntry[]>('GET', '/admin/moderation/log'),
   adminStats: () => call<AdminStats>('GET', '/admin/stats'),
   adminRules: () => call<AdminRulesResponse>('GET', '/admin/rules'),
   saveAdminRules: (overrides: unknown) =>
