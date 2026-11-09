@@ -24,6 +24,7 @@ export const feed = {
   'event.vacation_started': '{name} part en vacances.',
   'event.vacation_ended': '{name} est de retour de vacances.',
   'event.vacation_ended_auto': '{name} est rentré de vacances : la durée maximale était atteinte.',
+  'event.stat_up': '{name} progresse : {stat} {value} !',
   'event.retired': '{name} part couler des jours paisibles.',
 
   'activity.daily_bonus_one': 'Bonus du jour : +{count} pièce.',
@@ -49,6 +50,8 @@ export const feed = {
   'activity.daycare_care.scold': '{caretakerName} a grondé {petName}.',
   'activity.trade_offer': '{playerName} te propose un échange : réponds depuis le village.',
   'activity.trade_accepted': '{playerName} a accepté ton échange.',
+  'activity.wish_request':
+    '{playerName} aimerait avoir : {item}. Tu peux lui proposer un échange ou un cadeau depuis son profil.',
   'activity.trade_declined': '{playerName} a refusé ton échange : tes objets te sont rendus.',
   'activity.trade_expired': 'Ton échange avec {playerName} a expiré : tes objets te sont rendus.',
   'activity.name_changed_pet': 'Un modérateur a renommé ton compagnon : « {name} ».',

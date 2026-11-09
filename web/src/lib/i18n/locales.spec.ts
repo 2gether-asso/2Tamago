@@ -25,13 +25,17 @@ const NAMESPACES: Record<string, string[]> = {
     'item',
     'stat',
     'zone',
+    'group',
+    'illness',
+    'diet',
   ],
   feed: ['event', 'activity', 'notice'],
-  home: ['home', 'action', 'walk'],
+  home: ['home', 'action', 'walk', 'care'],
   minigame: ['minigame'],
   adopt: ['adopt'],
   profile: ['profile'],
   push: ['push'],
+  rpg: ['rpg'],
   social: ['village', 'goal', 'daycare', 'trade', 'contest', 'visit', 'album', 'journal'],
   shop: ['shop', 'promo'],
   auth: ['login'],
@@ -39,6 +43,7 @@ const NAMESPACES: Record<string, string[]> = {
   feedback: ['feedback'],
   account: ['account'],
   errors: ['error'],
+  work: ['work'],
 };
 
 type Messages = Record<string, string>;

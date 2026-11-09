@@ -26,6 +26,7 @@ export const feed: Record<keyof typeof fr, string> = {
   'event.vacation_started': '{name} is off on vacation.',
   'event.vacation_ended': '{name} is back from vacation.',
   'event.vacation_ended_auto': '{name} came back from vacation: the longest stay was reached.',
+  'event.stat_up': '{name} improves: {stat} {value}!',
   'event.retired': '{name} is off to enjoy a quiet life.',
 
   'activity.daily_bonus_one': 'Daily bonus: +{count} coin.',
@@ -49,6 +50,8 @@ export const feed: Record<keyof typeof fr, string> = {
   'activity.daycare_care.scold': '{caretakerName} scolded {petName}.',
   'activity.trade_offer': '{playerName} offers you a trade: answer from the village.',
   'activity.trade_accepted': '{playerName} accepted your trade.',
+  'activity.wish_request':
+    '{playerName} would like: {item}. You can offer a swap or a gift from their profile.',
   'activity.trade_declined': '{playerName} declined your trade: your items are returned.',
   'activity.trade_expired': 'Your trade with {playerName} expired: your items are returned.',
   'activity.name_changed_pet': 'A moderator renamed your companion: “{name}”.',

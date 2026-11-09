@@ -14,6 +14,8 @@ import { errors } from './errors.ts';
 import { feedback } from './feedback.ts';
 import { push } from './push.ts';
 import { account } from './account.ts';
+import { rpg } from './rpg.ts';
+import { work } from './work.ts';
 
 /** French: the reference language. */
 export const fr = {
@@ -33,4 +35,6 @@ export const fr = {
   ...feedback,
   ...push,
   ...account,
+  ...rpg,
+  ...work,
 } as const;

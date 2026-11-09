@@ -1,5 +1,5 @@
 {
-  "id": "cb3dbdc7-25f5-4838-b91a-c8a99b458588",
+  "id": "90377622-556a-4d54-9776-985d7743946e",
   "prevId": "e2ddc62a-2101-4459-ae18-02d1b3a5d329",
   "version": "7",
   "dialect": "postgresql",
@@ -1642,13 +1642,6 @@
           "notNull": true,
           "default": false
         },
-        "name_by_admin": {
-          "name": "name_by_admin",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
         "avatar_url": {
           "name": "avatar_url",
           "type": "text",
@@ -1680,6 +1673,18 @@
           "primaryKey": false,
           "notNull": true,
           "default": 0
+        },
+        "last_work_at": {
+          "name": "last_work_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_pet_work_at": {
+          "name": "last_pet_work_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
         },
         "created_at": {
           "name": "created_at",

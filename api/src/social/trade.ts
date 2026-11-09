@@ -5,3 +5,9 @@ export const TRADE = {
   /** Offers one player can have waiting at once (their items are set aside meanwhile). */
   maxOpen: 3,
 } as const;
+
+/** "Could you part with this item?" asks, from a wishlist. */
+export const WISH_ASK = {
+  /** Before the same player can ask the same member for the same item again. */
+  cooldownHours: 24,
+} as const;

@@ -1,4 +1,4 @@
-import type { Species, Stats } from './types.js';
+import type { FoodGroup, Illness, Species, Stats } from './types.js';
 
 /** Shop and inventory items. Names are texts of the web app (`lib/i18n`), not of the engine. */
 
@@ -8,7 +8,31 @@ export interface SnackItem {
   price: number;
   effects: Partial<Pick<Stats, 'satiety' | 'happiness' | 'energy'>>;
   weight: number;
+  /** Food group for the diet balance; a snack with no group is a sweet. */
+  group?: FoodGroup;
   /** `false`: only found on walks, never sold. */
+  forSale?: boolean;
+}
+
+/** A real meal, given with the "feed" care: filling, and counted in the diet balance. */
+export interface MealItem {
+  kind: 'meal';
+  id: string;
+  price: number;
+  satiety: number;
+  group: FoodGroup;
+  weight: number;
+  /** `false`: only found on walks, never sold. */
+  forSale?: boolean;
+}
+
+/** A treatment, given with the "heal" care. */
+export interface MedicineItem {
+  kind: 'medicine';
+  id: string;
+  price: number;
+  /** What it cures at once; `'any'` is a general remedy that only counts as one dose. */
+  cures: Illness | 'any';
   forSale?: boolean;
 }
 
@@ -20,7 +44,7 @@ export interface AccessoryItem {
   forSale?: boolean;
 }
 
-export type Item = SnackItem | AccessoryItem;
+export type Item = SnackItem | MealItem | MedicineItem | AccessoryItem;
 
 export const ITEMS = {
   cookie: {
@@ -36,6 +60,7 @@ export const ITEMS = {
     price: 12,
     effects: { happiness: 12, satiety: 8 },
     weight: 0,
+    group: 'fruit',
   },
   warm_milk: {
     kind: 'snack',
@@ -58,6 +83,7 @@ export const ITEMS = {
     price: 10,
     effects: { happiness: 15, satiety: 10 },
     weight: 0,
+    group: 'fruit',
     forSale: false,
   },
   mushroom: {
@@ -66,6 +92,7 @@ export const ITEMS = {
     price: 14,
     effects: { satiety: 25, energy: 5 },
     weight: 1,
+    group: 'veg',
     forSale: false,
   },
   coconut: {
@@ -74,6 +101,7 @@ export const ITEMS = {
     price: 16,
     effects: { energy: 25, satiety: 10 },
     weight: 1,
+    group: 'fruit',
     forSale: false,
   },
   ice_cream: {
@@ -84,6 +112,37 @@ export const ITEMS = {
     weight: 2,
     forSale: false,
   },
+  // Meals: a full ration for the "feed" care, one per food group.
+  rice_bowl: { kind: 'meal', id: 'rice_bowl', price: 10, satiety: 35, group: 'grain', weight: 1 },
+  veggie_stew: {
+    kind: 'meal',
+    id: 'veggie_stew',
+    price: 14,
+    satiety: 30,
+    group: 'veg',
+    weight: 0,
+  },
+  grilled_fish: {
+    kind: 'meal',
+    id: 'grilled_fish',
+    price: 20,
+    satiety: 40,
+    group: 'protein',
+    weight: 1,
+  },
+  fruit_salad: {
+    kind: 'meal',
+    id: 'fruit_salad',
+    price: 12,
+    satiety: 25,
+    group: 'fruit',
+    weight: 0,
+  },
+  // Medicines: the right one for an illness cures it at once, the syrup is a slower all-rounder.
+  syrup: { kind: 'medicine', id: 'syrup', price: 15, cures: 'any' },
+  antibiotic: { kind: 'medicine', id: 'antibiotic', price: 30, cures: 'infection' },
+  digestive_tea: { kind: 'medicine', id: 'digestive_tea', price: 20, cures: 'indigestion' },
+  vitamins: { kind: 'medicine', id: 'vitamins', price: 20, cures: 'weakness' },
   flower_crown: { kind: 'accessory', id: 'flower_crown', price: 150, forSale: false },
   starfish: { kind: 'accessory', id: 'starfish', price: 200, forSale: false },
   ribbon: { kind: 'accessory', id: 'ribbon', price: 50 },
@@ -96,6 +155,11 @@ export type ItemId = keyof typeof ITEMS;
 export type SnackId = { [K in ItemId]: (typeof ITEMS)[K] extends SnackItem ? K : never }[ItemId];
 export type AccessoryId = {
   [K in ItemId]: (typeof ITEMS)[K] extends AccessoryItem ? K : never;
+}[ItemId];
+
+export type MealId = { [K in ItemId]: (typeof ITEMS)[K] extends MealItem ? K : never }[ItemId];
+export type MedicineId = {
+  [K in ItemId]: (typeof ITEMS)[K] extends MedicineItem ? K : never;
 }[ItemId];
 
 export const ITEM_IDS = Object.keys(ITEMS) as ItemId[];
@@ -112,6 +176,14 @@ export function isForSale(id: string): boolean {
 
 export function isSnack(id: string): id is SnackId {
   return getItem(id)?.kind === 'snack';
+}
+
+export function isMeal(id: string): id is MealId {
+  return getItem(id)?.kind === 'meal';
+}
+
+export function isMedicine(id: string): id is MedicineId {
+  return getItem(id)?.kind === 'medicine';
 }
 
 export function isAccessory(id: string): id is AccessoryId {

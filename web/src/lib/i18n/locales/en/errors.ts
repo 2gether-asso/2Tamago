@@ -16,6 +16,8 @@ export const errors: Record<keyof typeof fr, string> = {
   'error.not_hungry': 'It is not hungry anymore.',
   'error.not_sleepy': 'It is not sleepy.',
   'error.not_sick': 'It is not sick.',
+  'error.tired_of_playing': 'It is tired of playing for now: one game comes back every 30 minutes.',
+  'error.praise_cooldown': 'You already praised it a moment ago: one praise every 30 minutes.',
   'error.too_tired': 'It is too tired.',
   'error.too_hungry': 'It is too hungry for that.',
   'error.unknown_item': 'Unknown item.',
@@ -29,7 +31,9 @@ export const errors: Record<keyof typeof fr, string> = {
   'error.daycare_exists': 'This companion is already entrusted, or an invitation is pending.',
   'error.daycare_full': 'This person already looks after as many companions as they can.',
   'error.no_daycare': 'This daycare no longer exists.',
+  'error.work_cooldown': 'That job was done a moment ago: come back later.',
   'error.trade_full': 'You already have too many trades waiting.',
+  'error.wish_already_asked': 'You already asked for this item today.',
   'error.trade_invalid':
     'This trade is not possible (an accessory the other already owns, for instance).',
   'error.no_trade': 'This trade no longer exists.',
