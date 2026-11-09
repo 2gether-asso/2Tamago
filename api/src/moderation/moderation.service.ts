@@ -59,7 +59,7 @@ export class ModerationService {
     if (!before) throw noPlayer();
     await this.db
       .update(players)
-      .set({ displayName: name, nameLocked: true })
+      .set({ displayName: name, nameLocked: true, nameByAdmin: true })
       .where(eq(players.id, playerId));
     await this.record(adminId, 'rename_player', playerId, before.displayName, name);
     await this.activity.record(this.db, playerId, 'name_changed', { what: 'player', name });
@@ -69,7 +69,7 @@ export class ModerationService {
   async unlockPlayer(adminId: string, playerId: string): Promise<void> {
     const updated = await this.db
       .update(players)
-      .set({ nameLocked: false })
+      .set({ nameLocked: false, nameByAdmin: false })
       .where(and(eq(players.id, playerId), eq(players.nameLocked, true)))
       .returning({ name: players.displayName });
     if (updated.length === 0) throw noPlayer();

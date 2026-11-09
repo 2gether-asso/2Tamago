@@ -97,3 +97,24 @@ describe('AppConfig', () => {
     expect(config.auth.adminDiscordIds).toEqual(['1', '2']);
   });
 });
+
+describe('AppConfig network', () => {
+  it('trusts one proxy and no client IP header by default', () => {
+    expect(new AppConfig({}).network).toEqual({ trustProxy: 1, clientIpHeader: undefined });
+  });
+
+  it('reads hop counts, address lists and the header name', () => {
+    expect(new AppConfig({ TRUST_PROXY: '2' }).network.trustProxy).toBe(2);
+    expect(new AppConfig({ TRUST_PROXY: '0' }).network.trustProxy).toBe(0);
+    expect(new AppConfig({ TRUST_PROXY: 'loopback, 10.99.0.0/16' }).network.trustProxy).toBe(
+      'loopback, 10.99.0.0/16',
+    );
+    expect(new AppConfig({ CLIENT_IP_HEADER: 'CF-Connecting-IP' }).network.clientIpHeader).toBe(
+      'cf-connecting-ip',
+    );
+  });
+
+  it('refuses a blanket trust', () => {
+    expect(() => new AppConfig({ TRUST_PROXY: 'true' })).toThrow();
+  });
+});

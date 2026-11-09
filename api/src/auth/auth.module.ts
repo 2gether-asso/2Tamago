@@ -19,5 +19,6 @@ import { DiscordClient } from './discord.client.js';
   ],
   controllers: [AuthController],
   providers: [DiscordClient, AuthSessionService, { provide: APP_GUARD, useClass: AuthGuard }],
+  exports: [AuthSessionService],
 })
 export class AuthModule {}

@@ -19,6 +19,7 @@ import { ModerationModule } from './moderation/moderation.module.js';
 import { PetsModule } from './pets/pets.module.js';
 import { PushModule } from './push/push.module.js';
 import { ShopModule } from './shop/shop.module.js';
+import { AccountModule } from './account/account.module.js';
 import { ProfileModule } from './profile/profile.module.js';
 import { SocialModule } from './social/social.module.js';
 
@@ -39,6 +40,7 @@ import { SocialModule } from './social/social.module.js';
     PetsModule,
     ModerationModule,
     ProfileModule,
+    AccountModule,
     PushModule,
     ShopModule,
     SocialModule,

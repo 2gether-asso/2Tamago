@@ -47,6 +47,7 @@ import type {
   CommunityGoal,
   FavoriteResponse,
   WalkResponse,
+  AccountOverview,
 } from '@2tamago/core/contracts';
 
 import { hasMessage, t, type MessageKey } from './i18n/index.svelte.ts';
@@ -123,6 +124,11 @@ export const api = {
     call<{ discord: boolean; devLogin: boolean; inviteUrl: string | null }>('GET', '/auth/config'),
   devLogin: (name: string) => auth.devLogin(name),
   logout: () => auth.signOut(),
+
+  account: () => call<AccountOverview>('GET', '/account'),
+  renameSelf: (name: string) => call<void>('PUT', '/account/name', { name }),
+  revokeSession: (id: string) => call<void>('DELETE', `/account/sessions/${id}`),
+  revokeOtherSessions: () => call<void>('DELETE', '/account/sessions'),
 
   sendFeedback: (body: FeedbackBody) => call<void>('POST', '/feedback', body),
   clientConfig: () => call<ClientConfig>('GET', '/config'),

@@ -41,6 +41,7 @@ const NAMESPACES: Record<string, string[]> = {
   auth: ['login'],
   admin: ['admin'],
   feedback: ['feedback'],
+  account: ['account'],
   errors: ['error'],
   work: ['work'],
 };

@@ -51,6 +51,9 @@ services:
       AUTH_REFRESH_IDLE_DAYS: ${AUTH_REFRESH_IDLE_DAYS:-}
       AUTH_SESSION_MAX_DAYS: ${AUTH_SESSION_MAX_DAYS:-}
       AUTH_ROAMING_HOURS: ${AUTH_ROAMING_HOURS:-}
+      # Client IP behind the reverse proxies (docs/ARCHITECTURE.md, "IP du joueur")
+      TRUST_PROXY: ${TRUST_PROXY:-}
+      CLIENT_IP_HEADER: ${CLIENT_IP_HEADER:-}
       # Web app
       WEB_ORIGIN: ${WEB_ORIGIN:-http://localhost:8080}
       # Discord

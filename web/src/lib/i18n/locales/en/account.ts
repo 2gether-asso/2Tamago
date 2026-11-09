@@ -1,0 +1,41 @@
+import type { account as fr } from '../fr/account.ts';
+
+/** The account page: name and sign-ins. */
+export const account: Record<keyof typeof fr, string> = {
+  'account.title': 'My account',
+  'account.link': 'Account',
+  'account.name_title': 'My name',
+  'account.name_hint':
+    'The name other players see. Once changed here, signing in with Discord no longer replaces it.',
+  'account.name_label': 'Display name',
+  'account.name_save': 'Save',
+  'account.name_saved': 'Name saved.',
+  'account.name_locked': 'A moderator set your name: it cannot be changed here.',
+  'account.sessions_title': 'My sign-ins',
+  'account.sessions_hint':
+    'The devices signed in to your account. Sign out the ones you do not recognize.',
+  'account.session.current': 'This device',
+  'account.session.ip': 'IP: {ip}',
+  'account.session.last_used': 'Last activity: {date}',
+  'account.session.created': 'Signed in on {date}',
+  'account.session.expires': 'Expires on {date} without activity',
+  'account.session.revoke': 'Sign out',
+  'account.session.revoked': 'Device signed out.',
+  'account.session.revoke_others': 'Sign out all other devices',
+  'account.session.revoked_others': 'The other devices are signed out.',
+  'account.session.none_others': 'No other device is signed in.',
+  'account.browser.chrome': 'Chrome',
+  'account.browser.firefox': 'Firefox',
+  'account.browser.safari': 'Safari',
+  'account.browser.edge': 'Edge',
+  'account.browser.opera': 'Opera',
+  'account.browser.other': 'Unknown browser',
+  'account.system.windows': 'Windows',
+  'account.system.macos': 'macOS',
+  'account.system.linux': 'Linux',
+  'account.system.android': 'Android',
+  'account.system.ios': 'iOS',
+  'account.system.chromeos': 'ChromeOS',
+  'account.system.other': 'unknown system',
+  'account.session.device': '{browser} on {system}',
+};
