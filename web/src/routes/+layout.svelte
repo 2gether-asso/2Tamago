@@ -111,6 +111,7 @@
         <a class="who-name" href="/players/{game.player.id}" title={t('profile.mine')}
           >{game.player.displayName}</a
         >
+        <a class="who-name" href="/account">{t('account.link')}</a>
         <button class="link" onclick={logout}>{t('header.logout')}</button>
         {#if clientConfig.feedbackEnabled}
           <button

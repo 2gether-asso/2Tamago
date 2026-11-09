@@ -39,6 +39,8 @@ export const errors: Record<keyof typeof fr, string> = {
   'error.code_used_up': 'This code has already been used as many times as it could be.',
   'error.code_already_redeemed': 'You have already used this code.',
   'error.name_not_allowed': 'This name is not allowed.',
+  'error.name_locked': 'A moderator set your name: it cannot be changed here.',
+  'error.no_session': 'This session no longer exists.',
   'error.no_event': 'This event no longer exists.',
   'error.no_entry': 'This companion is not entered in this week’s contest.',
   'error.no_prize': 'No prize for you in this contest.',

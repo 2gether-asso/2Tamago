@@ -132,7 +132,10 @@ describe('Account (e2e)', () => {
     const root = await signIn('Root');
     const alice = await signIn('Alice');
     const id = (await alice.get('/api/me').expect(200)).body.player.id;
-    await root.put(`/api/admin/moderation/players/${id}/name`).send({ name: 'Imposed' }).expect(204);
+    await root
+      .put(`/api/admin/moderation/players/${id}/name`)
+      .send({ name: 'Imposed' })
+      .expect(204);
 
     expect((await overview(alice)).nameLocked).toBe(true);
     const refused = await alice.put('/api/account/name').send({ name: 'Mine' }).expect(409);

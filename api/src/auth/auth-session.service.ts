@@ -242,9 +242,7 @@ export class AuthSessionService {
   async revokeOthers(playerId: string, keep: string | undefined): Promise<number> {
     const removed = await this.db
       .delete(authSessions)
-      .where(
-        and(eq(authSessions.playerId, playerId), keep ? ne(authSessions.id, keep) : undefined),
-      )
+      .where(and(eq(authSessions.playerId, playerId), keep ? ne(authSessions.id, keep) : undefined))
       .returning({ id: authSessions.id });
     return removed.length;
   }

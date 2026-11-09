@@ -37,6 +37,8 @@ export const errors = {
   'error.code_used_up': 'Ce code a déjà été utilisé autant de fois qu’il pouvait l’être.',
   'error.code_already_redeemed': 'Tu as déjà utilisé ce code.',
   'error.name_not_allowed': 'Ce nom n’est pas autorisé.',
+  'error.name_locked': 'Un modérateur a fixé ton nom : il ne peut pas être changé ici.',
+  'error.no_session': 'Cette session n’existe plus.',
   'error.no_event': 'Cet événement n’existe plus.',
   'error.no_entry': 'Ce compagnon n’est pas inscrit au concours de cette semaine.',
   'error.no_prize': 'Pas de récompense pour toi dans ce concours.',
