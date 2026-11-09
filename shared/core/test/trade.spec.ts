@@ -37,6 +37,18 @@ describe('tradeProblem', () => {
     expect(tradeProblem({ cookie: 1 }, { cookie: 2 })).toBe('same_item');
   });
 
+  it('treats coins as part of the bundle', () => {
+    expect(tradeProblem({}, { cookie: 1 }, 50, 0)).toBeNull();
+    expect(tradeProblem({ cookie: 1 }, {}, 0, 50)).toBeNull();
+    expect(tradeProblem({}, {}, 50, 0)).toBeNull(); // a gift of coins
+    expect(tradeProblem({}, { cookie: 1 }, 0, 0)).toBe('empty_offer');
+    expect(tradeProblem({}, {}, 0, 50)).toBe('empty_offer');
+    expect(tradeProblem({ cookie: 1 }, {}, TRADE_LIMITS.maxCoins + 1, 0)).toBe('bad_coins');
+    expect(tradeProblem({ cookie: 1 }, {}, 0, -1)).toBe('bad_coins');
+    expect(tradeProblem({ cookie: 1 }, {}, 0, 1.5)).toBe('bad_coins');
+    expect(tradeProblem({ cookie: 1 }, {}, 10, 20)).toBe('coins_both_sides');
+  });
+
   it('lists a bundle in a stable order', () => {
     expect(bundleEntries({ mushroom: 1, cake: 3, cookie: 2 })).toEqual([
       ['cake', 3],

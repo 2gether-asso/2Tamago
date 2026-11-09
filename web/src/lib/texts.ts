@@ -6,9 +6,11 @@ import {
   type ItemId,
   type Mood,
   type PetEvent,
+  type RpgStat,
   type Stage,
   type Temperament,
   type TrickId,
+  type WalkEventId,
   type WalkZoneId,
 } from '@2tamago/core';
 import type { ActivityDto, Notice } from '@2tamago/core/contracts';
@@ -31,7 +33,16 @@ export function bundleLabel(items: Partial<Record<ItemId, number>>): string {
     .map(([id, quantity]) => `${t(`item.${id}`)} ×${quantity}`)
     .join(', ');
 }
+/** An item bundle and coins: "Cookie ×2, 30 coins". Empty when there is nothing. */
+export function tradeSideLabel(items: Partial<Record<ItemId, number>>, coins: number): string {
+  return [bundleLabel(items), ...(coins > 0 ? [t('trade.coins', { count: coins })] : [])]
+    .filter(Boolean)
+    .join(', ');
+}
 export const itemLabel = (id: ItemId) => t(`item.${id}`);
+
+/** The story of a walk event (`rpg.event.<id>`). */
+export const walkEventText = (id: WalkEventId, name: string) => t(`rpg.event.${id}`, { name });
 
 export function eventText(event: PetEvent, name: string): string | null {
   switch (event.type) {
@@ -56,6 +67,14 @@ export function eventText(event: PetEvent, name: string): string | null {
       });
     case 'trick_level_up':
       return t('event.trick_level_up', { name, trick: trickLabel(event.data?.trick as TrickId) });
+    case 'walk_event':
+      return walkEventText(event.data?.walk as WalkEventId, name);
+    case 'stat_up':
+      return t('event.stat_up', {
+        name,
+        stat: t(`rpg.stat.${event.data?.stat as RpgStat}`),
+        value: Number(event.data?.value),
+      });
     case 'fell_ill':
     case 'cured':
     case 'care_mistake':
@@ -93,6 +112,11 @@ export function activityText(entry: ActivityDto): string {
     case 'trade_declined':
     case 'trade_expired':
       return t(`activity.${entry.kind}`, { playerName: String(d.playerName) });
+    case 'wish_request':
+      return t('activity.wish_request', {
+        playerName: String(d.playerName),
+        item: String(d.item) in ITEMS ? itemLabel(d.item as ItemId) : t('item.unknown'),
+      });
     case 'name_changed':
       return t(d.what === 'pet' ? 'activity.name_changed_pet' : 'activity.name_changed_player', {
         name: String(d.name),

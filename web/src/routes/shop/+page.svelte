@@ -6,17 +6,25 @@
   import { bundleLabel } from '#lib/texts.ts';
   import { itemLabel } from '#lib/texts.ts';
   import { api } from '#lib/api.ts';
+  import { wishlist } from '#lib/wishlist.svelte.ts';
   import { toasts } from '#lib/toasts.svelte.ts';
 
   // Some items can only be found on walks.
   const items = Object.values(ITEMS).filter((item) => isForSale(item.id));
   const snacks = items.filter((item) => item.kind === 'snack');
+  const meals = items.filter((item) => item.kind === 'meal');
+  const medicines = items.filter((item) => item.kind === 'medicine');
   const accessories = items.filter((item) => item.kind === 'accessory');
 
   let coins = $derived(game.player?.coins ?? 0);
   /** What an item costs now: an event may take a percentage off. */
   const priceOf = (item: { price: number }) =>
     discounted(item.price, events.percent('shop_discount'));
+
+  $effect(() => {
+    void wishlist.load();
+  });
+  const wishTitle = (id: ItemId) => (wishlist.has(id) ? t('shop.wish_remove') : t('shop.wish_add'));
 
   let code = $state('');
   let redeeming = $state(false);
@@ -42,6 +50,13 @@
   }
 </script>
 
+{#snippet buy(item: { id: string; price: number })}
+  <button disabled={game.busy || coins < priceOf(item)} onclick={() => game.buy(item.id as ItemId)}
+    >🪙 {priceOf(item)}{#if priceOf(item) < item.price}
+      <s class="was">{item.price}</s>{/if}</button
+  >
+{/snippet}
+
 <h1>{t('shop.title')}</h1>
 <p class="muted">{t('shop.intro')}</p>
 
@@ -61,11 +76,36 @@
   </div>
 </form>
 
+<section class="card wishes" aria-labelledby="wish-title">
+  <h2 id="wish-title">{t('shop.wish_title')}</h2>
+  <p class="muted">{t('shop.wish_hint', { max: wishlist.max })}</p>
+  {#if wishlist.items.length === 0}
+    <p class="muted">{t('shop.wish_empty')}</p>
+  {:else}
+    <ul>
+      {#each wishlist.items as id (id)}
+        <li>{itemLabel(id)}</li>
+      {/each}
+    </ul>
+  {/if}
+</section>
+
 <h2>{t('shop.snacks')}</h2>
 <div class="grid">
   {#each snacks as item (item.id)}
     <div class="card item">
       <strong>{itemLabel(item.id as ItemId)}</strong>
+      <button
+        class="wish"
+        type="button"
+        aria-pressed={wishlist.has(item.id as ItemId)}
+        title={wishTitle(item.id as ItemId)}
+        aria-label={wishTitle(item.id as ItemId)}
+        disabled={wishlist.busy ||
+          (!wishlist.has(item.id as ItemId) && wishlist.items.length >= wishlist.max)}
+        onclick={() => wishlist.toggle(item.id as ItemId)}
+        >{wishlist.has(item.id as ItemId) ? '💖' : '🤍'}</button
+      >
       <small class="muted">
         {Object.entries(item.effects)
           .map(([k, v]) => `${t(`stat.${k as 'satiety' | 'happiness' | 'energy'}`)} +${v}`)
@@ -82,12 +122,53 @@
   {/each}
 </div>
 
+<h2>{t('shop.meals')}</h2>
+<div class="grid">
+  {#each meals as item (item.id)}
+    <div class="card item">
+      <strong>{itemLabel(item.id as ItemId)}</strong>
+      <small class="muted">
+        {t('item.meal_hint', { satiety: item.satiety, group: t(`group.${item.group}`) })}
+      </small>
+      <small>{t('shop.in_bag', { count: game.inventory[item.id as ItemId] ?? 0 })}</small>
+      {@render buy(item)}
+    </div>
+  {/each}
+</div>
+
+<h2>{t('shop.medicines')}</h2>
+<div class="grid">
+  {#each medicines as item (item.id)}
+    <div class="card item">
+      <strong>{itemLabel(item.id as ItemId)}</strong>
+      <small class="muted">
+        {item.cures === 'any'
+          ? t('item.medicine_hint_any', { doses: game.rules?.medicineDoses ?? 2 })
+          : t('item.medicine_hint', { illness: t(`illness.${item.cures}`) })}
+      </small>
+      <small>{t('shop.in_bag', { count: game.inventory[item.id as ItemId] ?? 0 })}</small>
+      {@render buy(item)}
+    </div>
+  {/each}
+</div>
+
 <h2>{t('shop.accessories')}</h2>
 <div class="grid">
   {#each accessories as item (item.id)}
     {@const owned = (game.inventory[item.id as ItemId] ?? 0) > 0}
     <div class="card item">
       <strong>{itemLabel(item.id as ItemId)}</strong>
+      <button
+        class="wish"
+        type="button"
+        aria-pressed={wishlist.has(item.id as ItemId)}
+        title={wishTitle(item.id as ItemId)}
+        aria-label={wishTitle(item.id as ItemId)}
+        disabled={wishlist.busy ||
+          (!wishlist.has(item.id as ItemId) && wishlist.items.length >= wishlist.max)}
+        onclick={() => wishlist.toggle(item.id as ItemId)}
+        >{wishlist.has(item.id as ItemId) ? '💖' : '🤍'}</button
+      >
       {#if owned}
         <small>{t('shop.owned')}</small>
       {:else}
@@ -103,6 +184,26 @@
 </div>
 
 <style>
+  .wishes h2 {
+    margin: 0 0 0.3rem;
+  }
+  .wishes ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+  .wishes li {
+    padding: 0.2rem 0.6rem;
+    border-radius: var(--radius-md);
+    background: var(--surface-2);
+  }
+  .wish {
+    align-self: flex-end;
+    padding: 0.1rem 0.4rem;
+  }
   .was {
     opacity: 0.6;
     margin-left: 0.3rem;

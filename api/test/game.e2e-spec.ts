@@ -136,6 +136,21 @@ describe('2Tamago API (e2e)', () => {
       .expect(409);
     expect(noMore.body.code).toBe('missing_item');
 
+    // A meal from the bag: refused without it, paid for, then taken from the bag.
+    clock.advance(hours(3));
+    const noMeal = await alice
+      .post('/api/pet/actions')
+      .send({ type: 'feed', item: 'rice_bowl' })
+      .expect(409);
+    expect(noMeal.body.code).toBe('missing_item');
+    const meal = await alice.post('/api/shop/buy').send({ item: 'rice_bowl' }).expect(200);
+    expect(meal.body.inventory).toEqual({ rice_bowl: 1 });
+    const eaten: ActionResponse = (
+      await alice.post('/api/pet/actions').send({ type: 'feed', item: 'rice_bowl' }).expect(201)
+    ).body;
+    expect(eaten.pet.state.diet).toEqual(['sweet', 'grain']); // the cookie, then the rice
+    expect(((await alice.get('/api/me').expect(200)).body as MeResponse).inventory).toEqual({});
+
     // The hatching made it to the activity feed.
     const feed: ActivityDto[] = (await alice.get('/api/activity').expect(200)).body;
     expect(feed.map((entry) => entry.data.event)).toContain('hatched');

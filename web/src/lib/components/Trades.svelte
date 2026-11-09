@@ -1,10 +1,10 @@
 <script lang="ts">
-  import type { TradeOverview } from '@2tamago/core/contracts';
+  import type { TradeDto, TradeOverview } from '@2tamago/core/contracts';
   import { api } from '#lib/api.ts';
   import { game } from '#lib/game.svelte.ts';
   import { intlTag, t } from '#lib/i18n/index.svelte.ts';
   import { toasts } from '#lib/toasts.svelte.ts';
-  import { bundleLabel } from '#lib/texts.ts';
+  import { tradeSideLabel } from '#lib/texts.ts';
 
   let overview = $state.raw<TradeOverview | null>(null);
   let busy = $state(false);
@@ -20,7 +20,8 @@
   let when = $derived(
     new Intl.DateTimeFormat(intlTag(), { dateStyle: 'long', timeStyle: 'short' }),
   );
-  const asking = (items: object) => Object.keys(items).length > 0;
+  const asking = (trade: TradeDto) =>
+    Object.keys(trade.request).length > 0 || trade.requestCoins > 0;
 
   async function run(task: () => Promise<unknown>, done: string) {
     if (busy) return;
@@ -47,15 +48,15 @@
       {#each overview.incoming as trade (trade.id)}
         <div class="row">
           <p>
-            {asking(trade.request)
+            {asking(trade)
               ? t('trade.incoming_swap', {
                   name: trade.proposerName,
-                  give: bundleLabel(trade.offer),
-                  ask: bundleLabel(trade.request),
+                  give: tradeSideLabel(trade.offer, trade.offerCoins),
+                  ask: tradeSideLabel(trade.request, trade.requestCoins),
                 })
               : t('trade.incoming_gift', {
                   name: trade.proposerName,
-                  give: bundleLabel(trade.offer),
+                  give: tradeSideLabel(trade.offer, trade.offerCoins),
                 })}
           </p>
           <div class="actions">
@@ -79,15 +80,15 @@
       {#each overview.outgoing as trade (trade.id)}
         <div class="row">
           <p>
-            {asking(trade.request)
+            {asking(trade)
               ? t('trade.outgoing_swap', {
                   name: trade.targetName,
-                  give: bundleLabel(trade.offer),
-                  ask: bundleLabel(trade.request),
+                  give: tradeSideLabel(trade.offer, trade.offerCoins),
+                  ask: tradeSideLabel(trade.request, trade.requestCoins),
                 })
               : t('trade.outgoing_gift', {
                   name: trade.targetName,
-                  give: bundleLabel(trade.offer),
+                  give: tradeSideLabel(trade.offer, trade.offerCoins),
                 })}
             <small class="muted">{t('trade.until', { date: when.format(trade.expiresAt) })}</small>
           </p>

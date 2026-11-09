@@ -41,6 +41,11 @@ export const home: Record<keyof typeof fr, string> = {
   'action.lights_on': '💡 Turn the light on',
   'action.lights_off': '🕯️ Turn the light off',
   'action.praise': '👏 Praise',
+  'home.play_tired':
+    '{name} is tired of playing: one game comes back every 30 min (next around {time}).',
+  'home.praise_wait': 'You already praised it: next praise around {time}.',
+  'home.scold_tip':
+    '{name} is throwing a tantrum: now is the time to scold (discipline up). Praising it, or scolding for nothing, costs discipline or bond.',
   'action.scold': '☝️ Scold',
   'action.train': '🎓 Train',
   'action.return': '🏠 Bring home',
@@ -59,4 +64,19 @@ export const home: Record<keyof typeof fr, string> = {
   'walk.encounters': 'Encounters',
   'walk.nobody': 'Nobody else was out walking at that time.',
   'walk.ok': 'Great!',
+
+  'home.diet': 'Diet: {status}',
+  'home.illness': 'Illness: {illness}',
+  'care.cancel': 'Cancel',
+  'care.shop': '🛍️ Go to the shop',
+  'care.in_bag': '×{count}',
+  'care.feed.title': 'What should it eat?',
+  'care.feed.free': 'Plain ration',
+  'care.feed.free_hint': 'Free: satiety +{satiety}, no effect on the diet balance.',
+  'care.feed.empty': 'Your bag has no meal: the shop sells some.',
+  'care.medicine.title': 'How should it be treated?',
+  'care.medicine.free': 'Basic care',
+  'care.medicine.free_hint':
+    'Free, but slow: about {count} are needed to cure it, and it does not like them.',
+  'care.medicine.empty': 'Your bag has no medicine: the shop sells some.',
 };

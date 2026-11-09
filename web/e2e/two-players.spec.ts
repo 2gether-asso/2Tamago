@@ -29,6 +29,7 @@ test('two players adopt a pet, care for it and visit each other', async ({ brows
   const feed = alice.getByRole('button', { name: /Nourrir/ });
   await expect(feed).toBeEnabled({ timeout: 20_000 }); // the egg hatches
   await feed.click();
+  await alice.getByRole('button', { name: /Ration simple/ }).click();
   await expect(alice.getByRole('heading', { name: 'Pompon' })).toBeVisible();
   await expect(alice.getByText(/structuredClone|could not be cloned/i)).toHaveCount(0);
 

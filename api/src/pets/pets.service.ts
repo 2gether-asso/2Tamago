@@ -103,8 +103,13 @@ export class PetsService {
     const notices: Notice[] = [];
     const result = await this.mutate(eq(pets.ownerId, playerId), async (state, now, tx) => {
       const change = applyAction(state, action, now, this.rules);
-      if (action.type === 'treat') {
-        if (!(await this.players.takeItem(tx, playerId, action.item))) throw missingItem();
+      // Treats, meals and medicines come out of the bag; the free care (no item) costs nothing.
+      const spent =
+        action.type === 'treat' || action.type === 'feed' || action.type === 'medicine'
+          ? action.item
+          : undefined;
+      if (spent !== undefined) {
+        if (!(await this.players.takeItem(tx, playerId, spent))) throw missingItem();
       }
       if (action.type === 'equip' && action.item !== null) {
         if (!(await this.players.hasItem(tx, playerId, action.item))) throw missingItem();

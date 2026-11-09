@@ -1,8 +1,11 @@
 import { getItem, isAccessory, isSnack, type ItemId } from './catalog.js';
+import { recordMeal } from './diet.js';
 import { GameError } from './errors.js';
 import { alignToGrid, gameHours, type GameRules } from './rules.js';
 import { clamp, endVacation, simulate } from './simulate.js';
 import { isNight } from './night.js';
+import { gainXp, resolveWalkEvent, walkSeed } from './rpg.js';
+import { WORK } from './work.js';
 import { hashSeed, modOf, rollTraits } from './traits.js';
 import { DEFAULT_ZONE, WALK_ZONES, zoneOpenTo, type WalkZoneId } from './zones.js';
 import { type PetEvent, type PetState, type Species, type TrickId, TRICKS } from './types.js';
@@ -55,11 +58,13 @@ export function createPet(input: NewPetInput, rules: GameRules): PetState {
 
 /** Actions the owner can do on their own pet. */
 export type OwnerAction =
-  | { type: 'feed' }
+  /** Without an item: the free ration. With a meal: its satiety, its food group. */
+  | { type: 'feed'; item?: ItemId }
   | { type: 'treat'; item: ItemId }
   | { type: 'play'; score: number }
   | { type: 'clean' }
-  | { type: 'medicine' }
+  /** Without an item: the free, weak care. With a medicine: its effect. */
+  | { type: 'medicine'; item?: ItemId }
   | { type: 'sleep' }
   | { type: 'wake' }
   | { type: 'lights'; on: boolean }
@@ -67,6 +72,8 @@ export type OwnerAction =
   | { type: 'scold' }
   | { type: 'caress' }
   | { type: 'train'; trick: TrickId }
+  /** A job: the server pays it (see `petWage`) and keeps the cooldown; not sent by clients. */
+  | { type: 'work' }
   | { type: 'equip'; item: ItemId | null }
   | { type: 'retire' }
   | { type: 'startVacation' }
@@ -92,7 +99,8 @@ export type CaretakerActionType = (typeof CARETAKER_ACTION_TYPES)[number];
 /** Actions triggered by the server: outings, and what other players do. */
 export type SystemAction =
   | { type: 'startOuting'; zone?: WalkZoneId }
-  | { type: 'endOuting' }
+  /** `seed` picks the walk event (default: derived from the pet and the walk, see `walkSeed`). */
+  | { type: 'endOuting'; seed?: number }
   | { type: 'visitorCaress' }
   | { type: 'visitorTreat'; item: ItemId };
 
@@ -137,9 +145,17 @@ export function applyAction(
   switch (action.type) {
     case 'feed': {
       requireAwake();
-      if (s.satiety >= 95) throw new GameError('not_hungry');
-      add('satiety', 35);
-      state.weight += 1;
+      if (s.satiety >= rules.fullSatiety) throw new GameError('not_hungry');
+      if (action.item === undefined) {
+        add('satiety', rules.freeMealSatiety);
+        state.weight += 1;
+        break;
+      }
+      const meal = getItem(action.item);
+      if (meal?.kind !== 'meal') throw new GameError('unknown_item');
+      add('satiety', meal.satiety);
+      state.weight += meal.weight;
+      recordMeal(state, meal.group, rules);
       break;
     }
     case 'treat':
@@ -148,20 +164,29 @@ export function applyAction(
       const item = getItem(action.item);
       if (!item || !isSnack(action.item) || item.kind !== 'snack')
         throw new GameError('unknown_item');
+      // Stuffing a full pet with treats: it only gets fatter.
+      if (s.satiety >= rules.fullSatiety) state.weight += rules.overfeedWeight;
       for (const [key, value] of Object.entries(item.effects)) add(key as keyof typeof s, value);
       state.weight += item.weight;
+      recordMeal(state, item.group ?? 'sweet', rules);
       if (action.type === 'treat') state.bond = clamp(state.bond + 1);
       break;
     }
     case 'play': {
       requireAwake();
       if (s.energy < 10) throw new GameError('too_tired');
+      const left = playChargesLeft(state, at, rules);
+      if (left < 1) throw new GameError('tired_of_playing');
+      // Settle the refill, then spend one game.
+      state.playCharges = left - 1;
+      state.playChargesAt = at;
       const score = clamp(Math.round(action.score), 0, 3);
       add('happiness', 10 + score * 5);
       add('energy', -10);
       add('satiety', -3);
       state.weight = Math.max(5, state.weight - 1);
       state.bond = clamp(state.bond + 2);
+      gainXp(state, 'agility', 2, at, events);
       break;
     }
     case 'clean': {
@@ -173,12 +198,23 @@ export function applyAction(
     case 'medicine': {
       requireHome();
       if (state.sickSince === null) throw new GameError('not_sick');
-      state.medicineDoses++;
-      add('happiness', -5);
-      if (state.medicineDoses >= rules.medicineDoses) {
+      let dose = rules.freeMedicineDose;
+      let cure = false;
+      if (action.item !== undefined) {
+        const medicine = getItem(action.item);
+        if (medicine?.kind !== 'medicine') throw new GameError('unknown_item');
+        if (medicine.cures === 'any') dose = 1;
+        else if (medicine.cures === state.illness) cure = true;
+        else dose = rules.wrongMedicineDose;
+      }
+      state.medicineDoses += dose;
+      add('happiness', action.item === undefined ? -5 : -2);
+      if (cure || state.medicineDoses >= rules.medicineDoses) {
+        const illness = state.illness ?? null;
         state.sickSince = null;
+        state.illness = null;
         state.medicineDoses = 0;
-        events.push({ type: 'cured', at });
+        events.push({ type: 'cured', at, data: { illness } });
       }
       break;
     }
@@ -211,6 +247,8 @@ export function applyAction(
     }
     case 'praise': {
       requireAwake();
+      if (!praiseReady(state, at, rules)) throw new GameError('praise_cooldown');
+      state.lastPraiseAt = at;
       add('happiness', 5);
       state.bond = clamp(state.bond + 1);
       // Rewarding a tantrum teaches the wrong lesson.
@@ -238,6 +276,7 @@ export function applyAction(
         add('happiness', 3);
         state.bond = clamp(state.bond + modOf(state, rules, 'caressBond'));
         state.lastCaressAt = at;
+        gainXp(state, 'charm', 1, at, events);
       }
       break;
     }
@@ -258,10 +297,22 @@ export function applyAction(
       const gain = 8 * (1 + s.discipline / 100) * focus;
       state.tricks[action.trick] = clamp(state.tricks[action.trick] + gain);
       state.bond = clamp(state.bond + 1);
+      gainXp(state, 'wit', 3, at, events);
       const after = trickLevel(state.tricks[action.trick]);
       if (after > before) {
         events.push({ type: 'trick_level_up', at, data: { trick: action.trick, level: after } });
       }
+      break;
+    }
+    case 'work': {
+      requireAwake();
+      if (state.stage === 'baby') throw new GameError('too_young');
+      if (s.energy < WORK.petMinEnergy) throw new GameError('too_tired');
+      if (s.satiety < WORK.petMinSatiety) throw new GameError('too_hungry');
+      add('energy', -WORK.petCost.energy);
+      add('satiety', -WORK.petCost.satiety);
+      add('happiness', -WORK.petCost.happiness);
+      add('hygiene', -WORK.petCost.hygiene);
       break;
     }
     case 'equip': {
@@ -308,12 +359,15 @@ export function applyAction(
       if (!state.outing) throw new GameError('not_away');
       if (at < state.outing.endsAt) throw new GameError('outing_not_finished');
       const zone = WALK_ZONES[state.outing.zone ?? DEFAULT_ZONE];
+      const seed = action.seed ?? walkSeed(state);
       state.outing = null;
       add('happiness', 15);
       add('energy', -zone.energyCost);
       add('satiety', -zone.satietyCost);
       state.weight = Math.max(5, state.weight - 2);
       state.bond = clamp(state.bond + zone.bondGain);
+      gainXp(state, 'vigor', zone.vigorXp, at, events);
+      resolveWalkEvent(state, zone.id, seed, at, events);
       break;
     }
     default: {
@@ -328,6 +382,32 @@ export function applyAction(
 export function caressReady(state: PetState, now: number, rules: GameRules): boolean {
   return (
     state.lastCaressAt === null || now - state.lastCaressAt >= rules.caressCooldownSeconds * 1000
+  );
+}
+
+/** Games the pet is still willing to play at `now` (the quota refills one by one over time). */
+export function playChargesLeft(state: PetState, now: number, rules: GameRules): number {
+  const max = rules.playMaxCharges;
+  if (state.playCharges === undefined || state.playChargesAt === undefined) return max;
+  const refill = rules.playRefillSeconds * 1000;
+  const back = refill > 0 ? Math.floor(Math.max(0, now - state.playChargesAt) / refill) : max;
+  return Math.min(max, state.playCharges + back);
+}
+
+/**
+ * When the next game comes back (real ms), or null when the quota is full. Counted from the last
+ * time a game was played, so waiting only works in whole steps.
+ */
+export function nextPlayChargeAt(state: PetState, now: number, rules: GameRules): number | null {
+  if (playChargesLeft(state, now, rules) >= rules.playMaxCharges) return null;
+  const refill = rules.playRefillSeconds * 1000;
+  const at = state.playChargesAt ?? now;
+  return at + (Math.floor(Math.max(0, now - at) / refill) + 1) * refill;
+}
+
+export function praiseReady(state: PetState, now: number, rules: GameRules): boolean {
+  return (
+    state.lastPraiseAt == null || now - state.lastPraiseAt >= rules.praiseCooldownSeconds * 1000
   );
 }
 

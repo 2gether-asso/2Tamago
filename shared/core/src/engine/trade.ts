@@ -8,6 +8,10 @@ export const TRADE_LIMITS = {
   maxKinds: 4,
   /** Of one item (an accessory is worn once: one only). */
   maxQuantity: 10,
+  /** Coins on one side of a trade. */
+  maxCoins: 1000,
+  /** Items on a wishlist. */
+  maxWishlist: 12,
 } as const;
 
 export type TradeProblem =
@@ -15,6 +19,9 @@ export type TradeProblem =
   | 'bad_quantity'
   | 'too_many_kinds'
   | 'empty_offer'
+  | 'bad_coins'
+  /** Coins on both sides: swap the difference instead. */
+  | 'coins_both_sides'
   /** The same item on both sides: nothing would change hands. */
   | 'same_item';
 
@@ -36,11 +43,24 @@ function bundleProblem(bundle: Bundle): TradeProblem | null {
   return null;
 }
 
-/** Whether a trade of `offer` against `request` is allowed at all (null: it is). */
-export function tradeProblem(offer: Bundle, request: Bundle): TradeProblem | null {
+const validCoins = (coins: number) =>
+  Number.isInteger(coins) && coins >= 0 && coins <= TRADE_LIMITS.maxCoins;
+
+/**
+ * Whether a trade of `offer` (and `offerCoins`) against `request` (and `requestCoins`) is allowed
+ * at all (null: it is). Coins are part of the bundle: something must be given, items or coins.
+ */
+export function tradeProblem(
+  offer: Bundle,
+  request: Bundle,
+  offerCoins = 0,
+  requestCoins = 0,
+): TradeProblem | null {
   const mine = bundleProblem(offer) ?? bundleProblem(request);
   if (mine) return mine;
-  if (bundleEntries(offer).length === 0) return 'empty_offer';
+  if (!validCoins(offerCoins) || !validCoins(requestCoins)) return 'bad_coins';
+  if (offerCoins > 0 && requestCoins > 0) return 'coins_both_sides';
+  if (bundleEntries(offer).length === 0 && offerCoins === 0) return 'empty_offer';
   const asked = new Set(bundleEntries(request).map(([id]) => id));
   if (bundleEntries(offer).some(([id]) => asked.has(id))) return 'same_item';
   return null;
