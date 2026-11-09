@@ -1,4 +1,5 @@
 import {
+  bundleEntries,
   ITEMS,
   type Alert,
   type Form,
@@ -24,6 +25,12 @@ export const temperamentLabel = (temperament: Temperament) => t(`temperament.${t
 export const temperamentHint = (temperament: Temperament) => t(`temperament.${temperament}.hint`);
 export const zoneLabel = (zone: WalkZoneId) => t(`zone.${zone}`);
 export const zoneHint = (zone: WalkZoneId) => t(`zone.${zone}.hint`);
+/** "Cookie ×2, Mushroom ×1": what a trade is about, or nothing if the side is empty. */
+export function bundleLabel(items: Partial<Record<ItemId, number>>): string {
+  return bundleEntries(items)
+    .map(([id, quantity]) => `${t(`item.${id}`)} ×${quantity}`)
+    .join(', ');
+}
 export const itemLabel = (id: ItemId) => t(`item.${id}`);
 
 export function eventText(event: PetEvent, name: string): string | null {

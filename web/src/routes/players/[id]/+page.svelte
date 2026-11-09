@@ -1,6 +1,7 @@
 <script lang="ts">
   import { ageInDays, ITEMS, SPECIES_LABELS, TRICKS, trickLevel, type ItemId } from '@2tamago/core';
   import type { DaycareOverview, PlayerProfile } from '@2tamago/core/contracts';
+  import TradeComposer from '#lib/components/TradeComposer.svelte';
   import PushSettings from '#lib/components/PushSettings.svelte';
   import PetSprite from '#lib/components/PetSprite.svelte';
   import StatBar from '#lib/components/StatBar.svelte';
@@ -165,6 +166,7 @@
           {t('daycare.entrust')}
         </button>
       {/if}
+      <TradeComposer targetId={player.id} targetName={player.displayName} />
     {/if}
   </section>
 

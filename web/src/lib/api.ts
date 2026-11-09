@@ -17,6 +17,10 @@ import type {
   PlayerProfile,
   VillagePet,
   VisitResponse,
+  TradeBody,
+  TradeDto,
+  TradeOverview,
+  TradeResult,
   CareActionBody,
   DaycareDto,
   DaycareOverview,
@@ -133,6 +137,12 @@ export const api = {
   daycareEnd: (id: string) => call<void>('DELETE', `/daycare/${id}`),
   daycareCare: (id: string, body: CareActionBody) =>
     call<ActionResponse>('POST', `/daycare/${id}/care`, body),
+
+  trades: () => call<TradeOverview>('GET', '/trades'),
+  tradeOffer: (body: TradeBody) => call<TradeDto>('POST', '/trades', body),
+  tradeAccept: (id: string) => call<TradeResult>('POST', `/trades/${id}/accept`),
+  tradeDecline: (id: string) => call<void>('POST', `/trades/${id}/decline`),
+  tradeCancel: (id: string) => call<void>('DELETE', `/trades/${id}`),
 
   pushSubscribe: (body: PushSubscriptionBody) => call<void>('PUT', '/push/subscription', body),
   pushUnsubscribe: (endpoint: string) => call<void>('DELETE', '/push/subscription', { endpoint }),

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Trades from '#lib/components/Trades.svelte';
   import DaycareCaretaker from '#lib/components/DaycareCaretaker.svelte';
   import CommunityGoal from '#lib/components/CommunityGoal.svelte';
   import PetSprite from '#lib/components/PetSprite.svelte';
@@ -11,6 +12,8 @@
 
 <h1>{t('village.title')}</h1>
 <p class="muted">{t('village.intro')}</p>
+
+<Trades />
 
 <DaycareCaretaker />
 
