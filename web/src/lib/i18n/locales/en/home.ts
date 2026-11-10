@@ -54,6 +54,11 @@ export const home: Record<keyof typeof fr, string> = {
   'home.treats': 'Treats',
   'home.training': 'Training and outings',
   'home.trick_to_learn': 'Trick to learn',
+  'home.pad_label': 'Gesture training area',
+  'home.pad_hint': 'Draw a gesture here to give a command',
+  'home.pad_gestures': 'Trick gestures',
+  'home.pad_recognized': '{trick}!',
+  'home.pad_unknown': 'I did not get that: try ↓ ○ ↑ →',
   'home.retire_confirm': '{name} will retire. Continue?',
   'home.accessories': 'Accessories',
 
