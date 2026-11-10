@@ -945,6 +945,7 @@ export const API_ERROR_CODES = [
   'goal_not_reached',
   'missing_item',
   'name_locked',
+  'confirmation_mismatch',
   'name_not_allowed',
   'no_session',
   'no_code',
