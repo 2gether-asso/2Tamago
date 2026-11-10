@@ -580,7 +580,10 @@ describe('2Tamago API (e2e)', () => {
       expect((await alice.post('/api/pet/walk/return').expect(409)).body.code).toBe(
         'outing_not_finished',
       );
-      const forest = await finish(rules.outingHours * WALK_ZONES.forest.durationFactor, [0.5, 0.1, 0.99]);
+      const forest = await finish(
+        rules.outingHours * WALK_ZONES.forest.durationFactor,
+        [0.5, 0.1, 0.99],
+      );
       expect(forest.zone).toBe('forest');
       expect(forest.found.items).toEqual(['flower_crown']);
       expect(forest.found.coins).toBe(16);
@@ -590,7 +593,10 @@ describe('2Tamago API (e2e)', () => {
       // The same find again brings no second accessory.
       await rest();
       await walk({ zone: 'forest' }).expect(200);
-      const again = await finish(rules.outingHours * WALK_ZONES.forest.durationFactor, [0.5, 0.1, 0.99]);
+      const again = await finish(
+        rules.outingHours * WALK_ZONES.forest.durationFactor,
+        [0.5, 0.1, 0.99],
+      );
       expect(again.found.items).toEqual([]);
       expect(
         ((await alice.get('/api/me').expect(200)).body as MeResponse).inventory.flower_crown,
