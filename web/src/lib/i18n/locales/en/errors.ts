@@ -47,6 +47,8 @@ export const errors: Record<keyof typeof fr, string> = {
   'error.confirmation_mismatch': 'The name you typed does not match your display name.',
   'error.room_invalid': 'This decoration does not go there, or there is too much of it.',
   'error.room_not_owned': 'You do not own all of this decoration.',
+  'error.no_discord_name':
+    'Your Discord name is not known yet: sign in with Discord again, then retry.',
   'error.no_session': 'This session no longer exists.',
   'error.no_event': 'This event no longer exists.',
   'error.no_entry': 'This companion is not entered in this week’s contest.',

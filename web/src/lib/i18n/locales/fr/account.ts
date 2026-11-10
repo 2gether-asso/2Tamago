@@ -9,6 +9,8 @@ export const account = {
   'account.name_save': 'Enregistrer',
   'account.name_saved': 'Nom enregistré.',
   'account.name_locked': 'Un modérateur a fixé ton nom : il ne peut pas être changé ici.',
+  'account.name_discord': 'Revenir au nom Discord ({name})',
+  'account.name_discord_done': 'Tu as retrouvé ton nom Discord.',
   'account.sessions_title': 'Mes connexions',
   'account.sessions_hint':
     'Les appareils connectés à ton compte. Déconnecte ceux que tu ne reconnais pas.',
