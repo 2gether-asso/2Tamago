@@ -4,6 +4,7 @@ import { InjectDrizzle } from '@nestjs/drizzle';
 import {
   applyAction,
   createPet,
+  heirloomOf,
   simulate,
   traitsOf,
   type GameRules,
@@ -77,6 +78,7 @@ export class PetsService {
       pet: pet ? toPetDto(pet.row, pet.ownerName) : null,
       inventory: await this.players.inventory(this.db, playerId),
       room: await this.players.room(this.db, playerId),
+      heirloom: player.heirloom,
       serverTime: this.now(),
     };
   }
@@ -84,26 +86,38 @@ export class PetsService {
   async adopt(playerId: string, body: AdoptBody) {
     await this.nameFilter.assertAllowed(body.name);
     const now = this.now();
-    const state = createPet({ ...body, seed: randomInt(2 ** 32), now }, this.rules);
-    const inserted = await this.db
-      .insert(pets)
-      .values({ ownerId: playerId, status: state.status, state })
-      .onConflictDoNothing()
-      .returning();
-    if (inserted.length === 0) {
-      throw new ConflictException({
-        statusCode: 409,
-        code: 'already_has_pet',
-      });
-    }
-    const player = await this.players.get(this.db, playerId);
-    return toPetDto(inserted[0]!, player.displayName);
+    return this.db.transaction(async (tx) => {
+      const player = await this.players.get(tx, playerId);
+      // What the last retired companion handed down goes to this egg, once.
+      const state = createPet(
+        { ...body, seed: randomInt(2 ** 32), heirloom: player.heirloom, now },
+        this.rules,
+      );
+      const inserted = await tx
+        .insert(pets)
+        .values({ ownerId: playerId, status: state.status, state })
+        .onConflictDoNothing()
+        .returning();
+      if (inserted.length === 0) {
+        throw new ConflictException({
+          statusCode: 409,
+          code: 'already_has_pet',
+        });
+      }
+      if (player.heirloom) await this.players.setHeirloom(tx, playerId, null);
+      return toPetDto(inserted[0]!, player.displayName);
+    });
   }
 
   async act(playerId: string, action: OwnerActionBody): Promise<ActionResponse> {
     const notices: Notice[] = [];
     const result = await this.mutate(eq(pets.ownerId, playerId), async (state, now, tx) => {
       const change = applyAction(state, action, now, this.rules);
+      // A retirement leaves an egg for the next companion.
+      if (action.type === 'retire') {
+        const heirloom = heirloomOf(change.state);
+        if (heirloom) await this.players.setHeirloom(tx, playerId, heirloom);
+      }
       // Treats, meals and medicines come out of the bag; the free care (no item) costs nothing.
       const spent =
         action.type === 'treat' || action.type === 'feed' || action.type === 'medicine'

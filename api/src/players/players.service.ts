@@ -5,7 +5,14 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectDrizzle } from '@nestjs/drizzle';
-import { roomProblem, visibleRoom, type DecorId, type ItemId, type Room } from '@2tamago/core';
+import {
+  roomProblem,
+  visibleRoom,
+  type DecorId,
+  type Heirloom,
+  type ItemId,
+  type Room,
+} from '@2tamago/core';
 import type { Inventory, PlayerDto, RoomBody } from '@2tamago/core/contracts';
 import { and, eq, gt, gte, sql } from 'drizzle-orm';
 import { AnnouncementService } from '../announcements/announcement.service.js';
@@ -158,6 +165,15 @@ export class PlayersService {
       .from(inventory)
       .where(and(eq(inventory.playerId, playerId), gt(inventory.quantity, 0)));
     return Object.fromEntries(rows.map((row) => [row.itemId, row.quantity]));
+  }
+
+  /** Keeps what a retired companion hands down, or clears it (`null`) once it has been used. */
+  async setHeirloom(
+    executor: Executor,
+    playerId: string,
+    heirloom: Heirloom | null,
+  ): Promise<void> {
+    await executor.update(players).set({ heirloom }).where(eq(players.id, playerId));
   }
 
   /** The player's room as it shows: what they no longer own is left out. */
