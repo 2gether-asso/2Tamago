@@ -64,6 +64,7 @@ export const home: Record<keyof typeof fr, string> = {
 
   'walk.zone': '{zone}',
   'walk.title': 'Back from the walk!',
+  'walk.weather': 'Weather: {weather}',
   'walk.coins_found_one': '🪙 {count} coin found',
   'walk.coins_found_other': '🪙 {count} coins found',
   'walk.encounters': 'Encounters',

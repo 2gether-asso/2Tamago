@@ -28,6 +28,7 @@ const NAMESPACES: Record<string, string[]> = {
     'group',
     'illness',
     'diet',
+    'weather',
   ],
   feed: ['event', 'activity', 'notice'],
   home: ['home', 'action', 'walk', 'care'],
