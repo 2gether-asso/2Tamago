@@ -1,10 +1,12 @@
 import {
   alertsOf,
+  EMPTY_ROOM,
   moodOf,
   simulate,
   type GameRules,
   type PetEvent,
   type PetState,
+  type Room,
   type WalkZoneId,
 } from '@2tamago/core';
 import type {
@@ -28,6 +30,7 @@ const REFRESH_MS = 60_000;
 class Game {
   player = $state<PlayerDto | null>(null);
   inventory = $state<Inventory>({});
+  room = $state<Room>(EMPTY_ROOM);
   rules = $state<GameRules | null>(null);
   /** Last pet received from the API. */
   snapshot = $state.raw<PetDto | null>(null);
@@ -56,6 +59,7 @@ class Game {
       this.rules = rules;
       this.player = me.player;
       this.inventory = me.inventory;
+      this.room = me.room;
       this.snapshot = me.pet;
       this.clockOffset = me.serverTime - Date.now();
       this.loaded = true;
@@ -65,6 +69,11 @@ class Game {
       if (error instanceof ApiError && error.status === 401) return false;
       throw error;
     }
+  }
+
+  /** Saves the arrangement of the room (the API answers with what it kept). */
+  async saveRoom(room: Room): Promise<void> {
+    this.room = await api.setRoom(room);
   }
 
   async refresh(): Promise<void> {

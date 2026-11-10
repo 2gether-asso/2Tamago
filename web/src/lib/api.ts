@@ -1,4 +1,4 @@
-import type { ContestKind, GameRules, ItemId, WalkZoneId } from '@2tamago/core';
+import type { ContestKind, GameRules, ItemId, Room, WalkZoneId } from '@2tamago/core';
 import type {
   ActionResponse,
   AdminRulesResponse,
@@ -15,6 +15,7 @@ import type {
   OwnerActionBody,
   PetDto,
   PlayerProfile,
+  RoomBody,
   VillagePet,
   VisitResponse,
   ContestBoard,
@@ -128,6 +129,7 @@ export const api = {
   account: () => call<AccountOverview>('GET', '/account'),
   renameSelf: (name: string) => call<void>('PUT', '/account/name', { name }),
   deleteAccount: (confirm: string) => call<void>('DELETE', '/account', { confirm }),
+  setRoom: (room: RoomBody) => call<Room>('PUT', '/room', room),
   revokeSession: (id: string) => call<void>('DELETE', `/account/sessions/${id}`),
   revokeOtherSessions: () => call<void>('DELETE', '/account/sessions'),
 
