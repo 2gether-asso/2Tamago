@@ -1,6 +1,11 @@
 /** The adoption form. */
 export const adopt = {
   'adopt.title': 'Adopter un compagnon',
+  'adopt.heirloom': '🥚 {name} te laisse un œuf en héritage.',
+  'adopt.heirloom_bond': 'Le prochain compagnon démarre avec un lien déjà fort (+{count}).',
+  'adopt.heirloom_tricks':
+    'Le prochain compagnon connaît déjà un peu chaque tour (+{count} de progrès).',
+  'adopt.heirloom_luck': 'Le prochain compagnon a de la chance en promenade (+{count} points).',
   'adopt.species': 'Espèce',
   'adopt.randomize_all': 'Surprends-moi !',
   'adopt.randomize_hint':
