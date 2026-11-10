@@ -5,6 +5,7 @@
 import { z } from 'zod';
 import { DECOR_IDS, ITEM_IDS, type DecorId, type ItemId } from '../engine/catalog.js';
 import type { Heirloom } from '../engine/heirloom.js';
+import type { Weather } from '../engine/weather.js';
 import { ROOM_LIMITS, type Room } from '../engine/room.js';
 import type { QuestId, WalkEventId, WalkEventKind } from '../engine/rpg.js';
 import { WALK_ZONE_IDS, type WalkZoneId } from '../engine/zones.js';
@@ -740,6 +741,8 @@ export interface WalkEventDto {
 
 export interface WalkResponse extends ActionResponse {
   zone: WalkZoneId;
+  /** The weather of the day the walk set off in. */
+  weather: Weather;
   /** What happened on the way. */
   walkEvent: WalkEventDto;
   found: { coins: number; items: ItemId[] };
