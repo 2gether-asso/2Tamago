@@ -273,7 +273,7 @@ Chaque joueur a une chambre, où vit son compagnon : on la voit à l'accueil, su
 | Travail du compagnon (toutes les 2 heures)                            | 1 à 12, selon ses talents          |
 | Caresser le compagnon d'un autre (une fois par jour et par compagnon) | 3                                  |
 
-Repas : bol de riz 10, ragoût 14, poisson 20, salade de fruits 12. Remèdes : sirop 15, antibiotique 30, tisane digestive 20, vitamines 20. Prix : biscuit 8, fraise 12, lait chaud 15, gâteau 30, nœud 50, chapeau 80, lunettes 120, couronne 300. Décoration : de 40 (parquet) à 120 (bocal à poissons), voir « Chambre ». Les objets qu'on ne trouve qu'en promenade (mûre, champignon, noix de coco, glace, couronne de fleurs, étoile de mer) ne sont pas vendus : la boutique les refuse (`not_for_sale`).
+Repas : bol de riz 10, ragoût 14, poisson 20, salade de fruits 12. Remèdes : sirop 15, antibiotique 30, tisane digestive 20, vitamines 20. Prix : biscuit 8, fraise 12, lait chaud 15, gâteau 30, nœud 50, chapeau 80, lunettes 120, couronne 300. Décoration : de 40 (parquet) à 120 (bocal à poissons), voir « Chambre ». Un accessoire ou une décoration ne s'achète qu'une fois, seul : `POST /shop/buy` refuse un second exemplaire ou un lot (`already_owned`), même si le joueur n'a plus assez de pièces ; le contrôle est refait une fois la ligne du joueur verrouillée, pour que deux achats simultanés ne passent pas tous les deux. Les objets qu'on ne trouve qu'en promenade (mûre, champignon, noix de coco, glace, couronne de fleurs, étoile de mer) ne sont pas vendus : la boutique les refuse (`not_for_sale`).
 
 ## Travail
 
