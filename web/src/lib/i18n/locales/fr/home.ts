@@ -52,6 +52,11 @@ export const home = {
   'home.treats': 'Friandises',
   'home.training': 'Dressage et sorties',
   'home.trick_to_learn': 'Tour à apprendre',
+  'home.pad_label': 'Zone de dressage au geste',
+  'home.pad_hint': 'Dessine un geste ici pour donner un ordre',
+  'home.pad_gestures': 'Gestes des tours',
+  'home.pad_recognized': '{trick} !',
+  'home.pad_unknown': 'Je n’ai pas compris : essaie ↓ ○ ↑ →',
   'home.retire_confirm': '{name} partira à la retraite. Continuer ?',
   'home.accessories': 'Accessoires',
 

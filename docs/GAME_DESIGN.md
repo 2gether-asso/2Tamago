@@ -237,19 +237,19 @@ Les valeurs sont la règle `temperaments` de `GameRules` : un admin peut les mod
 
 ## Actions
 
-| Action                 | Effet                                                                                                                          |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| Nourrir                | Ration simple (satiété +20) ou repas du sac, voir « Repas ». Refusé à partir de 80 de satiété                                  |
-| Friandise              | Selon l'objet (voir la boutique), lien +1                                                                                      |
-| Jouer (score de 0 à 3) | Bonheur +10 + 5 × score, énergie −10, satiété −3, poids −1, lien +2. Il faut au moins 10 d'énergie                             |
-| Nettoyer               | Retire les cacas, propreté +40                                                                                                 |
-| Soigner                | Soins de base ou remède du sac, voir « Maladies et soins »                                                                     |
-| Coucher / Réveiller    | Coucher seulement si énergie < 90. Réveiller coûte −10 bonheur                                                                 |
-| Lumière                | Éteindre : seulement la nuit. Rallumer : à tout moment (voir « Jour et nuit »)                                                 |
-| Caresser               | Bonheur +3, lien +1, au plus une fois toutes les 15 s                                                                          |
-| Dresser                | Énergie −8, satiété −3, progrès de 8 × (1 + discipline/100), divisé par deux si bonheur < 50                                   |
-| Vacances / Retour      | Pause complète du compagnon, voir « Vacances ». Refusé pour un œuf ou pendant une promenade                                    |
-| Promenade              | Selon la zone (voir « Promenades »). Au retour : bonheur +15, énergie, satiété et lien selon la zone, pièces et objets trouvés |
+| Action                 | Effet                                                                                                                                                                                                                                            |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Nourrir                | Ration simple (satiété +20) ou repas du sac, voir « Repas ». Refusé à partir de 80 de satiété                                                                                                                                                    |
+| Friandise              | Selon l'objet (voir la boutique), lien +1                                                                                                                                                                                                        |
+| Jouer (score de 0 à 3) | Bonheur +10 + 5 × score, énergie −10, satiété −3, poids −1, lien +2. Il faut au moins 10 d'énergie                                                                                                                                               |
+| Nettoyer               | Retire les cacas, propreté +40                                                                                                                                                                                                                   |
+| Soigner                | Soins de base ou remède du sac, voir « Maladies et soins »                                                                                                                                                                                       |
+| Coucher / Réveiller    | Coucher seulement si énergie < 90. Réveiller coûte −10 bonheur                                                                                                                                                                                   |
+| Lumière                | Éteindre : seulement la nuit. Rallumer : à tout moment (voir « Jour et nuit »)                                                                                                                                                                   |
+| Caresser               | Bonheur +3, lien +1, au plus une fois toutes les 15 s                                                                                                                                                                                            |
+| Dresser                | Énergie −8, satiété −3, progrès de 8 × (1 + discipline/100), divisé par deux si bonheur < 50 Au geste (↓ assis, ○ tourne, ↑ saute, → tape-m'en cinq), c'est la même action : la reconnaissance du dessin est côté web et ne change aucune règle. |
+| Vacances / Retour      | Pause complète du compagnon, voir « Vacances ». Refusé pour un œuf ou pendant une promenade                                                                                                                                                      |
+| Promenade              | Selon la zone (voir « Promenades »). Au retour : bonheur +15, énergie, satiété et lien selon la zone, pièces et objets trouvés                                                                                                                   |
 
 ## Chambre
 

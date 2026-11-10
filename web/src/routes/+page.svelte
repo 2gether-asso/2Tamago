@@ -26,6 +26,7 @@
   import AdoptForm from '#lib/components/AdoptForm.svelte';
   import PetSprite from '#lib/components/PetSprite.svelte';
   import RoomScene from '#lib/components/RoomScene.svelte';
+  import TrickPad from '#lib/components/TrickPad.svelte';
   import PlayGame from '#lib/components/PlayGame.svelte';
   import StatBar from '#lib/components/StatBar.svelte';
   import { game } from '#lib/game.svelte.ts';
@@ -418,6 +419,13 @@
             >
           {/if}
         </div>
+        <TrickPad
+          disabled={!awake || game.busy}
+          ontrick={(id) => {
+            trick = id;
+            void game.act({ type: 'train', trick: id });
+          }}
+        />
         {#if accessories.length > 0}
           <h4>{t('home.accessories')}</h4>
           <div class="actions">
