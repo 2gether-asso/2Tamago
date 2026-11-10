@@ -269,7 +269,7 @@ Le titre est tronqué à 80 caractères ; le texte complet, la page et le naviga
 - **Stack locale** (`docker-compose.yml`) : PostgreSQL, API et web (nginx) construits depuis les sources (`make up`, <http://localhost:8080>, API aussi sur :3000). Le projet compose porte le même nom que celui du devcontainer : ses services sont donc sur le même réseau, et le devcontainer joint `db:5432` (`make db-up`) ou `api:3000`.
 - **Production et préproduction** (`docker-compose.prod.yml`) : il étend les services de `docker-compose.yml` (les deux fichiers sont nécessaires sur le serveur) et tire les images publiées (`REGISTRY`, `TAG`) et exige les secrets (`AUTH_SECRET`, `POSTGRES_PASSWORD`, Discord). Elle ne lance que PostgreSQL et l'API (l'image web est facultative : `--profile web`), publiée sur `API_BIND:API_PORT` (`0.0.0.0` par défaut : pare-feu, ou `127.0.0.1` si le proxy est sur la même machine) : un reverse proxy placé devant (non fourni) gère le HTTPS pour `API_ORIGIN`.
 - **CI** (GitHub Actions) : `ci.yml` (formatage, lint, build, types et tests), `docker.yml` (build des images de l'API et du web à chaque PR ; sur `main` et sur les tags `vX.Y.Z`, publication multi-architecture amd64 et arm64 sur ghcr.io) et `pages.yml` (build du site statique `web/build`, déployé sur GitHub Pages avec la variable `API_URL`).
-- Sauvegardes : à mettre en place avec `pg_dump` (voir la roadmap).
+- Sauvegardes : la base PostgreSQL est un service distant géré, dont l'hébergeur fait les sauvegardes. Le dépôt n'en contient aucune (pas de `pg_dump` planifié).
 
 ## Évolutions prévues
 
