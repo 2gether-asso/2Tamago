@@ -21,6 +21,7 @@ import { PushModule } from './push/push.module.js';
 import { ShopModule } from './shop/shop.module.js';
 import { AccountModule } from './account/account.module.js';
 import { ProfileModule } from './profile/profile.module.js';
+import { RoomModule } from './room/room.module.js';
 import { SocialModule } from './social/social.module.js';
 
 @Module({
@@ -40,6 +41,7 @@ import { SocialModule } from './social/social.module.js';
     PetsModule,
     ModerationModule,
     ProfileModule,
+    RoomModule,
     AccountModule,
     PushModule,
     ShopModule,

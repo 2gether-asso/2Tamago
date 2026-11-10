@@ -9,6 +9,7 @@ import { encounters, favorites, interactions, pets, players, walks } from '../da
 import { GameRulesService } from '../game/game-rules.service.js';
 import { toPetDto } from '../pets/pet-mapper.js';
 import { PetsService } from '../pets/pets.service.js';
+import { PlayersService } from '../players/players.service.js';
 
 /** The public profile of a player: who they are, what they did, and their living companion. */
 @Injectable()
@@ -18,6 +19,7 @@ export class ProfileService {
     private readonly gameRules: GameRulesService,
     private readonly clock: Clock,
     private readonly pets: PetsService,
+    private readonly players: PlayersService,
   ) {}
 
   private get rules(): GameRules {
@@ -48,6 +50,7 @@ export class ProfileService {
       },
       stats: await this.stats(playerId),
       pet: living ? toPetDto(living.row, living.ownerName) : null,
+      room: await this.players.room(this.db, playerId),
     };
   }
 

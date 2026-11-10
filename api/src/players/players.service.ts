@@ -5,8 +5,8 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectDrizzle } from '@nestjs/drizzle';
-import type { ItemId } from '@2tamago/core';
-import type { Inventory, PlayerDto } from '@2tamago/core/contracts';
+import { roomProblem, visibleRoom, type DecorId, type ItemId, type Room } from '@2tamago/core';
+import type { Inventory, PlayerDto, RoomBody } from '@2tamago/core/contracts';
 import { and, eq, gt, gte, sql } from 'drizzle-orm';
 import { AnnouncementService } from '../announcements/announcement.service.js';
 import { ActivityService } from '../activity/activity.service.js';
@@ -156,6 +156,25 @@ export class PlayersService {
       .from(inventory)
       .where(and(eq(inventory.playerId, playerId), gt(inventory.quantity, 0)));
     return Object.fromEntries(rows.map((row) => [row.itemId, row.quantity]));
+  }
+
+  /** The player's room as it shows: what they no longer own is left out. */
+  async room(executor: Executor, playerId: string): Promise<Room> {
+    const player = await this.get(executor, playerId);
+    const owned = await this.inventory(executor, playerId);
+    return visibleRoom(player.room, (id) => (owned[id] ?? 0) > 0);
+  }
+
+  /** Replaces the whole room: it can only hold decoration of the right place the player owns. */
+  async setRoom(playerId: string, room: RoomBody): Promise<Room> {
+    const owned = await this.inventory(this.db, playerId);
+    const problem = roomProblem(room, (id: DecorId) => (owned[id] ?? 0) > 0);
+    if (problem === 'not_owned') {
+      throw new ConflictException({ statusCode: 409, code: 'room_not_owned' });
+    }
+    if (problem) throw new ConflictException({ statusCode: 409, code: 'room_invalid' });
+    await this.db.update(players).set({ room }).where(eq(players.id, playerId));
+    return room;
   }
 
   async addItem(executor: Executor, playerId: string, itemId: ItemId, quantity = 1): Promise<void> {
