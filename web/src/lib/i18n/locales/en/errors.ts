@@ -58,6 +58,7 @@ export const errors: Record<keyof typeof fr, string> = {
   'error.goal_not_reached': 'The village has not reached its goal yet.',
   'error.no_contribution': 'Take your companion for a walk at least once this week to qualify.',
   'error.already_has_pet': 'You already have a companion.',
+  'error.already_owned': 'You already have this item: only one is kept.',
   'error.feedback_disabled': 'Feedback is not enabled on this server.',
   'error.missing_item': 'You do not have this item.',
   'error.no_pet': 'This companion is gone.',
