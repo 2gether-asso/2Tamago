@@ -1,6 +1,8 @@
 <script lang="ts">
   import type { AccountOverview } from '@2tamago/core/contracts';
+  import { goto } from '$app/navigation';
   import { api } from '#lib/api.ts';
+  import { events } from '#lib/events.svelte.ts';
   import { game } from '#lib/game.svelte.ts';
   import { hasMessage, intlTag, t, type MessageKey } from '#lib/i18n/index.svelte.ts';
   import { toasts } from '#lib/toasts.svelte.ts';
@@ -8,6 +10,7 @@
   let account = $state.raw<AccountOverview | null>(null);
   let name = $state('');
   let busy = $state(false);
+  let confirmName = $state('');
 
   let when = $derived(
     new Intl.DateTimeFormat(intlTag(), { dateStyle: 'short', timeStyle: 'short' }),
@@ -59,6 +62,25 @@
       await api.renameSelf(name.trim());
       if (game.player) game.player.displayName = name.trim();
     }, t('account.name_saved'));
+  }
+
+  async function deleteAccount(event: SubmitEvent) {
+    event.preventDefault();
+    if (busy || !account || !confirm(t('account.delete_confirm'))) return;
+    busy = true;
+    try {
+      await api.deleteAccount(confirmName.trim());
+      // The sessions went with the account: clean up here like a sign-out would.
+      await api.logout();
+      game.signOut();
+      events.stop();
+      toasts.push(t('account.deleted'));
+      await goto('/login');
+    } catch (e) {
+      toasts.push((e as Error).message, 'error');
+    } finally {
+      busy = false;
+    }
   }
 </script>
 
@@ -133,9 +155,33 @@
       <p class="muted">{t('account.session.none_others')}</p>
     {/if}
   </section>
+
+  <form class="card danger" onsubmit={deleteAccount}>
+    <h2>{t('account.delete_title')}</h2>
+    <p class="muted">{t('account.delete_hint')}</p>
+    <label>
+      {t('account.delete_label', { name: account.displayName })}
+      <input bind:value={confirmName} autocomplete="off" required />
+    </label>
+    <button
+      type="submit"
+      class="delete"
+      disabled={busy || confirmName.trim() !== account.displayName}
+    >
+      {t('account.delete_button')}
+    </button>
+  </form>
 {/if}
 
 <style>
+  .danger {
+    border-color: var(--bad);
+  }
+  button.delete:not(:disabled) {
+    background: var(--bad);
+    border-color: transparent;
+    color: #fff;
+  }
   .sessions {
     list-style: none;
     padding: 0;
