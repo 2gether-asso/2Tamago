@@ -124,11 +124,26 @@ Avant de partir, le joueur choisit une **zone** (`WALK_ZONES`, dans `shared/core
 | Forêt   | ado          | 1 h (×2)                | −25     | −15     | +4   | 10 à 22 | 45 %         | mûre, champignon, fraise, lait chaud, rarement une couronne de fleurs |
 | Plage   | adulte       | 2 h (×4)                | −35     | −20     | +5   | 20 à 40 | 30 %         | noix de coco, glace, gâteau, étoile de mer                            |
 
-- **Énergie** : il faut le coût de la zone plus 5 pour partir (`too_tired` sinon). Un compagnon trop jeune se voit refuser la zone (`zone_locked`) ; un bébé ne part pas du tout (`too_young`).
+- **Énergie** : il faut le coût de la zone (météo comprise, voir plus bas) plus 5 pour partir (`too_tired` sinon). Un compagnon trop jeune se voit refuser la zone (`zone_locked`) ; un bébé ne part pas du tout (`too_young`).
 - **Le hasard est tiré hors du moteur** : `rollFinds(zone, random)` est pure, elle reçoit la fonction de tirage (l'API passe `Math.random`, les tests des valeurs fixes). Les pièces sont tirées dans l'intervalle de la zone, puis une chance de trouver un objet, choisi selon les poids de la zone.
 - **Les accessoires ne se trouvent qu'une fois** : trouver un accessoire qu'on possède déjà ne rapporte rien (les friandises, elles, s'empilent).
 - **Les rencontres** ne dépendent pas de la zone : deux promenades qui se chevauchent dans le temps se croisent, où qu'elles aillent.
 - **Données** : la zone est dans `outing.zone` (absente sur une promenade commencée avant les zones : c'est la prairie) et dans la colonne `walks.zone`. Toutes les valeurs du tableau sont dans `zones.ts` ; seule la durée de base (`outingHours`) se règle depuis l'écran Admin.
+
+### Météo
+
+Chaque zone a la météo du jour, la même pour tous les joueurs (`weatherAt()`, `shared/core/src/engine/weather.ts`). C'est une fonction pure du jour de jeu (dans le fuseau `GAME_TIMEZONE`, comme la nuit) et de la zone : pas de hasard, rien en base, et le web la calcule seul pour afficher la prévision de chaque zone.
+
+| Météo      | Effet sur la promenade                                        |
+| ---------- | ------------------------------------------------------------- |
+| Ensoleillé | +25 % de pièces trouvées                                      |
+| Nuageux    | aucun                                                         |
+| Pluie      | ×1,5 de chance de trouver un objet, mais −5 d'énergie de plus |
+| Vent       | +10 % de pièces, mais ×0,7 de chance de trouver un objet      |
+
+- **Probabilités** (`ZONE_WEATHER`) : la forêt est la plus pluvieuse (40 % de pluie), la plage la plus ensoleillée (45 %) et la plus venteuse (30 %), la prairie entre les deux.
+- **La météo qui compte est celle du jour du départ** : elle sert à l'énergie demandée au départ (`walkEnergyCost()`), à l'énergie prélevée au retour et aux trouvailles (`rollFinds(zone, random, weather)`), même si la promenade finit le lendemain. `WalkResponse.weather` la rappelle au retour.
+- Les pièces de la météo s'ajoutent avant le bonus d'un événement programmé (`walk_coins`), qui les multiplie ensuite.
 
 ## Fiche de personnage et événements de promenade
 
