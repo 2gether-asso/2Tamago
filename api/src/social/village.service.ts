@@ -7,7 +7,6 @@ import {
 import { InjectDrizzle } from '@nestjs/drizzle';
 import {
   applyAction,
-  ITEMS,
   isSnack,
   moodOf,
   simulate,
