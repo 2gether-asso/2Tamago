@@ -1,10 +1,12 @@
 <script lang="ts">
   /**
    * Mini-games, in the spirit of the classic virtual pets. One is drawn at random each time:
-   * guess where it looks, guess if the next number is higher or lower, or beat it at
-   * rock-paper-scissors. Three rounds, the score (0-3) goes to the API.
+   * guess where it looks, guess if the next number is higher or lower, beat it at
+   * rock-paper-scissors (three rounds each), or catch the treats it drops in a basket. The score
+   * (0-3) goes to the API.
    */
   import { t, type MessageKey } from '#lib/i18n/index.svelte.ts';
+  import CatchGame from './CatchGame.svelte';
 
   interface Props {
     name: string;
@@ -13,13 +15,14 @@
   }
   let { name, onfinish, oncancel }: Props = $props();
 
-  type Kind = 'look' | 'number' | 'hand';
+  type Kind = 'look' | 'number' | 'hand' | 'catch';
   const TITLES: Record<Kind, MessageKey> = {
     look: 'minigame.title_look',
     number: 'minigame.title_number',
     hand: 'minigame.title_hand',
+    catch: 'minigame.title_catch',
   };
-  const KINDS: Kind[] = ['look', 'number', 'hand'];
+  const KINDS: Kind[] = ['look', 'number', 'hand', 'catch'];
   const CHOICES: Record<Kind, { id: string; label: MessageKey }[]> = {
     look: [
       { id: 'left', label: 'minigame.left' },
@@ -34,6 +37,8 @@
       { id: 'paper', label: 'minigame.paper' },
       { id: 'scissors', label: 'minigame.scissors' },
     ],
+    // Played in `CatchGame`: no round-by-round choices.
+    catch: [],
   };
   const BEATS: Record<string, string> = { rock: 'scissors', paper: 'rock', scissors: 'paper' };
   const SHOWN: Record<string, string> = {
@@ -82,7 +87,9 @@
 <div class="backdrop">
   <div class="card dialog">
     <h2>{t(TITLES[kind], { name })}</h2>
-    {#if round < ROUNDS}
+    {#if kind === 'catch'}
+      <CatchGame {onfinish} {oncancel} />
+    {:else if round < ROUNDS}
       <p>{t('minigame.round', { round: round + 1, total: ROUNDS, score })}</p>
       {#if kind === 'number'}
         <p class="number">{current}</p>
