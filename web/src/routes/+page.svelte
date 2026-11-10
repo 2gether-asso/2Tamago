@@ -25,6 +25,7 @@
   import CarePicker from '#lib/components/CarePicker.svelte';
   import AdoptForm from '#lib/components/AdoptForm.svelte';
   import PetSprite from '#lib/components/PetSprite.svelte';
+  import RoomScene from '#lib/components/RoomScene.svelte';
   import PlayGame from '#lib/components/PlayGame.svelte';
   import StatBar from '#lib/components/StatBar.svelte';
   import { game } from '#lib/game.svelte.ts';
@@ -177,30 +178,33 @@
         </div>
       </div>
 
-      <div class="scene" class:night={night || pet.asleep}>
-        {#if pet.outing}
-          <p class="away">
-            {t('home.away', {
-              zone: zoneLabel(pet.outing.zone ?? 'meadow'),
-              time: formatDuration(walkLeft),
-            })}
-          </p>
-        {:else}
-          <PetSprite
-            species={pet.species}
-            stage={pet.stage}
-            form={pet.form}
-            color={pet.color}
-            traits={pet.traits}
-            mood={game.mood ?? 'ok'}
-            equipped={pet.equipped}
-            oncaress={awake ? caress : undefined}
-          />
-          <div class="poops" aria-label={t('home.poops', { count: pet.poops })}>
-            {#each Array(pet.poops) as _, i (i)}<span>💩</span>{/each}
-          </div>
-        {/if}
+      <div class="scene">
+        <RoomScene room={game.room} night={night || pet.asleep}>
+          {#if pet.outing}
+            <p class="away">
+              {t('home.away', {
+                zone: zoneLabel(pet.outing.zone ?? 'meadow'),
+                time: formatDuration(walkLeft),
+              })}
+            </p>
+          {:else}
+            <PetSprite
+              species={pet.species}
+              stage={pet.stage}
+              form={pet.form}
+              color={pet.color}
+              traits={pet.traits}
+              mood={game.mood ?? 'ok'}
+              equipped={pet.equipped}
+              oncaress={awake ? caress : undefined}
+            />
+            <div class="poops" aria-label={t('home.poops', { count: pet.poops })}>
+              {#each Array(pet.poops) as _, i (i)}<span>💩</span>{/each}
+            </div>
+          {/if}
+        </RoomScene>
       </div>
+      <p class="center"><a href="/room">{t('room.link')}</a></p>
       {#if pet.stage === 'egg'}
         <p class="muted center">{t('home.egg_hint')}</p>
       {:else if awake}
@@ -551,19 +555,8 @@
     font-weight: 600;
   }
   .scene {
-    position: relative;
     margin: 1rem auto 0;
-    min-height: 240px;
     max-width: 26rem;
-    display: grid;
-    place-items: center;
-    border-radius: var(--radius);
-    background: linear-gradient(var(--scene-top), var(--scene-bottom));
-    border: 1px solid var(--border);
-    transition: background 0.6s;
-  }
-  .scene.night {
-    background: linear-gradient(#141638, #3a2f78);
   }
   .poops {
     position: absolute;

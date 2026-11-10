@@ -2,6 +2,7 @@
   import { isSnack, type ItemId } from '@2tamago/core';
   import type { CareActionBody, VisitResponse } from '@2tamago/core/contracts';
   import PetSprite from '#lib/components/PetSprite.svelte';
+  import RoomScene from '#lib/components/RoomScene.svelte';
   import StatBar from '#lib/components/StatBar.svelte';
   import { api } from '#lib/api.ts';
   import { game } from '#lib/game.svelte.ts';
@@ -69,15 +70,19 @@
     <p>
       <a href="/players/{visit.pet.ownerId}">{t('profile.view', { name: visit.pet.ownerName })}</a>
     </p>
-    <PetSprite
-      species={pet.species}
-      stage={pet.stage}
-      form={pet.form}
-      color={pet.color}
-      traits={pet.traits}
-      mood={visit.pet.mood}
-      equipped={pet.equipped}
-    />
+    <div class="scene">
+      <RoomScene room={visit.room} night={pet.asleep}>
+        <PetSprite
+          species={pet.species}
+          stage={pet.stage}
+          form={pet.form}
+          color={pet.color}
+          traits={pet.traits}
+          mood={visit.pet.mood}
+          equipped={pet.equipped}
+        />
+      </RoomScene>
+    </div>
     <p><strong>{moodLabel(visit.pet.mood)}</strong></p>
 
     {#if visit.daycareId}
@@ -176,6 +181,10 @@
   .visit {
     text-align: center;
     margin: 1rem 0;
+  }
+  .scene {
+    margin: 0.8rem auto;
+    max-width: 26rem;
   }
   .actions {
     display: flex;
