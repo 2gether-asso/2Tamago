@@ -535,8 +535,11 @@ describe('2Tamago API (e2e)', () => {
       await adopt(alice, 'Pompon');
       const act = (body: object) => alice.post('/api/pet/actions').send(body);
       const walk = (body?: object) => alice.post('/api/pet/walk').send(body ?? {});
-      const finish = async (hoursAway: number): Promise<WalkResponse> => {
+      // The dice are loaded right before coming back: other code (database driver) throws some too.
+      const finish = async (hoursAway: number, dice: number[] = []): Promise<WalkResponse> => {
         clock.advance(hours(hoursAway));
+        const random = vi.spyOn(Math, 'random');
+        for (const value of dice) random.mockReturnValueOnce(value);
         return (await alice.post('/api/pet/walk/return').expect(200)).body;
       };
       const rest = async () => {
@@ -573,15 +576,11 @@ describe('2Tamago API (e2e)', () => {
       clock.advance(hours(2.1));
       await act({ type: 'feed' });
       // Coins in the middle of the range, an item, then the last item of the table.
-      vi.spyOn(Math, 'random')
-        .mockReturnValueOnce(0.5)
-        .mockReturnValueOnce(0.1)
-        .mockReturnValueOnce(0.99);
       await walk({ zone: 'forest' }).expect(200);
       expect((await alice.post('/api/pet/walk/return').expect(409)).body.code).toBe(
         'outing_not_finished',
       );
-      const forest = await finish(rules.outingHours * WALK_ZONES.forest.durationFactor);
+      const forest = await finish(rules.outingHours * WALK_ZONES.forest.durationFactor, [0.5, 0.1, 0.99]);
       expect(forest.zone).toBe('forest');
       expect(forest.found.items).toEqual(['flower_crown']);
       expect(forest.found.coins).toBe(16);
@@ -590,12 +589,8 @@ describe('2Tamago API (e2e)', () => {
 
       // The same find again brings no second accessory.
       await rest();
-      vi.spyOn(Math, 'random')
-        .mockReturnValueOnce(0.5)
-        .mockReturnValueOnce(0.1)
-        .mockReturnValueOnce(0.99);
       await walk({ zone: 'forest' }).expect(200);
-      const again = await finish(rules.outingHours * WALK_ZONES.forest.durationFactor);
+      const again = await finish(rules.outingHours * WALK_ZONES.forest.durationFactor, [0.5, 0.1, 0.99]);
       expect(again.found.items).toEqual([]);
       expect(
         ((await alice.get('/api/me').expect(200)).body as MeResponse).inventory.flower_crown,
