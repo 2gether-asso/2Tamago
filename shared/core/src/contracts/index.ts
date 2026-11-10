@@ -217,6 +217,10 @@ export interface AccountOverview {
   displayName: string;
   /** An admin set the name: the player cannot change it. */
   nameLocked: boolean;
+  /** The player chose their name (it is not the Discord one, and Discord no longer replaces it). */
+  nameCustom: boolean;
+  /** The name Discord gave at the last sign-in; `null` when it is not known yet. */
+  discordName: string | null;
   memberSince: number;
   sessions: AccountSession[];
 }
@@ -959,6 +963,7 @@ export const API_ERROR_CODES = [
   'feedback_disabled',
   'goal_not_reached',
   'missing_item',
+  'no_discord_name',
   'room_invalid',
   'room_not_owned',
   'name_locked',
