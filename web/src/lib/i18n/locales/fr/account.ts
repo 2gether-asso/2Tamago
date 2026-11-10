@@ -35,5 +35,12 @@ export const account = {
   'account.system.ios': 'iOS',
   'account.system.chromeos': 'ChromeOS',
   'account.system.other': 'système inconnu',
+  'account.delete_title': 'Supprimer mon compte',
+  'account.delete_hint':
+    'Efface définitivement ton compte : ton compagnon et ses souvenirs, ton sac, tes pièces, tes échanges et ton historique. Les objets mis de côté dans les offres que tu as reçues sont rendus à leurs auteurs. Se reconnecter avec Discord crée un nouveau compte, sans rien récupérer.',
+  'account.delete_label': 'Pour confirmer, écris ton nom affiché : {name}',
+  'account.delete_button': 'Supprimer définitivement',
+  'account.delete_confirm': 'Supprimer ce compte pour de bon ? Cette action est irréversible.',
+  'account.deleted': 'Ton compte a été supprimé.',
   'account.session.device': '{browser} sur {system}',
 } as const;

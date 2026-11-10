@@ -44,6 +44,7 @@ export const errors = {
   'error.code_already_redeemed': 'Tu as déjà utilisé ce code.',
   'error.name_not_allowed': 'Ce nom n’est pas autorisé.',
   'error.name_locked': 'Un modérateur a fixé ton nom : il ne peut pas être changé ici.',
+  'error.confirmation_mismatch': 'Le nom saisi ne correspond pas à ton nom affiché.',
   'error.no_session': 'Cette session n’existe plus.',
   'error.no_event': 'Cet événement n’existe plus.',
   'error.no_entry': 'Ce compagnon n’est pas inscrit au concours de cette semaine.',
