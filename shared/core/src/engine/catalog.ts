@@ -44,7 +44,20 @@ export interface AccessoryItem {
   forSale?: boolean;
 }
 
-export type Item = SnackItem | MealItem | MedicineItem | AccessoryItem;
+/** Where a piece of decoration goes in a room: the wall, the floor, or standing in the room. */
+export type DecorSlot = 'wall' | 'floor' | 'prop';
+
+/** Decoration for the player's room (see `room.ts`). Kept once, like an accessory. */
+export interface DecorItem {
+  kind: 'decor';
+  id: string;
+  price: number;
+  slot: DecorSlot;
+  /** `false`: only found on walks, never sold. */
+  forSale?: boolean;
+}
+
+export type Item = SnackItem | MealItem | MedicineItem | AccessoryItem | DecorItem;
 
 export const ITEMS = {
   cookie: {
@@ -149,6 +162,17 @@ export const ITEMS = {
   hat: { kind: 'accessory', id: 'hat', price: 80 },
   glasses: { kind: 'accessory', id: 'glasses', price: 120 },
   crown: { kind: 'accessory', id: 'crown', price: 300 },
+  // Room decoration: wallpapers, floors and things to stand in the room.
+  wall_stars: { kind: 'decor', id: 'wall_stars', price: 60, slot: 'wall' },
+  wall_meadow: { kind: 'decor', id: 'wall_meadow', price: 60, slot: 'wall' },
+  wall_sea: { kind: 'decor', id: 'wall_sea', price: 90, slot: 'wall' },
+  floor_wood: { kind: 'decor', id: 'floor_wood', price: 40, slot: 'floor' },
+  floor_tatami: { kind: 'decor', id: 'floor_tatami', price: 60, slot: 'floor' },
+  floor_clouds: { kind: 'decor', id: 'floor_clouds', price: 90, slot: 'floor' },
+  plant: { kind: 'decor', id: 'plant', price: 45, slot: 'prop' },
+  lamp: { kind: 'decor', id: 'lamp', price: 70, slot: 'prop' },
+  cushion: { kind: 'decor', id: 'cushion', price: 50, slot: 'prop' },
+  fishbowl: { kind: 'decor', id: 'fishbowl', price: 120, slot: 'prop' },
 } as const satisfies Record<string, Item>;
 
 export type ItemId = keyof typeof ITEMS;
@@ -156,6 +180,8 @@ export type SnackId = { [K in ItemId]: (typeof ITEMS)[K] extends SnackItem ? K :
 export type AccessoryId = {
   [K in ItemId]: (typeof ITEMS)[K] extends AccessoryItem ? K : never;
 }[ItemId];
+
+export type DecorId = { [K in ItemId]: (typeof ITEMS)[K] extends DecorItem ? K : never }[ItemId];
 
 export type MealId = { [K in ItemId]: (typeof ITEMS)[K] extends MealItem ? K : never }[ItemId];
 export type MedicineId = {
@@ -188,6 +214,15 @@ export function isMedicine(id: string): id is MedicineId {
 
 export function isAccessory(id: string): id is AccessoryId {
   return getItem(id)?.kind === 'accessory';
+}
+
+export function isDecor(id: string): id is DecorId {
+  return getItem(id)?.kind === 'decor';
+}
+
+/** Kept once: owning a second one brings nothing (accessories and decoration). */
+export function isUnique(id: string): boolean {
+  return isAccessory(id) || isDecor(id);
 }
 
 /** Species names are proper names: the same in every language. */
