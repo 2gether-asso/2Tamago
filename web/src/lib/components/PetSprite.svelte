@@ -212,23 +212,22 @@
   {:else if species === 'kame'}
     <!-- Turtle-like: a domed shell behind a low body, and a small tail -->
     {#if part === 'back'}
+      <ellipse
+        class="tail"
+        cx="173"
+        cy="152"
+        rx="11"
+        ry="7"
+        fill={body}
+        stroke={line}
+        stroke-width="4"
+      />
       <path
         d="M 28 158 C 24 78, 62 44, 100 44 C 138 44, 176 78, 172 158 Z"
         fill={shade}
         stroke={line}
         stroke-width="4"
         stroke-linejoin="round"
-      />
-      <ellipse
-        class="tail"
-        cx="172"
-        cy="166"
-        rx="12"
-        ry="7"
-        fill={body}
-        stroke={line}
-        stroke-width="4"
-        transform="rotate(20 172 166)"
       />
     {/if}
     {#if part === 'front'}
