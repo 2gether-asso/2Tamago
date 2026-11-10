@@ -7,6 +7,7 @@ import type { Database } from '../database/database.js';
 import { players } from '../database/schema.js';
 import { NameFilterService } from '../moderation/name-filter.service.js';
 import { PlayersService } from '../players/players.service.js';
+import { TradesService } from '../social/trades.service.js';
 
 @Injectable()
 export class AccountService {
@@ -15,6 +16,7 @@ export class AccountService {
     private readonly players: PlayersService,
     private readonly sessions: AuthSessionService,
     private readonly names: NameFilterService,
+    private readonly trades: TradesService,
   ) {}
 
   async get(playerId: string, currentSessionId: string | undefined): Promise<AccountOverview> {
@@ -48,6 +50,22 @@ export class AccountService {
       .update(players)
       .set({ displayName: name, nameLocked: true })
       .where(eq(players.id, playerId));
+  }
+
+  /**
+   * Erases the account: the player must type their displayed name. Everything they own goes with
+   * the `players` row (companions, items, sessions, history); what other players had set aside for
+   * them is given back first. Signing in with Discord again starts a new account.
+   */
+  async delete(playerId: string, confirm: string): Promise<void> {
+    const player = await this.players.get(this.db, playerId);
+    if (confirm.trim() !== player.displayName) {
+      throw new ConflictException({ statusCode: 409, code: 'confirmation_mismatch' });
+    }
+    await this.db.transaction(async (tx) => {
+      await this.trades.declineAllTo(tx, playerId);
+      await tx.delete(players).where(eq(players.id, playerId));
+    });
   }
 
   async revoke(playerId: string, sessionId: string): Promise<void> {

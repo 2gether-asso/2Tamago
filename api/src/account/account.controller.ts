@@ -1,7 +1,9 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, Put } from '@nestjs/common';
 import {
+  accountDeleteBody,
   accountNameBody,
   uuidParam,
+  type AccountDeleteBody,
   type AccountNameBody,
   type AccountOverview,
 } from '@2tamago/core/contracts';
@@ -25,6 +27,16 @@ export class AccountController {
     @Body({ schema: accountNameBody }) body: AccountNameBody,
   ): Promise<void> {
     await this.account.rename(session.playerId, body.name);
+  }
+
+  /** Erases the account for good (the body confirms with the displayed name). */
+  @Delete()
+  @HttpCode(204)
+  async delete(
+    @CurrentSession() session: Session,
+    @Body({ schema: accountDeleteBody }) body: AccountDeleteBody,
+  ): Promise<void> {
+    await this.account.delete(session.playerId, body.confirm);
   }
 
   /** Signs out every other device. */

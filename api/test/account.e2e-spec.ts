@@ -145,9 +145,88 @@ describe('Account (e2e)', () => {
     await alice.put('/api/account/name').send({ name: 'Mine' }).expect(204);
   });
 
+  describe('deleting the account', () => {
+    const me = async (agent: Agent) => (await agent.get('/api/me').expect(200)).body;
+    const adopt = (agent: Agent, name: string) =>
+      agent.post('/api/pet').send({ name, species: 'mochi', color: 120 }).expect(201);
+
+    it('needs the displayed name as confirmation', async () => {
+      await start();
+      const alice = await signIn('Alice');
+      await adopt(alice, 'Mochi');
+      const wrong = await alice.delete('/api/account').send({ confirm: 'Bob' }).expect(409);
+      expect(wrong.body.code).toBe('confirmation_mismatch');
+      await alice.delete('/api/account').send({ confirm: 5 }).expect(400);
+      await alice.delete('/api/account').send({ confirm: '  ' }).expect(400);
+      await alice.delete('/api/account').expect(400);
+      expect((await overview(alice)).displayName).toBe('Alice');
+      expect((await me(alice)).pet).not.toBeNull();
+    });
+
+    it('erases the player and signs every device out, then a new sign-in starts fresh', async () => {
+      await start();
+      const laptop = await signIn('Alice');
+      const phone = await signIn('Alice');
+      const bob = await signIn('Bob');
+      await adopt(laptop, 'Mochi');
+      const aliceId = (await me(laptop)).player.id;
+
+      await laptop.delete('/api/account').send({ confirm: '  Alice ' }).expect(204);
+      await laptop.get('/api/account').expect(401);
+      await phone.get('/api/account').expect(401);
+      // Gone from the village; Bob is not affected.
+      const village = (await bob.get('/api/village').expect(200)).body;
+      expect(JSON.stringify(village)).not.toContain(aliceId);
+      expect((await overview(bob)).displayName).toBe('Bob');
+
+      const again = await signIn('Alice');
+      const fresh = await me(again);
+      expect(fresh.player.id).not.toBe(aliceId);
+      expect(fresh.pet).toBeNull();
+    });
+
+    it('gives back what a proposer had set aside for the leaving player', async () => {
+      await start();
+      const alice = await signIn('Alice');
+      const bob = await signIn('Bob');
+      const bobId = (await me(bob)).player.id;
+      await alice.post('/api/shop/buy').send({ item: 'cookie', quantity: 3 }).expect(200);
+      const before = (await me(alice)).player.coins;
+      await alice
+        .post('/api/trades')
+        .send({ targetId: bobId, offer: { cookie: 2 }, request: {}, offerCoins: 5 })
+        .expect(201);
+      expect((await me(alice)).inventory.cookie).toBe(1);
+
+      await bob.delete('/api/account').send({ confirm: 'Bob' }).expect(204);
+      const after = await me(alice);
+      expect(after.inventory.cookie).toBe(3);
+      expect(after.player.coins).toBe(before);
+      const kinds = (await alice.get('/api/activity').expect(200)).body.map(
+        (e: { kind: string }) => e.kind,
+      );
+      expect(kinds).toContain('trade_declined');
+    });
+
+    it('leaves the offers of the leaving player to go with them', async () => {
+      await start();
+      const alice = await signIn('Alice');
+      const bob = await signIn('Bob');
+      const bobId = (await me(bob)).player.id;
+      await alice.post('/api/shop/buy').send({ item: 'cookie', quantity: 3 }).expect(200);
+      await alice
+        .post('/api/trades')
+        .send({ targetId: bobId, offer: { cookie: 2 }, request: {} })
+        .expect(201);
+      await alice.delete('/api/account').send({ confirm: 'Alice' }).expect(204);
+      expect((await bob.get('/api/trades').expect(200)).body.incoming).toEqual([]);
+    });
+  });
+
   it('needs a session', async () => {
     await start();
     await request(app.getHttpServer()).get('/api/account').expect(401);
     await request(app.getHttpServer()).delete('/api/account/sessions').expect(401);
+    await request(app.getHttpServer()).delete('/api/account').send({ confirm: 'x' }).expect(401);
   });
 });
