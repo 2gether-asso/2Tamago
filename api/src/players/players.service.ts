@@ -49,12 +49,14 @@ export class PlayersService {
       .where(eq(players.discordId, input.discordId));
     const [row] = await this.db
       .insert(players)
-      .values(input)
+      .values({ ...input, discordName: input.displayName })
       .onConflictDoUpdate({
         target: players.discordId,
         set: {
           // A name an admin set stays, whatever Discord says.
           displayName: sql`case when ${players.nameLocked} then ${players.displayName} else ${input.displayName} end`,
+          // Always kept, so that a player can go back to it after choosing their own name.
+          discordName: input.displayName,
           avatarUrl: input.avatarUrl,
           lastSeenAt: new Date(),
         },
