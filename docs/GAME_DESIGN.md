@@ -42,6 +42,20 @@ Un compagnon bien soigné vit donc environ 16 jours avant de devenir ancien.
 - **Bien portant** (pas malade, satiété > 40, bonheur > 30) : +2 santé/h (×1,5 avec une alimentation équilibrée).
 - **Santé à 0** : le compagnon part (statut `gone`), ou reste à 1 PV si `GAME_DEPARTURE=false`. Un bébé totalement délaissé tient environ deux jours (vérifié par les tests).
 
+## Héritage
+
+Quand un ancien prend sa retraite (volontairement : un compagnon qui part, lui, ne laisse rien), il laisse un **œuf en héritage** à son propriétaire : le prochain compagnon adopté en reçoit un bonus, une seule fois. Le bonus dépend de la forme du compagnon retraité (`heirloomOf()`, `shared/core/src/engine/heirloom.ts`) :
+
+| Forme     | Bonus de l'œuf suivant                                   |
+| --------- | -------------------------------------------------------- |
+| Rayonnant | Un lien déjà fort : +20 (`HEIRLOOM.bond`)                |
+| Doux      | Un peu de chaque tour : +20 de progrès (`trickProgress`) |
+| Chenapan  | De la chance en promenade : 2 points (`luckXp`)          |
+
+- L'héritage est gardé sur le joueur (`players.heirloom`) jusqu'à la prochaine adoption, qui l'applique à l'œuf (`createPet({ heirloom })`) et l'efface dans la même transaction. Une adoption refusée le garde.
+- Le formulaire d'adoption l'annonce (`GET /me` renvoie `heirloom`). L'espèce et la couleur restent au choix du joueur : seul le bonus est transmis.
+- Un seul compagnon vivant à la fois : l'héritage en attente est donc toujours celui du dernier retraité.
+
 ## Repas et alimentation équilibrée
 
 Nourrir ouvre un choix (tickets #50 et #55) :
