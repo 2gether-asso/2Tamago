@@ -5,6 +5,7 @@ import {
   DEFAULT_ZONE,
   isUnique,
   rollFinds,
+  weatherAt,
   type GameRules,
   type ItemId,
   type WalkZoneId,
@@ -95,6 +96,8 @@ export class WalksService {
       async (state, now, tx, row) => {
         // Walks begun before zones existed have none: they were in the meadow.
         const zone = state.outing?.zone ?? DEFAULT_ZONE;
+        // The weather of the day the walk set off in: it prices the walk and changes the finds.
+        const weather = weatherAt(this.rules, state.outing?.startedAt ?? now, zone);
         const change = applyAction(state, { type: 'endOuting' }, now, this.rules);
         const [walk] = await tx
           .update(walks)
@@ -102,7 +105,7 @@ export class WalksService {
           .where(and(eq(walks.petId, row.id), isNull(walks.returnedAt)))
           .returning();
 
-        const rolled = rollFinds(zone, Math.random);
+        const rolled = rollFinds(zone, Math.random, weather);
         // An accessory (or decoration) is kept once: finding one already owned brings nothing.
         const items: ItemId[] = [];
         for (const item of rolled.items) {
@@ -130,11 +133,11 @@ export class WalksService {
           ? await this.meet(tx, walk, row.id, state.name, playerId)
           : { met: [], first: new Set<string>() };
         const goalReached = await this.community.walkCompleted(tx);
-        return { ...change, extra: { zone, found, walkEvent, goalReached, ...meetings } };
+        return { ...change, extra: { zone, weather, found, walkEvent, goalReached, ...meetings } };
       },
     );
 
-    const { zone, found, walkEvent, met, first, goalReached } = result.extra!;
+    const { zone, weather, found, walkEvent, met, first, goalReached } = result.extra!;
     if (goalReached !== null) this.announcements.communityGoal(goalReached);
     // Once saved: only the first walk two players ever share is worth the channel's attention.
     for (const encounter of met) {
@@ -155,6 +158,7 @@ export class WalksService {
       coins: await this.players.coinsOf(playerId),
       notices,
       zone,
+      weather,
       walkEvent,
       found,
       encounters: met,

@@ -1,6 +1,6 @@
 import type { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { gameHours, withRules } from '@2tamago/core';
+import { gameHours, WALK_ZONES, WEATHER_EFFECTS, weatherAt, withRules } from '@2tamago/core';
 import type {
   ActionResponse,
   EventsOverview,
@@ -199,10 +199,14 @@ describe('Events (e2e)', () => {
       .expect(200);
     clock.advance(hours(1.7));
     await bob.post('/api/pet/actions').send({ type: 'feed' });
+    const setOff = clock.time;
     await bob.post('/api/pet/walk').send({}).expect(200);
     clock.advance(hours(rules.outingHours));
     vi.spyOn(Math, 'random').mockReturnValue(0);
     const walk: WalkResponse = (await bob.post('/api/pet/walk/return').expect(200)).body;
-    expect(walk.found.coins).toBe(10); // the 5 coins of the lowest roll, doubled
+    // The lowest coin roll, with the weather of the day, then doubled by the event.
+    const weather = WEATHER_EFFECTS[weatherAt(rules, setOff, 'meadow')];
+    const lowest = Math.round((WALK_ZONES.meadow.coins.min * (100 + weather.coinsPercent)) / 100);
+    expect(walk.found.coins).toBe(lowest * 2);
   });
 });
