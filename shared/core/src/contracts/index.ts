@@ -223,6 +223,10 @@ export interface AccountOverview {
 export const accountNameBody = z.object({ name: z.string().trim().min(2).max(32) });
 export type AccountNameBody = z.infer<typeof accountNameBody>;
 
+/** `DELETE /account`: the player types their displayed name to confirm. */
+export const accountDeleteBody = z.object({ confirm: z.string().trim().min(1).max(64) });
+export type AccountDeleteBody = z.infer<typeof accountDeleteBody>;
+
 export type DevLoginBody = z.infer<typeof devLoginBody>;
 
 export const adoptBody = z.object({
