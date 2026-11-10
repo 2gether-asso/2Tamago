@@ -1,5 +1,6 @@
 import { type ItemId } from './catalog.js';
 import { STAGES, type Stage } from './types.js';
+import { WEATHER_EFFECTS, type Weather } from './weather.js';
 
 /**
  * Walk zones: where the pet goes decides how long it is away, what it costs and what it brings
@@ -103,13 +104,20 @@ export interface Finds {
 
 /**
  * What a walk brings back. `random` returns numbers from 0 (included) to 1 (excluded), such as
- * `Math.random`: the engine does not throw dice, whoever calls it does.
+ * `Math.random`: the engine does not throw dice, whoever calls it does. The weather of the walk
+ * (a neutral one by default) changes the coins and the chance of an item.
  */
-export function rollFinds(zoneId: WalkZoneId, random: () => number): Finds {
+export function rollFinds(
+  zoneId: WalkZoneId,
+  random: () => number,
+  weather: Weather = 'cloudy',
+): Finds {
   const zone = WALK_ZONES[zoneId];
+  const effect = WEATHER_EFFECTS[weather];
   const { min, max } = zone.coins;
-  const finds: Finds = { coins: min + Math.floor(random() * (max - min + 1)), items: [] };
-  if (random() < zone.itemChance) {
+  const base = min + Math.floor(random() * (max - min + 1));
+  const finds: Finds = { coins: Math.round((base * (100 + effect.coinsPercent)) / 100), items: [] };
+  if (random() < zone.itemChance * effect.itemChanceFactor) {
     const total = zone.items.reduce((sum, item) => sum + item.weight, 0);
     let roll = random() * total;
     for (const item of zone.items) {
