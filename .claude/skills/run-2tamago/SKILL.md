@@ -38,7 +38,7 @@ It never returns, so it is of no use headless.
 
 ## Test
 
-`make format ci` (format check, lint, build, type check, all tests). Browser tests: `make test-e2e`.
+`make format ci` (format check, lint, build, type check, all tests).
 
 ## Gotchas
 
@@ -59,4 +59,4 @@ It never returns, so it is of no use headless.
 - `serve.sh start` hangs: read `/tmp/2tamago-run/api.log` and `web.log`; a busy port means a previous
   run was not stopped (`serve.sh stop`).
 - A full `make ci` may kill one API e2e worker with SIGKILL (memory pressure); re-run that file alone with
-  `pnpm --filter @2tamago/api exec vitest run --config ./vitest.config.e2e.ts <file>`.
+  `cd api && pnpm exec vitest run --config ./vitest.config.e2e.ts test/<file>`.
