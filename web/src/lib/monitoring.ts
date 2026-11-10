@@ -2,6 +2,9 @@ import type { ClientConfig } from '@2tamago/core/contracts';
 
 type SentryBrowser = typeof import('@sentry/browser');
 
+/** Share of transactions sent for performance monitoring (1%). */
+const TRACES_SAMPLE_RATE = 0.01;
+
 let sentry: SentryBrowser | null = null;
 /** Errors raised before the SDK finished loading, sent once it is ready. */
 let pending: unknown[] = [];
@@ -17,6 +20,14 @@ export async function startMonitoring(config: Pick<ClientConfig, 'sentryDsn'>): 
     sdk.init({
       dsn: config.sentryDsn,
       environment: import.meta.env.MODE,
+      // Performance data (page loads, navigations): a small sample, adjust to the traffic.
+      tracesSampleRate: TRACES_SAMPLE_RATE,
+      // GlitchTip does not support sessions: drop the default session integration (v11 has no
+      // `autoSessionTracking` option), and add browser tracing for the transactions.
+      integrations: (defaults) => [
+        ...defaults.filter((integration) => integration.name !== 'BrowserSession'),
+        sdk.browserTracingIntegration(),
+      ],
     });
     sentry = sdk;
     for (const error of pending) sdk.captureException(error);

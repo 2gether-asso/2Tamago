@@ -2,13 +2,25 @@ import * as Sentry from '@sentry/node';
 import { Catch, HttpException, type ArgumentsHost } from '@nestjs/common';
 import { BaseExceptionFilter } from '@nestjs/core';
 
+/** Share of transactions sent for performance monitoring (1%). */
+const TRACES_SAMPLE_RATE = 0.01;
+
 /**
  * Error reporting to Sentry, or to any Sentry-compatible server such as GlitchTip: enabled by
  * `SENTRY_DSN`, a no-op without it.
  */
 export function initErrorReporting(options: { dsn?: string; environment: string }): void {
   if (!options.dsn) return;
-  Sentry.init({ dsn: options.dsn, environment: options.environment });
+  Sentry.init({
+    dsn: options.dsn,
+    environment: options.environment,
+    // Performance data (transactions): a small sample, adjust to the traffic.
+    tracesSampleRate: TRACES_SAMPLE_RATE,
+    // GlitchTip does not support sessions: drop the default session integration (v11 has no
+    // `autoSessionTracking` option).
+    integrations: (defaults) =>
+      defaults.filter((integration) => integration.name !== 'ProcessSession'),
+  });
 }
 
 /** Reports an error that was handled (for example by a redirect), so it is still followed. */
