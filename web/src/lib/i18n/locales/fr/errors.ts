@@ -59,6 +59,7 @@ export const errors = {
   'error.no_contribution':
     'Promène ton compagnon au moins une fois cette semaine pour y avoir droit.',
   'error.already_has_pet': 'Tu as déjà un compagnon.',
+  'error.already_owned': 'Tu as déjà cet objet : on n’en garde qu’un.',
   'error.feedback_disabled': 'Les avis ne sont pas activés sur ce serveur.',
   'error.missing_item': 'Tu n’as pas cet objet.',
   'error.no_pet': 'Ce compagnon n’est plus là.',
