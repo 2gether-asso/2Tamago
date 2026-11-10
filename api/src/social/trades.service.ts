@@ -195,6 +195,27 @@ export class TradesService {
     });
   }
 
+  /**
+   * A player is leaving for good: the offers made to them are declined and the proposers get
+   * their items back (the offers they made themselves go away with them, nothing was taken from
+   * anybody else).
+   */
+  async declineAllTo(tx: Transaction, targetId: string): Promise<void> {
+    const target = await this.players.get(tx, targetId);
+    const pending = await tx
+      .select({ id: trades.id })
+      .from(trades)
+      .where(and(eq(trades.targetId, targetId), eq(trades.status, 'pending')));
+    for (const { id } of pending) {
+      const trade = await this.claim(tx, eq(trades.id, id), 'declined');
+      if (!trade) continue;
+      await this.refund(tx, trade);
+      await this.activity.record(tx, trade.proposerId, 'trade_declined', {
+        playerName: target.displayName,
+      });
+    }
+  }
+
   /** Gives back what was set aside for the offers nobody answered in time. */
   private async expireStale(): Promise<void> {
     const now = new Date(this.clock.now());
