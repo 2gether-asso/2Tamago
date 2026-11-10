@@ -127,6 +127,13 @@
       "when": 1794274361964,
       "tag": "0017_awesome_gravity",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1794281868769,
+      "tag": "0018_tearful_zodiak",
+      "breakpoints": true
     }
   ]
 }

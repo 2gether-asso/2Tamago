@@ -6,7 +6,7 @@ import type {
   PushLocale,
   TradeItems,
 } from '@2tamago/core/contracts';
-import type { PetState, Room } from '@2tamago/core';
+import type { Heirloom, PetState, Room } from '@2tamago/core';
 import { sql } from 'drizzle-orm';
 import {
   boolean,
@@ -37,6 +37,8 @@ export const players = pgTable('players', {
   avatarUrl: text('avatar_url'),
   /** The player's room (see `Room`); what is no longer owned is left out when it is shown. */
   room: jsonb().$type<Partial<Room>>().notNull().default({}),
+  /** What a retired companion left for the next egg, until the player adopts it (see `heirloomOf`). */
+  heirloom: jsonb().$type<Heirloom>(),
   coins: integer().notNull().default(50),
   lastDailyBonusDay: text('last_daily_bonus_day'),
   /** Coins earned today by playing and training, capped per day. */
