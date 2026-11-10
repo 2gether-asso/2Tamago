@@ -28,5 +28,6 @@ export const shop = {
   'shop.medicines': 'Pharmacie',
   'shop.in_bag': 'Dans ton sac : {count}',
   'shop.accessories': 'Accessoires',
+  'shop.decor': 'Décoration de la chambre',
   'shop.owned': 'Déjà à toi ✔',
 } as const;

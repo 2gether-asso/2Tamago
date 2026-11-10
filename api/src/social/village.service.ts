@@ -105,6 +105,7 @@ export class VillageService {
       pet: toPetDto(pet.row, pet.ownerName),
       caressedToday: caressed.has(petId),
       daycareId: await this.daycare.activeFor(viewerId, petId),
+      room: await this.players.room(this.db, pet.row.ownerId),
     };
   }
 

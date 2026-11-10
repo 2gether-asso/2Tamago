@@ -29,5 +29,6 @@ export const shop: Record<keyof typeof fr, string> = {
   'shop.medicines': 'Pharmacy',
   'shop.in_bag': 'In your bag: {count}',
   'shop.accessories': 'Accessories',
+  'shop.decor': 'Room decoration',
   'shop.owned': 'Already yours ✔',
 };

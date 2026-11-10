@@ -50,7 +50,7 @@ Le jeu s'inspire de trois sources :
 | ✅  | Fiche de personnage (vigueur, agilité, astuce, charme, chance), événement tiré à chaque promenade selon l'âge et la zone, souvenirs de promenade et une première quête (l'ermite)                      | Voir « Fiche de personnage » dans [GAME_DESIGN.md](GAME_DESIGN.md) |
 | 💡  | Plus de zones, d'objets à collectionner et de quêtes, météo                                                                                                                                            |                                                                    |
 | ✅  | Concours hebdomadaires : tours (score figé à l'inscription, qu'on peut mettre à jour) et beauté (un vote par semaine) ; classements, et pièces pour le podium de la semaine précédente                 | Voir « Concours » dans [GAME_DESIGN.md](GAME_DESIGN.md)            |
-| 💡  | Décoration de la chambre                                                                                                                                                                               |                                                                    |
+| ✅  | Décoration de la chambre : papiers peints, sols et objets achetés à la boutique, arrangés depuis `/room` ; la chambre se voit à l'accueil, en visite et sur le profil                                  | Voir « Chambre » dans [GAME_DESIGN.md](GAME_DESIGN.md)             |
 
 ## 3. Multijoueur asynchrone
 

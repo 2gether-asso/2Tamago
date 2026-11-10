@@ -6,7 +6,7 @@ import type {
   PushLocale,
   TradeItems,
 } from '@2tamago/core/contracts';
-import type { PetState } from '@2tamago/core';
+import type { PetState, Room } from '@2tamago/core';
 import { sql } from 'drizzle-orm';
 import {
   boolean,
@@ -33,6 +33,8 @@ export const players = pgTable('players', {
   /** The lock is an admin's: the player cannot change the name themselves either. */
   nameByAdmin: boolean('name_by_admin').notNull().default(false),
   avatarUrl: text('avatar_url'),
+  /** The player's room (see `Room`); what is no longer owned is left out when it is shown. */
+  room: jsonb().$type<Partial<Room>>().notNull().default({}),
   coins: integer().notNull().default(50),
   lastDailyBonusDay: text('last_daily_bonus_day'),
   /** Coins earned today by playing and training, capped per day. */

@@ -81,11 +81,11 @@ Pour s'absenter sans pause, on peut **confier son compagnon à un autre membre**
 
 Deux membres peuvent s'échanger des objets (friandises, accessoires, et les objets qu'on ne trouve qu'en promenade) : bouton « Proposer un échange » sur le profil de l'autre. Les pièces font partie de l'échange (voir plus bas).
 
-- **L'offre** : ce qu'on donne, et ce qu'on demande en échange (rien : c'est un cadeau). Jusqu'à 4 objets différents de chaque côté, 10 exemplaires au plus de chacun, un seul pour un accessoire (`TRADE_LIMITS`, `tradeProblem()` dans `shared/core/src/engine/trade.ts`). Il faut donner quelque chose, et pas le même objet des deux côtés.
+- **L'offre** : ce qu'on donne, et ce qu'on demande en échange (rien : c'est un cadeau). Jusqu'à 4 objets différents de chaque côté, 10 exemplaires au plus de chacun, un seul pour un accessoire ou une décoration (`TRADE_LIMITS`, `tradeProblem()` dans `shared/core/src/engine/trade.ts`). Il faut donner quelque chose, et pas le même objet des deux côtés.
 - **Mise de côté** : faire une offre retire tout de suite les objets donnés du sac, pour qu'ils ne puissent pas être dépensés ou offerts ailleurs pendant l'attente. Un manque refuse l'offre sans rien retirer (`missing_item`). On ne peut avoir que 3 offres en attente (`trade_full`).
 - **La réponse** : l'autre membre accepte ou refuse depuis la page du village ; le proposeur peut retirer son offre. Accepter échange les deux côtés **en une seule transaction** : si l'accepteur n'a pas ce qu'on lui demande (`missing_item`), rien ne bouge et l'offre reste ouverte. Deux réponses simultanées ne concluent qu'un échange (chaque changement d'état est pris par un `UPDATE … WHERE status = 'pending'`).
 - **Rendu** : un refus, un retrait, ou 72 h sans réponse rendent les objets au proposeur, qui en est informé dans son journal.
-- **Un accessoire ne se porte qu'une fois** : on ne donne pas un accessoire à quelqu'un qui l'a déjà, ni on n'en demande un qu'on a déjà (`trade_invalid`).
+- **Un accessoire ou une décoration ne se garde qu'une fois** : on n'en donne pas à quelqu'un qui l'a déjà, ni on n'en demande un qu'on a déjà (`trade_invalid`). Même règle pour les trouvailles de promenade (`isUnique()`).
 - **Qui** : n'importe quel membre, pas seulement les favoris : les favoris sont privés et à sens unique (voir [FEATURES.md](FEATURES.md)), un échange demande l'accord de l'autre de toute façon, et les offres en attente sont plafonnées.
 - **On ne demande que ce que l'autre a** : le formulaire n'affiche, côté « demandé », que le sac de l'autre membre (`GET /trades/targets/:id`, qui renvoie aussi sa liste d'envies, jamais son solde). Le serveur le vérifie aussi à l'offre : quantité insuffisante, `missing_item`. Rien n'est mis de côté chez l'autre : au moment d'accepter, c'est encore le sac qui décide.
 - **Pièces** : un côté peut comporter des pièces (`offerCoins`, `requestCoins`, 1000 au plus, `TRADE_LIMITS.maxCoins`), sur **un seul côté** (`coins_both_sides` : on échange la différence). Donner uniquement des pièces est un cadeau valide, et acheter un objet 30 pièces = `offerCoins: 30` + l'objet demandé. Les pièces données sont retirées à l'offre (`not_enough_coins` si le solde manque) et rendues avec les objets en cas de refus, retrait ou expiration. Les pièces demandées doivent exister chez l'autre à l'offre, et sont de nouveau vérifiées à l'acceptation, dans la même transaction (un manque annule tout, l'offre reste ouverte). Choix : les pièces sont deux champs à part et non un « objet » du catalogue, pour que le sac et ses règles (accessoires, quantités) n'aient pas à les connaître.
@@ -251,6 +251,16 @@ Les valeurs sont la règle `temperaments` de `GameRules` : un admin peut les mod
 | Vacances / Retour      | Pause complète du compagnon, voir « Vacances ». Refusé pour un œuf ou pendant une promenade                                    |
 | Promenade              | Selon la zone (voir « Promenades »). Au retour : bonheur +15, énergie, satiété et lien selon la zone, pièces et objets trouvés |
 
+## Chambre
+
+Chaque joueur a une chambre, où vit son compagnon : on la voit à l'accueil, sur la page de visite et sur le profil. Elle se décore avec des **décorations** achetées à la boutique (objets de type `decor`, gardés une seule fois comme les accessoires).
+
+- **Trois emplacements** (`DecorSlot`) : un **mur** (papier peint étoilé 60, prairie 60, océan 90), un **sol** (parquet 40, tatami 60, nuages 90) et jusqu'à **3 objets** posés dans la pièce (`ROOM_LIMITS.maxProps`) : plante 45, lampe 70, coussin 50, bocal à poissons 120. Mur et sol sont facultatifs : sans eux, la chambre garde le ciel simple d'avant.
+- **Règles** (`roomProblem()` dans `shared/core/src/engine/room.ts`, pures) : la décoration doit exister, aller à son emplacement (`wrong_slot`), ne pas être en double, ne pas dépasser 3 objets, et être possédée. L'API les applique à `PUT /room`, qui remplace toute la chambre d'un coup (`room_invalid`, `room_not_owned`).
+- **Ce qu'on voit** (`visibleRoom()`) : la chambre est rangée en base (`players.room`, JSON), mais on n'affiche que ce que le propriétaire possède encore. Donner une lampe dans un échange la retire donc de la chambre, sans rien casser ; la retrouver la remet là où elle était.
+- **La nuit**, une chambre décorée s'assombrit ; sans décoration, le ciel de nuit habituel.
+- Les décorations s'échangent, se demandent dans une liste d'envies et se donnent par code cadeau comme les autres objets.
+
 ## Économie
 
 | Source                                                                | Pièces                             |
@@ -263,7 +273,7 @@ Les valeurs sont la règle `temperaments` de `GameRules` : un admin peut les mod
 | Travail du compagnon (toutes les 2 heures)                            | 1 à 12, selon ses talents          |
 | Caresser le compagnon d'un autre (une fois par jour et par compagnon) | 3                                  |
 
-Repas : bol de riz 10, ragoût 14, poisson 20, salade de fruits 12. Remèdes : sirop 15, antibiotique 30, tisane digestive 20, vitamines 20. Prix : biscuit 8, fraise 12, lait chaud 15, gâteau 30, nœud 50, chapeau 80, lunettes 120, couronne 300. Les objets qu'on ne trouve qu'en promenade (mûre, champignon, noix de coco, glace, couronne de fleurs, étoile de mer) ne sont pas vendus : la boutique les refuse (`not_for_sale`).
+Repas : bol de riz 10, ragoût 14, poisson 20, salade de fruits 12. Remèdes : sirop 15, antibiotique 30, tisane digestive 20, vitamines 20. Prix : biscuit 8, fraise 12, lait chaud 15, gâteau 30, nœud 50, chapeau 80, lunettes 120, couronne 300. Décoration : de 40 (parquet) à 120 (bocal à poissons), voir « Chambre ». Les objets qu'on ne trouve qu'en promenade (mûre, champignon, noix de coco, glace, couronne de fleurs, étoile de mer) ne sont pas vendus : la boutique les refuse (`not_for_sale`).
 
 ## Travail
 

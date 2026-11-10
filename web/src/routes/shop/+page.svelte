@@ -1,6 +1,7 @@
 <script lang="ts">
-  import { discounted, isForSale, ITEMS, type ItemId } from '@2tamago/core';
+  import { discounted, isForSale, ITEMS, type DecorId, type ItemId } from '@2tamago/core';
   import { events } from '#lib/events.svelte.ts';
+  import { DECOR_ICON } from '#lib/decor.ts';
   import { game } from '#lib/game.svelte.ts';
   import { t } from '#lib/i18n/index.svelte.ts';
   import { bundleLabel } from '#lib/texts.ts';
@@ -15,6 +16,7 @@
   const meals = items.filter((item) => item.kind === 'meal');
   const medicines = items.filter((item) => item.kind === 'medicine');
   const accessories = items.filter((item) => item.kind === 'accessory');
+  const decor = items.filter((item) => item.kind === 'decor');
 
   let coins = $derived(game.player?.coins ?? 0);
   /** What an item costs now: an event may take a percentage off. */
@@ -178,6 +180,32 @@
           >🪙 {priceOf(item)}{#if priceOf(item) < item.price}
             <s class="was">{item.price}</s>{/if}</button
         >
+      {/if}
+    </div>
+  {/each}
+</div>
+
+<h2>{t('shop.decor')}</h2>
+<div class="grid">
+  {#each decor as item (item.id)}
+    {@const owned = (game.inventory[item.id as ItemId] ?? 0) > 0}
+    <div class="card item">
+      <strong>{DECOR_ICON[item.id as DecorId]} {itemLabel(item.id as ItemId)}</strong>
+      <button
+        class="wish"
+        type="button"
+        aria-pressed={wishlist.has(item.id as ItemId)}
+        title={wishTitle(item.id as ItemId)}
+        aria-label={wishTitle(item.id as ItemId)}
+        disabled={wishlist.busy ||
+          (!wishlist.has(item.id as ItemId) && wishlist.items.length >= wishlist.max)}
+        onclick={() => wishlist.toggle(item.id as ItemId)}
+        >{wishlist.has(item.id as ItemId) ? '💖' : '🤍'}</button
+      >
+      {#if owned}
+        <small>{t('shop.owned')}</small>
+      {:else}
+        {@render buy(item)}
       {/if}
     </div>
   {/each}

@@ -3,7 +3,7 @@ import {
   applyAction,
   boosted,
   DEFAULT_ZONE,
-  isAccessory,
+  isUnique,
   rollFinds,
   type GameRules,
   type ItemId,
@@ -103,10 +103,10 @@ export class WalksService {
           .returning();
 
         const rolled = rollFinds(zone, Math.random);
-        // An accessory is kept once: finding one already owned brings nothing.
+        // An accessory (or decoration) is kept once: finding one already owned brings nothing.
         const items: ItemId[] = [];
         for (const item of rolled.items) {
-          if (!isAccessory(item) || !(await this.players.hasItem(tx, playerId, item))) {
+          if (!isUnique(item) || !(await this.players.hasItem(tx, playerId, item))) {
             items.push(item);
           }
         }
@@ -114,7 +114,7 @@ export class WalksService {
         const walkEvent = change.events.find((event) => event.type === 'walk_event')!
           .data as unknown as WalkEventDto;
         if (walkEvent.item) {
-          const kept = !isAccessory(walkEvent.item as ItemId);
+          const kept = !isUnique(walkEvent.item as ItemId);
           if (kept || !(await this.players.hasItem(tx, playerId, walkEvent.item as ItemId))) {
             items.push(walkEvent.item as ItemId);
           }

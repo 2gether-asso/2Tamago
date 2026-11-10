@@ -1,4 +1,4 @@
-import { getItem, isAccessory, type ItemId } from './catalog.js';
+import { getItem, isUnique, type ItemId } from './catalog.js';
 
 /** Items swapped between two players: what is given, or what is asked for. */
 export type Bundle = Partial<Record<ItemId, number>>;
@@ -6,7 +6,7 @@ export type Bundle = Partial<Record<ItemId, number>>;
 export const TRADE_LIMITS = {
   /** Different items on one side of a trade. */
   maxKinds: 4,
-  /** Of one item (an accessory is worn once: one only). */
+  /** Of one item (an accessory or a piece of decoration is kept once: one only). */
   maxQuantity: 10,
   /** Coins on one side of a trade. */
   maxCoins: 1000,
@@ -37,7 +37,7 @@ function bundleProblem(bundle: Bundle): TradeProblem | null {
   if (entries.length > TRADE_LIMITS.maxKinds) return 'too_many_kinds';
   for (const [id, quantity] of entries) {
     if (!getItem(id)) return 'unknown_item';
-    const max = isAccessory(id) ? 1 : TRADE_LIMITS.maxQuantity;
+    const max = isUnique(id) ? 1 : TRADE_LIMITS.maxQuantity;
     if (!Number.isInteger(quantity) || quantity < 1 || quantity > max) return 'bad_quantity';
   }
   return null;

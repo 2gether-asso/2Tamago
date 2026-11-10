@@ -15,3 +15,4 @@ export * from './engine/contests.js';
 export * from './engine/rpg.js';
 export * from './engine/work.js';
 export * from './engine/diet.js';
+export * from './engine/room.js';

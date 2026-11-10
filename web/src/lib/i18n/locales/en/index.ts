@@ -17,6 +17,7 @@ import { push } from './push.ts';
 import { account } from './account.ts';
 import { rpg } from './rpg.ts';
 import { work } from './work.ts';
+import { room } from './room.ts';
 
 /** English: must have exactly the keys of `fr`. */
 export const en: Record<keyof typeof fr, string> = {
@@ -38,4 +39,5 @@ export const en: Record<keyof typeof fr, string> = {
   ...account,
   ...rpg,
   ...work,
+  ...room,
 };

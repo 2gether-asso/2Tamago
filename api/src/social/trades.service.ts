@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectDrizzle } from '@nestjs/drizzle';
-import { bundleEntries, isAccessory, type Bundle } from '@2tamago/core';
+import { bundleEntries, isUnique, type Bundle } from '@2tamago/core';
 import type {
   TradeBody,
   TradeDto,
@@ -88,10 +88,10 @@ export class TradesService {
       if ((open?.n ?? 0) >= TRADE.maxOpen) {
         throw new ConflictException({ statusCode: 409, code: 'trade_full' });
       }
-      // An accessory is worn once: it makes no sense to give one to, or ask one from, an owner.
+      // An accessory or a decoration is kept once: it makes no sense to give one to, or ask one from, an owner.
       if (
-        (await this.ownsAccessory(tx, body.targetId, body.offer)) ||
-        (await this.ownsAccessory(tx, proposerId, body.request))
+        (await this.ownsUnique(tx, body.targetId, body.offer)) ||
+        (await this.ownsUnique(tx, proposerId, body.request))
       ) {
         throw invalidTrade();
       }
@@ -140,8 +140,8 @@ export class TradesService {
       );
       if (!trade) throw noTrade();
       if (
-        (await this.ownsAccessory(tx, targetId, trade.offer)) ||
-        (await this.ownsAccessory(tx, trade.proposerId, trade.request))
+        (await this.ownsUnique(tx, targetId, trade.offer)) ||
+        (await this.ownsUnique(tx, trade.proposerId, trade.request))
       ) {
         throw invalidTrade();
       }
@@ -267,9 +267,9 @@ export class TradesService {
     }
   }
 
-  private async ownsAccessory(tx: Transaction, playerId: string, bundle: Bundle): Promise<boolean> {
+  private async ownsUnique(tx: Transaction, playerId: string, bundle: Bundle): Promise<boolean> {
     for (const [item] of bundleEntries(bundle)) {
-      if (isAccessory(item) && (await this.players.hasItem(tx, playerId, item))) return true;
+      if (isUnique(item) && (await this.players.hasItem(tx, playerId, item))) return true;
     }
     return false;
   }

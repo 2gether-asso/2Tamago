@@ -76,6 +76,7 @@ export class PetsService {
       player: this.players.toDto(player, isAdmin),
       pet: pet ? toPetDto(pet.row, pet.ownerName) : null,
       inventory: await this.players.inventory(this.db, playerId),
+      room: await this.players.room(this.db, playerId),
       serverTime: this.now(),
     };
   }

@@ -4,6 +4,7 @@
   import TradeComposer from '#lib/components/TradeComposer.svelte';
   import PushSettings from '#lib/components/PushSettings.svelte';
   import PetSprite from '#lib/components/PetSprite.svelte';
+  import RoomScene from '#lib/components/RoomScene.svelte';
   import StatBar from '#lib/components/StatBar.svelte';
   import { api } from '#lib/api.ts';
   import { game } from '#lib/game.svelte.ts';
@@ -173,17 +174,19 @@
   <section class="card pet" aria-labelledby="pet-title">
     <h2 class="sr-only">{t('profile.pet_card')}</h2>
     {#if pet && profile.pet}
-      <div class="scene" class:night={pet.asleep}>
-        <PetSprite
-          species={pet.species}
-          stage={pet.stage}
-          form={pet.form}
-          color={pet.color}
-          traits={pet.traits}
-          mood={profile.pet.mood}
-          equipped={pet.equipped}
-          size={240}
-        />
+      <div class="scene">
+        <RoomScene room={profile.room} night={pet.asleep}>
+          <PetSprite
+            species={pet.species}
+            stage={pet.stage}
+            form={pet.form}
+            color={pet.color}
+            traits={pet.traits}
+            mood={profile.pet.mood}
+            equipped={pet.equipped}
+            size={240}
+          />
+        </RoomScene>
       </div>
       <h2 id="pet-title" class="name">{pet.name}</h2>
       <p class="muted">
@@ -306,16 +309,7 @@
     text-align: center;
   }
   .scene {
-    display: grid;
-    place-items: center;
-    border-radius: var(--radius);
-    background: linear-gradient(var(--scene-top), var(--scene-bottom));
-    border: 1px solid var(--border);
-    padding: 1rem 0;
     margin-bottom: 0.8rem;
-  }
-  .scene.night {
-    background: linear-gradient(#141638, #3a2f78);
   }
   .name {
     margin: 0;
