@@ -11,6 +11,8 @@ export const account: Record<keyof typeof fr, string> = {
   'account.name_save': 'Save',
   'account.name_saved': 'Name saved.',
   'account.name_locked': 'A moderator set your name: it cannot be changed here.',
+  'account.name_discord': 'Go back to my Discord name ({name})',
+  'account.name_discord_done': 'You have your Discord name back.',
   'account.sessions_title': 'My sign-ins',
   'account.sessions_hint':
     'The devices signed in to your account. Sign out the ones you do not recognize.',

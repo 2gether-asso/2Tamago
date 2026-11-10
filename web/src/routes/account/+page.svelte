@@ -56,6 +56,13 @@
     }
   }
 
+  function useDiscordName() {
+    return guarded(async () => {
+      await api.useDiscordName();
+      await game.refresh(); // the name in the header
+    }, t('account.name_discord_done'));
+  }
+
   function rename(event: SubmitEvent) {
     event.preventDefault();
     return guarded(async () => {
@@ -109,6 +116,11 @@
     >
       {t('account.name_save')}
     </button>
+    {#if account.nameCustom && account.discordName}
+      <button type="button" class="link" disabled={busy} onclick={useDiscordName}>
+        {t('account.name_discord', { name: account.discordName })}
+      </button>
+    {/if}
   </form>
 
   <section class="card">

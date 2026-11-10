@@ -25,6 +25,8 @@ export class AccountService {
     return {
       displayName: player.displayName,
       nameLocked: player.nameByAdmin,
+      nameCustom: player.nameLocked && !player.nameByAdmin,
+      discordName: player.discordName,
       memberSince: player.createdAt.getTime(),
       sessions: rows.map((row) => ({
         id: row.id,
@@ -66,6 +68,20 @@ export class AccountService {
       await this.trades.declineAllTo(tx, playerId);
       await tx.delete(players).where(eq(players.id, playerId));
     });
+  }
+
+  /** Gives the Discord name back: it replaces the chosen one, and sign-ins keep it up to date again. */
+  async useDiscordName(playerId: string): Promise<void> {
+    const player = await this.players.get(this.db, playerId);
+    if (player.nameByAdmin) throw new ConflictException({ statusCode: 409, code: 'name_locked' });
+    if (!player.nameLocked) return; // already the Discord name
+    if (!player.discordName) {
+      throw new ConflictException({ statusCode: 409, code: 'no_discord_name' });
+    }
+    await this.db
+      .update(players)
+      .set({ displayName: player.discordName, nameLocked: false })
+      .where(eq(players.id, playerId));
   }
 
   async revoke(playerId: string, sessionId: string): Promise<void> {

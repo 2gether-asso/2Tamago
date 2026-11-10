@@ -128,6 +128,7 @@ export const api = {
 
   account: () => call<AccountOverview>('GET', '/account'),
   renameSelf: (name: string) => call<void>('PUT', '/account/name', { name }),
+  useDiscordName: () => call<void>('DELETE', '/account/name'),
   deleteAccount: (confirm: string) => call<void>('DELETE', '/account', { confirm }),
   setRoom: (room: RoomBody) => call<Room>('PUT', '/room', room),
   revokeSession: (id: string) => call<void>('DELETE', `/account/sessions/${id}`),

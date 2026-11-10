@@ -28,6 +28,8 @@ export const players = pgTable('players', {
   /** Discord user id, or `dev:<name>` for development accounts. */
   discordId: text('discord_id').notNull().unique(),
   displayName: text('display_name').notNull(),
+  /** The name Discord gave at the last sign-in, kept to go back to it after a custom name. */
+  discordName: text('discord_name'),
   /** An admin set the name: the Discord name no longer replaces it at sign-in. */
   nameLocked: boolean('name_locked').notNull().default(false),
   /** The lock is an admin's: the player cannot change the name themselves either. */

@@ -29,6 +29,13 @@ export class AccountController {
     await this.account.rename(session.playerId, body.name);
   }
 
+  /** Goes back to the name Discord gave, after a chosen one. */
+  @Delete('name')
+  @HttpCode(204)
+  async useDiscordName(@CurrentSession() session: Session): Promise<void> {
+    await this.account.useDiscordName(session.playerId);
+  }
+
   /** Erases the account for good (the body confirms with the displayed name). */
   @Delete()
   @HttpCode(204)
