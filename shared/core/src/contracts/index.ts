@@ -3,7 +3,8 @@
  * client). Request bodies are Zod schemas; responses are plain types.
  */
 import { z } from 'zod';
-import { ITEM_IDS, type ItemId } from '../engine/catalog.js';
+import { DECOR_IDS, ITEM_IDS, type DecorId, type ItemId } from '../engine/catalog.js';
+import { ROOM_LIMITS, type Room } from '../engine/room.js';
 import type { QuestId, WalkEventId, WalkEventKind } from '../engine/rpg.js';
 import { WALK_ZONE_IDS, type WalkZoneId } from '../engine/zones.js';
 import { TRADE_LIMITS, tradeProblem } from '../engine/trade.js';
@@ -28,6 +29,7 @@ import {
 } from '../engine/types.js';
 
 const itemId = z.enum(ITEM_IDS as [ItemId, ...ItemId[]]);
+const decorId = z.enum(DECOR_IDS as [DecorId, ...DecorId[]]);
 const petName = z
   .string()
   .trim()
@@ -524,6 +526,14 @@ export const buyBody = z.object({
 });
 export type BuyBody = z.infer<typeof buyBody>;
 
+/** `PUT /room`: the whole room at once (see `roomProblem` for what is allowed). */
+export const roomBody = z.object({
+  wall: decorId.nullable(),
+  floor: decorId.nullable(),
+  props: z.array(decorId).max(ROOM_LIMITS.maxProps),
+});
+export type RoomBody = z.infer<typeof roomBody>;
+
 export const giftBody = z.object({ item: itemId });
 export type GiftBody = z.infer<typeof giftBody>;
 
@@ -676,6 +686,8 @@ export interface MeResponse {
   player: PlayerDto;
   pet: PetDto | null;
   inventory: Inventory;
+  /** The player's room, as it shows now. */
+  room: Room;
   /** Server clock, so the client can correct its own when predicting. */
   serverTime: number;
 }
@@ -757,6 +769,7 @@ export interface PlayerProfile {
   stats: PlayerStats;
   /** Their living companion, brought up to date. */
   pet: PetDto | null;
+  room: Room;
 }
 
 export interface VillagePet {
@@ -810,6 +823,8 @@ export interface VisitResponse {
   caressedToday: boolean;
   /** Set when the viewer looks after this companion right now: the way to the care actions. */
   daycareId: string | null;
+  /** The owner's room. */
+  room: Room;
 }
 
 /** `pending`: waiting for the caretaker's answer. `active`: the caretaker looks after the pet. */
@@ -944,6 +959,8 @@ export const API_ERROR_CODES = [
   'feedback_disabled',
   'goal_not_reached',
   'missing_item',
+  'room_invalid',
+  'room_not_owned',
   'name_locked',
   'confirmation_mismatch',
   'name_not_allowed',

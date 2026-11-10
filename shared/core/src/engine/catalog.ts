@@ -220,6 +220,8 @@ export function isDecor(id: string): id is DecorId {
   return getItem(id)?.kind === 'decor';
 }
 
+export const DECOR_IDS = ITEM_IDS.filter(isDecor);
+
 /** Kept once: owning a second one brings nothing (accessories and decoration). */
 export function isUnique(id: string): boolean {
   return isAccessory(id) || isDecor(id);
