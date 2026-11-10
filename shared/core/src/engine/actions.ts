@@ -4,6 +4,7 @@ import { GameError } from './errors.js';
 import { alignToGrid, gameHours, type GameRules } from './rules.js';
 import { clamp, endVacation, simulate } from './simulate.js';
 import { isNight } from './night.js';
+import { applyHeirloom, type Heirloom } from './heirloom.js';
 import { gainXp, resolveWalkEvent, walkSeed } from './rpg.js';
 import { WORK } from './work.js';
 import { hashSeed, modOf, rollTraits } from './traits.js';
@@ -16,11 +17,19 @@ export interface NewPetInput {
   color: number;
   /** Randomness for the traits; defaults to a hash of the name and the creation time. */
   seed?: number;
+  /** What the previous companion handed down, if it retired (see `heirloomOf`). */
+  heirloom?: Heirloom | null;
   now: number;
 }
 
 /** A fresh egg. */
 export function createPet(input: NewPetInput, rules: GameRules): PetState {
+  const state = newEgg(input, rules);
+  if (input.heirloom) applyHeirloom(state, input.heirloom);
+  return state;
+}
+
+function newEgg(input: NewPetInput, rules: GameRules): PetState {
   const t = alignToGrid(rules, input.now);
   return {
     v: 1,

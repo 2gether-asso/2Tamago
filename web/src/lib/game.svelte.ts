@@ -4,6 +4,7 @@ import {
   moodOf,
   simulate,
   type GameRules,
+  type Heirloom,
   type PetEvent,
   type PetState,
   type Room,
@@ -31,6 +32,8 @@ class Game {
   player = $state<PlayerDto | null>(null);
   inventory = $state<Inventory>({});
   room = $state<Room>(EMPTY_ROOM);
+  /** What the last retired companion hands down to the next egg. */
+  heirloom = $state<Heirloom | null>(null);
   rules = $state<GameRules | null>(null);
   /** Last pet received from the API. */
   snapshot = $state.raw<PetDto | null>(null);
@@ -60,6 +63,7 @@ class Game {
       this.player = me.player;
       this.inventory = me.inventory;
       this.room = me.room;
+      this.heirloom = me.heirloom;
       this.snapshot = me.pet;
       this.clockOffset = me.serverTime - Date.now();
       this.loaded = true;
@@ -87,6 +91,9 @@ class Game {
       if (action.type === 'treat') this.#addItem(action.item, -1);
       else if ((action.type === 'feed' || action.type === 'medicine') && action.item) {
         this.#addItem(action.item, -1);
+      } else if (action.type === 'retire') {
+        // A retirement leaves an egg for the next companion: only the server knows which.
+        this.heirloom = (await api.me()).heirloom;
       }
     }
     return result;
@@ -95,6 +102,7 @@ class Game {
   async adopt(name: string, species: PetState['species'], color: number): Promise<void> {
     await this.#run(async () => {
       this.snapshot = await api.adopt({ name, species, color });
+      this.heirloom = null; // it went to this egg
     });
   }
 

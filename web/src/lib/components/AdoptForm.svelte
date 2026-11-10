@@ -1,7 +1,14 @@
 <script lang="ts">
-  import { SPECIES, SPECIES_LABELS, type Species } from '@2tamago/core';
+  import {
+    HEIRLOOM,
+    SPECIES,
+    SPECIES_LABELS,
+    XP_PER_POINT,
+    type HeirloomBonus,
+    type Species,
+  } from '@2tamago/core';
   import { game } from '../game.svelte.ts';
-  import { t } from '#lib/i18n/index.svelte.ts';
+  import { t, type MessageKey } from '#lib/i18n/index.svelte.ts';
   import PetSprite from './PetSprite.svelte';
 
   let name = $state('');
@@ -49,6 +56,13 @@
     randomizeColor();
   }
 
+  /** What each bonus is worth, in the words of the player (a point of luck is `XP_PER_POINT`). */
+  const BONUS: Record<HeirloomBonus, { key: MessageKey; count: number }> = {
+    bond: { key: 'adopt.heirloom_bond', count: HEIRLOOM.bond },
+    tricks: { key: 'adopt.heirloom_tricks', count: HEIRLOOM.trickProgress },
+    luck: { key: 'adopt.heirloom_luck', count: HEIRLOOM.luckXp / XP_PER_POINT },
+  };
+
   async function submit(event: SubmitEvent) {
     event.preventDefault();
     await game.adopt(name.trim(), species, color);
@@ -57,6 +71,13 @@
 
 <form class="card adopt" onsubmit={submit}>
   <h2>{t('adopt.title')}</h2>
+  {#if game.heirloom}
+    {@const bonus = BONUS[game.heirloom.bonus]}
+    <p class="heirloom">
+      <strong>{t('adopt.heirloom', { name: game.heirloom.from })}</strong>
+      {t(bonus.key, { count: bonus.count })}
+    </p>
+  {/if}
   <button type="button" class="shuffle-all" onclick={randomizeAll}>
     🎲 {t('adopt.randomize_all')}
   </button>
@@ -126,6 +147,12 @@
 </form>
 
 <style>
+  .heirloom {
+    margin: 0 0 0.8rem;
+    padding: 0.6rem 0.9rem;
+    border-radius: var(--radius-md);
+    background: rgb(var(--accent-rgb) / 0.1);
+  }
   .adopt {
     display: flex;
     flex-direction: column;

@@ -4,6 +4,7 @@
  */
 import { z } from 'zod';
 import { DECOR_IDS, ITEM_IDS, type DecorId, type ItemId } from '../engine/catalog.js';
+import type { Heirloom } from '../engine/heirloom.js';
 import { ROOM_LIMITS, type Room } from '../engine/room.js';
 import type { QuestId, WalkEventId, WalkEventKind } from '../engine/rpg.js';
 import { WALK_ZONE_IDS, type WalkZoneId } from '../engine/zones.js';
@@ -692,6 +693,8 @@ export interface MeResponse {
   inventory: Inventory;
   /** The player's room, as it shows now. */
   room: Room;
+  /** What the last retired companion hands down to the next egg, until it is adopted. */
+  heirloom: Heirloom | null;
   /** Server clock, so the client can correct its own when predicting. */
   serverTime: number;
 }
