@@ -12,8 +12,11 @@
     isSnack,
     SPECIES_LABELS,
     TRICKS,
+    walkEnergyCost,
     WALK_ZONE_IDS,
     WALK_ZONES,
+    WEATHER_EFFECTS,
+    weatherAt,
     zoneOpenTo,
     trickLevel,
     type ItemId,
@@ -41,10 +44,16 @@
     temperamentLabel,
     trickLabel,
     walkEventText,
+    WEATHER_ICON,
+    weatherHint,
+    weatherLabel,
     zoneHint,
     zoneLabel,
   } from '#lib/texts.ts';
 
+  /** The coins of a zone under today's weather, as the engine rounds them. */
+  const coinsWithWeather = (coins: number, percent: number) =>
+    Math.round((coins * (100 + percent)) / 100);
   const ZONE_ICONS = { meadow: '🌼', forest: '🌲', beach: '🏖️' } as const;
 
   let playing = $state(false);
@@ -361,19 +370,29 @@
           {#each WALK_ZONE_IDS as id (id)}
             {@const zone = WALK_ZONES[id]}
             {@const open = zoneOpenTo(zone, pet.stage)}
-            {@const tired = pet.stats.energy < zone.energyCost + 5}
+            {@const weather = weatherAt(rules, now, id)}
+            {@const effect = WEATHER_EFFECTS[weather]}
+            {@const cost = walkEnergyCost(zone, weather)}
+            {@const tired = pet.stats.energy < cost + 5}
             <div class="zone" class:locked={!open}>
               <span class="zone-icon" aria-hidden="true">{ZONE_ICONS[id]}</span>
               <div class="zone-text">
                 <strong>{zoneLabel(id)}</strong>
                 <small class="muted">{zoneHint(id)}</small>
+                <small class="weather" title={weatherHint(weather)}>
+                  {WEATHER_ICON[weather]}
+                  {weatherLabel(weather)} · {weatherHint(weather)}
+                </small>
                 <small class="muted">
                   {#if open}
                     {t('home.zone_duration', {
                       minutes: Math.round(rules.outingHours * zone.durationFactor * 60),
                     })}
-                    · {t('home.zone_cost', { energy: zone.energyCost })}
-                    · 🪙 {zone.coins.min}–{zone.coins.max}
+                    · {t('home.zone_cost', { energy: cost })}
+                    · 🪙 {coinsWithWeather(zone.coins.min, effect.coinsPercent)}–{coinsWithWeather(
+                      zone.coins.max,
+                      effect.coinsPercent,
+                    )}
                   {:else}
                     🔒 {t('home.zone_locked', { stage: stageLabel(zone.minStage) })}
                   {/if}
@@ -461,6 +480,10 @@
         {ZONE_ICONS[walkResult.zone]}
         {t('walk.zone', { zone: zoneLabel(walkResult.zone) })}
       </p>
+      <p class="muted">
+        {WEATHER_ICON[walkResult.weather]}
+        {t('walk.weather', { weather: weatherLabel(walkResult.weather) })}
+      </p>
       <p class="story">{walkEventText(walkResult.walkEvent.walk, pet?.name ?? '')}</p>
       <p>{t('walk.coins_found', { count: walkResult.found.coins })}</p>
       {#each walkResult.found.items as item, i (i)}<p>🎁 {itemLabel(item)}</p>{/each}
@@ -504,6 +527,9 @@
   }
   .zone.locked {
     opacity: 0.65;
+  }
+  .weather {
+    color: var(--text);
   }
   .zone-icon {
     font-size: 1.8rem;

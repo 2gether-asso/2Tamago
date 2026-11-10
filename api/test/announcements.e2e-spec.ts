@@ -130,8 +130,10 @@ describe('Discord announcements (e2e)', () => {
     expect(say('🤝')).toHaveLength(1);
     expect(say('🤝')[0]).toMatch(/Pompon.*Caillou|Caillou.*Pompon/);
 
-    // They are out together again: they met already, the channel hears nothing new.
-    clock.advance(hours(2));
+    // They are out together again: they met already, the channel hears nothing new. Rested first,
+    // so that the weather of the day (rain costs more energy) cannot keep them home.
+    for (const agent of [alice, bob]) await agent.post('/api/pet/actions').send({ type: 'sleep' });
+    clock.advance(hours(9));
     expect(await walkTogether()).toHaveLength(2);
     expect(say('🤝')).toHaveLength(1);
   });

@@ -1,6 +1,6 @@
 import type { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { gameHours, WALK_ZONES, withRules } from '@2tamago/core';
+import { gameHours, WALK_ZONES, weatherAt, withRules } from '@2tamago/core';
 import type {
   ActionResponse,
   AdminStats,
@@ -378,6 +378,7 @@ describe('2Tamago API (e2e)', () => {
     // A good night's sleep, then both go for a walk at the same time: they meet.
     for (const agent of [alice, bob]) await agent.post('/api/pet/actions').send({ type: 'sleep' });
     clock.advance(hours(9));
+    const setOff = clock.time;
     for (const agent of [alice, bob]) {
       await agent.post('/api/pet/actions').send({ type: 'feed' });
       await agent.post('/api/pet/walk').expect(200);
@@ -387,6 +388,8 @@ describe('2Tamago API (e2e)', () => {
     const walk: WalkResponse = (await alice.post('/api/pet/walk/return').expect(200)).body;
     expect(walk.encounters.map((e) => e.name)).toEqual(['Caillou']);
     expect(walk.found.coins).toBeGreaterThan(0);
+    // The weather is the one of the zone on the day it set off.
+    expect(walk.weather).toBe(weatherAt(rules, setOff, walk.zone));
 
     const bobWalk: WalkResponse = (await bob.post('/api/pet/walk/return').expect(200)).body;
     expect(bobWalk.encounters.map((e) => e.name)).toEqual(['Pompon']);

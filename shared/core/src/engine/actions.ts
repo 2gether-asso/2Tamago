@@ -6,6 +6,7 @@ import { clamp, endVacation, simulate } from './simulate.js';
 import { isNight } from './night.js';
 import { applyHeirloom, type Heirloom } from './heirloom.js';
 import { gainXp, resolveWalkEvent, walkSeed } from './rpg.js';
+import { walkEnergyCost, weatherAt } from './weather.js';
 import { WORK } from './work.js';
 import { hashSeed, modOf, rollTraits } from './traits.js';
 import { DEFAULT_ZONE, WALK_ZONES, zoneOpenTo, type WalkZoneId } from './zones.js';
@@ -356,7 +357,9 @@ export function applyAction(
       if (state.stage === 'baby') throw new GameError('too_young');
       const zone = WALK_ZONES[action.zone ?? DEFAULT_ZONE];
       if (!zoneOpenTo(zone, state.stage)) throw new GameError('zone_locked');
-      if (s.energy < zone.energyCost + 5) throw new GameError('too_tired');
+      // The weather of the day costs more or less energy (see `weather.ts`).
+      const cost = walkEnergyCost(zone, weatherAt(rules, at, zone.id));
+      if (s.energy < cost + 5) throw new GameError('too_tired');
       state.outing = {
         startedAt: at,
         endsAt: at + gameHours(rules, rules.outingHours * zone.durationFactor),
@@ -369,9 +372,11 @@ export function applyAction(
       if (at < state.outing.endsAt) throw new GameError('outing_not_finished');
       const zone = WALK_ZONES[state.outing.zone ?? DEFAULT_ZONE];
       const seed = action.seed ?? walkSeed(state);
+      // The weather of the day it set off, the one the walk was priced with.
+      const weather = weatherAt(rules, state.outing.startedAt, zone.id);
       state.outing = null;
       add('happiness', 15);
-      add('energy', -zone.energyCost);
+      add('energy', -walkEnergyCost(zone, weather));
       add('satiety', -zone.satietyCost);
       state.weight = Math.max(5, state.weight - 2);
       state.bond = clamp(state.bond + zone.bondGain);

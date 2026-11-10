@@ -1,6 +1,7 @@
 import {
   bundleEntries,
   ITEMS,
+  WEATHER_EFFECTS,
   type Alert,
   type Form,
   type ItemId,
@@ -11,10 +12,11 @@ import {
   type Temperament,
   type TrickId,
   type WalkEventId,
+  type Weather,
   type WalkZoneId,
 } from '@2tamago/core';
 import type { ActivityDto, Notice } from '@2tamago/core/contracts';
-import { t, type MessageKey } from './i18n/index.svelte.ts';
+import { intlTag, t, type MessageKey } from './i18n/index.svelte.ts';
 
 /** Texts of the game, in the current language (see `lib/i18n`). */
 
@@ -27,6 +29,25 @@ export const temperamentLabel = (temperament: Temperament) => t(`temperament.${t
 export const temperamentHint = (temperament: Temperament) => t(`temperament.${temperament}.hint`);
 export const zoneLabel = (zone: WalkZoneId) => t(`zone.${zone}`);
 export const zoneHint = (zone: WalkZoneId) => t(`zone.${zone}.hint`);
+export const weatherLabel = (weather: Weather) => t(`weather.${weather}`);
+/** What the weather changes about a walk, with the numbers of the rules. */
+export const weatherHint = (weather: Weather) => {
+  const effect = WEATHER_EFFECTS[weather];
+  // ×1,5 in French, ×1.5 in English.
+  const number = new Intl.NumberFormat(intlTag());
+  return t(`weather.${weather}.hint`, {
+    coins: number.format(effect.coinsPercent),
+    items: number.format(effect.itemChanceFactor),
+    energy: number.format(effect.energyExtra),
+  });
+};
+/** A small picture for each weather. */
+export const WEATHER_ICON: Record<Weather, string> = {
+  sunny: '☀️',
+  cloudy: '☁️',
+  rain: '🌧️',
+  wind: '💨',
+};
 /** "Cookie ×2, Mushroom ×1": what a trade is about, or nothing if the side is empty. */
 export function bundleLabel(items: Partial<Record<ItemId, number>>): string {
   return bundleEntries(items)

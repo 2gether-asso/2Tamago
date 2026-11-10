@@ -62,6 +62,7 @@ export const home = {
 
   'walk.title': 'De retour de promenade !',
   'walk.zone': '{zone}',
+  'walk.weather': 'Météo : {weather}',
   'walk.coins_found_one': '🪙 {count} pièce trouvée',
   'walk.coins_found_other': '🪙 {count} pièces trouvées',
   'walk.encounters': 'Rencontres',
