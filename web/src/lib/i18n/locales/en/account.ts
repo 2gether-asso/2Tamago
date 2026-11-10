@@ -37,5 +37,12 @@ export const account: Record<keyof typeof fr, string> = {
   'account.system.ios': 'iOS',
   'account.system.chromeos': 'ChromeOS',
   'account.system.other': 'unknown system',
+  'account.delete_title': 'Delete my account',
+  'account.delete_hint':
+    'Permanently erases your account: your companion and its memories, your bag, your coins, your trades and your history. Items set aside in offers you received are given back to their senders. Signing in with Discord again creates a new account and recovers nothing.',
+  'account.delete_label': 'To confirm, type your display name: {name}',
+  'account.delete_button': 'Delete permanently',
+  'account.delete_confirm': 'Delete this account for good? This cannot be undone.',
+  'account.deleted': 'Your account has been deleted.',
   'account.session.device': '{browser} on {system}',
 };

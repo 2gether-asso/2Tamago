@@ -127,6 +127,7 @@ export const api = {
 
   account: () => call<AccountOverview>('GET', '/account'),
   renameSelf: (name: string) => call<void>('PUT', '/account/name', { name }),
+  deleteAccount: (confirm: string) => call<void>('DELETE', '/account', { confirm }),
   revokeSession: (id: string) => call<void>('DELETE', `/account/sessions/${id}`),
   revokeOtherSessions: () => call<void>('DELETE', '/account/sessions'),
 

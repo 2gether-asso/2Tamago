@@ -44,6 +44,7 @@ export const errors: Record<keyof typeof fr, string> = {
   'error.code_already_redeemed': 'You have already used this code.',
   'error.name_not_allowed': 'This name is not allowed.',
   'error.name_locked': 'A moderator set your name: it cannot be changed here.',
+  'error.confirmation_mismatch': 'The name you typed does not match your display name.',
   'error.no_session': 'This session no longer exists.',
   'error.no_event': 'This event no longer exists.',
   'error.no_entry': 'This companion is not entered in this week’s contest.',

@@ -35,5 +35,6 @@ import { WalksService } from './walks.service.js';
     TradesService,
     WishlistService,
   ],
+  exports: [TradesService],
 })
 export class SocialModule {}
