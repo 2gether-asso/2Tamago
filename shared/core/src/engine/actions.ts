@@ -184,7 +184,7 @@ export function applyAction(
     }
     case 'play': {
       requireAwake();
-      if (s.energy < 10) throw new GameError('too_tired');
+      if (s.energy < PLAY_MIN_ENERGY) throw new GameError('too_tired');
       const left = playChargesLeft(state, at, rules);
       if (left < 1) throw new GameError('tired_of_playing');
       // Settle the refill, then spend one game.
@@ -400,6 +400,9 @@ export function caressReady(state: PetState, now: number, rules: GameRules): boo
 }
 
 /** Games the pet is still willing to play at `now` (the quota refills one by one over time). */
+/** Energy needed to start a game (the web app disables Play below it). */
+export const PLAY_MIN_ENERGY = 10;
+
 export function playChargesLeft(state: PetState, now: number, rules: GameRules): number {
   const max = rules.playMaxCharges;
   if (state.playCharges === undefined || state.playChargesAt === undefined) return max;
