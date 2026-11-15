@@ -186,6 +186,22 @@ describe('applyAction', () => {
     expect(back.bond).toBeGreaterThan(pet.bond);
   });
 
+  it('does not make a pet pay for a finished walk nobody collected', () => {
+    const pet = { ...hatched(), stage: 'child' as const };
+    const start = pet.simulatedAt;
+    const out = applyAction(pet, { type: 'startOuting' }, start, rules).state;
+    const end = out.outing!.endsAt;
+    const forgotten = simulate(out, end + h(24), rules).state;
+    const onTime = simulate(out, end, rules).state;
+    expect(forgotten.stats).toEqual(onTime.stats);
+    expect(forgotten.outing).not.toBeNull();
+    expect(forgotten.nextPoopAt - onTime.nextPoopAt).toBeGreaterThan(h(23));
+    const back = applyAction(out, { type: 'endOuting' }, end + h(24), rules).state;
+    expect(back.stats.energy).toBeGreaterThan(0);
+    expect(back.sickSince).toBeNull();
+    expect(back.poops).toBe(0);
+  });
+
   it('levels up tricks with training', () => {
     let pet: PetState = { ...hatched(), stage: 'child' };
     const now = pet.simulatedAt;
