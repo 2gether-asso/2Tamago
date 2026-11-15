@@ -65,7 +65,18 @@ export function endVacation(
   events: PetEvent[],
   automatic: boolean,
 ): void {
-  const away = Math.max(0, at - (state.vacationSince ?? at));
+  shiftClocks(state, Math.max(0, at - (state.vacationSince ?? at)));
+  state.simulatedAt = Math.max(state.simulatedAt, alignToGrid(rules, at));
+  state.vacationSince = null;
+  state.vacationEndedAt = at;
+  events.push({ type: 'vacation_ended', at, data: { automatic } });
+}
+
+/**
+ * Pushes every date of the pet `away` ms later: the time spent paused (vacation, a finished walk
+ * nobody collected) did not count.
+ */
+function shiftClocks(state: PetState, away: number): void {
   // `MAX_SAFE_INTEGER` stands for "never" (an egg has no poop to wait for).
   const later = (time: number) => (time >= Number.MAX_SAFE_INTEGER ? time : time + away);
   state.bornAt += away;
@@ -77,10 +88,6 @@ export function endVacation(
   for (const tracker of Object.values(state.needs)) {
     if (tracker) tracker.since += away;
   }
-  state.simulatedAt = Math.max(state.simulatedAt, alignToGrid(rules, at));
-  state.vacationSince = null;
-  state.vacationEndedAt = at;
-  events.push({ type: 'vacation_ended', at, data: { automatic } });
 }
 
 function tick(state: PetState, t: number, rules: GameRules, events: PetEvent[]): void {
@@ -91,6 +98,12 @@ function tick(state: PetState, t: number, rules: GameRules, events: PetEvent[]):
       hatch(state, t, rules);
       events.push({ type: 'hatched', at: t, data: { temperament: traitsOf(state).temperament } });
     }
+    return;
+  }
+
+  // The walk is over and nobody came to get the pet: it waits, and the wait costs it nothing.
+  if (state.outing && t > state.outing.endsAt) {
+    shiftClocks(state, stepMs(rules));
     return;
   }
 
