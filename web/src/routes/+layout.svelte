@@ -225,7 +225,7 @@
   main {
     max-width: 56rem;
     margin: 0 auto;
-    padding: 0 1rem 6rem;
+    padding: 0 1rem 8rem;
   }
   nav {
     position: fixed;
@@ -233,10 +233,9 @@
     left: 0;
     right: 0;
     display: flex;
-    justify-content: safe center;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: 0.1rem;
-    overflow-x: auto;
-    scrollbar-width: none;
     padding: 0.4rem 0.4rem calc(0.4rem + env(safe-area-inset-bottom, 0px));
     background: color-mix(in srgb, var(--surface) 82%, transparent);
     backdrop-filter: blur(16px) saturate(140%);
