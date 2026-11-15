@@ -81,7 +81,9 @@ export function eventText(event: PetEvent, name: string): string | null {
     case 'fell_asleep':
       return event.data?.exhausted
         ? t('event.fell_asleep_exhausted', { name })
-        : t('event.fell_asleep', { name });
+        : event.data?.drowsy
+          ? t('event.fell_asleep_drowsy', { name })
+          : t('event.fell_asleep', { name });
     case 'vacation_ended':
       return t(event.data?.automatic ? 'event.vacation_ended_auto' : 'event.vacation_ended', {
         name,

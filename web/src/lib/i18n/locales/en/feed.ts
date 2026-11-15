@@ -18,6 +18,7 @@ export const feed: Record<keyof typeof fr, string> = {
   'event.cured': '{name} is better!',
   'event.care_mistake': '{name} felt neglected…',
   'event.fell_asleep_exhausted': '{name} fell asleep from exhaustion.',
+  'event.fell_asleep_drowsy': '{name} is sleepy and goes to bed.',
   'event.fell_asleep': 'Good night, {name}.',
   'event.woke_up': '{name} woke up.',
   'event.attention_call': '{name} is throwing a tantrum!',
