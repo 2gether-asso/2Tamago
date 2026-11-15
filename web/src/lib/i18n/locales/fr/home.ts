@@ -41,6 +41,7 @@ export const home = {
   'action.praise': '👏 Féliciter',
   'home.play_tired':
     '{name} en a assez de jouer : un jeu revient toutes les 30 min (prochain vers {time}).',
+  'home.play_no_energy': '{name} est trop fatigué pour jouer : laisse-le se reposer.',
   'home.praise_wait': 'Tu l’as déjà félicité : prochaine félicitation vers {time}.',
   'home.scold_tip':
     '{name} fait un caprice : c’est le moment de le gronder (discipline +). Le féliciter ou le gronder sans raison fait perdre en discipline ou en lien.',
