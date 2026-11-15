@@ -4,6 +4,12 @@
 COMPOSE      := docker compose
 COMPOSE_PROD := docker compose -f docker-compose.prod.yml
 
+# BASE=<git ref> (e.g. BASE=origin/main) restricts test, test-e2e, format and
+# format-check to what changed since the merge-base with that ref (a PR diff),
+# uncommitted files included. Unset: everything runs.
+BASE         ?=
+AFFECTED     := node scripts/affected.mjs
+
 .DEFAULT_GOAL := help
 .PHONY: help install dev build test test-e2e check lint format format-check ci db-generate vapid-keys \
 	db-up db-down up down logs ps images prod-pull prod-up prod-down clean
@@ -22,20 +28,20 @@ dev: install ## Run engine (watch), API (:3000) and web (:4321, proxies /api)
 build: ## Build every package
 	pnpm build
 
-test: ## Run every test suite (engine, API with e2e, web)
-	pnpm test
+test: ## Run every test suite (engine, API with e2e, web); BASE=<ref>: only those affected by the changes
+	$(AFFECTED) test $(BASE)
 
 check: ## Type-check every package
 	pnpm check
 
-format: ## Format the code with Prettier
-	pnpm format
+format: ## Format the code with Prettier; BASE=<ref>: only the changed files
+	$(AFFECTED) format $(BASE)
 
-format-check: ## Check the formatting
-	pnpm format:check
+format-check: ## Check the formatting; BASE=<ref>: only the changed files
+	$(AFFECTED) format-check $(BASE)
 
-test-e2e: ## Browser tests (Playwright); needs `make build` and `pnpm --filter @2tamago/web exec playwright install chromium`
-	pnpm --filter @2tamago/web test:e2e
+test-e2e: ## Browser tests (Playwright); BASE=<ref>: skipped unless the changes reach them; needs `make build` and `pnpm --filter @2tamago/web exec playwright install chromium`
+	$(AFFECTED) test-e2e $(BASE)
 
 lint: ## Lint with Biome (formatting stays with Prettier)
 	pnpm lint
