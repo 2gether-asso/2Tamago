@@ -6,6 +6,7 @@ export const rpg = {
   'rpg.no_pet': 'No companion yet.',
   'rpg.egg': 'The sheet fills in once it has hatched.',
   'rpg.level': 'Level {level}',
+  'rpg.state': 'State',
   'rpg.stats': 'Statistics',
   'rpg.progress': '{xp}/{max} towards the next point',
   'rpg.maxed': 'Maxed out',

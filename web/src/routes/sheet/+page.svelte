@@ -2,8 +2,10 @@
   import { characterSheet } from '@2tamago/core';
   import SheetHistory from '#lib/components/SheetHistory.svelte';
   import SheetStats from '#lib/components/SheetStats.svelte';
+  import StatBar from '#lib/components/StatBar.svelte';
   import { game } from '#lib/game.svelte.ts';
   import { t } from '#lib/i18n/index.svelte.ts';
+  import { moodLabel, stageLabel } from '#lib/texts.ts';
 
   let pet = $derived(game.pet);
   let hatched = $derived(pet !== null && pet.stage !== 'egg');
@@ -20,6 +22,20 @@
   {#if !sheet}
     <p class="card">{t('rpg.egg')}</p>
   {:else}
+    <section class="card">
+      <h2>{t('rpg.state')} · {stageLabel(pet.stage)}</h2>
+      <p><strong>{moodLabel(game.mood ?? 'ok')}</strong></p>
+      <div class="bars">
+        <StatBar icon="😊" label={t('stat.happiness')} value={pet.stats.happiness} />
+        <StatBar icon="🍙" label={t('stat.satiety')} value={pet.stats.satiety} />
+        <StatBar icon="⚡" label={t('stat.energy')} value={pet.stats.energy} />
+        <StatBar icon="🛁" label={t('stat.hygiene')} value={pet.stats.hygiene} />
+        <StatBar icon="❤️" label={t('stat.health')} value={pet.stats.health} />
+        <StatBar icon="🎓" label={t('stat.discipline')} value={pet.stats.discipline} />
+        <StatBar icon="💞" label={t('stat.bond')} value={pet.bond} />
+      </div>
+    </section>
+
     <section class="card">
       <h2>{t('rpg.stats')} · {t('rpg.level', { level: sheet.level })}</h2>
       <SheetStats {sheet} />
@@ -50,6 +66,10 @@
 {/if}
 
 <style>
+  .bars {
+    display: grid;
+    gap: 0.5rem;
+  }
   .quest {
     display: grid;
     gap: 0.2rem;
