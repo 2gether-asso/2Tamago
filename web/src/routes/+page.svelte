@@ -7,6 +7,7 @@
     isAccessory,
     isNight,
     nextPlayChargeAt,
+    PLAY_MIN_ENERGY,
     playChargesLeft,
     praiseReady,
     isSnack,
@@ -258,8 +259,9 @@
         <button disabled={!awake || game.busy} onclick={() => (picking = 'feed')}
           >{t('action.feed')}</button
         >
-        <button disabled={!awake || game.busy || playsLeft < 1} onclick={() => (playing = true)}
-          >{t('action.play')} ({playsLeft})</button
+        <button
+          disabled={!awake || game.busy || playsLeft < 1 || pet.stats.energy < PLAY_MIN_ENERGY}
+          onclick={() => (playing = true)}>{t('action.play')} ({playsLeft})</button
         >
         <button disabled={!free || game.busy} onclick={() => game.act({ type: 'clean' })}
           >{t('action.clean')}</button
@@ -301,6 +303,9 @@
         <p class="muted">
           {t('home.play_tired', { name: pet.name, time: timeFormat.format(nextPlayAt) })}
         </p>
+      {/if}
+      {#if awake && playsLeft >= 1 && pet.stats.energy < PLAY_MIN_ENERGY}
+        <p class="muted">{t('home.play_no_energy', { name: pet.name })}</p>
       {/if}
       {#if awake && !canPraise && praiseAt}
         <p class="muted">{t('home.praise_wait', { time: timeFormat.format(praiseAt) })}</p>
