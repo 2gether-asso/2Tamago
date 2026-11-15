@@ -4,12 +4,16 @@
     label: string;
     icon: string;
     value: number;
+    hint?: string;
   }
-  let { label, icon, value }: Props = $props();
+  let { label, icon, value, hint }: Props = $props();
   let level = $derived(value < 25 ? 'low' : value < 50 ? 'mid' : 'high');
 </script>
 
-<div class="stat" title={t('stat.title', { label, value: Math.round(value) })}>
+<div
+  class="stat"
+  title={t('stat.title', { label, value: Math.round(value) }) + (hint ? `\n${hint}` : '')}
+>
   <span class="icon" aria-hidden="true">{icon}</span>
   <span class="label">{label}</span>
   <div

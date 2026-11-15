@@ -106,6 +106,8 @@ export const catalog = {
   'stat.hygiene': 'Propreté',
   'stat.health': 'Santé',
   'stat.discipline': 'Discipline',
+  'stat.discipline.hint':
+    "La discipline ne monte qu'en grondant pendant un caprice (un appel à l'attention sans raison, environ toutes les 10 h). Elle baisse lentement avec le temps et aide au dressage et à l'évolution.",
   'stat.bond': 'Lien',
   'stat.title': '{label} : {value} / 100',
 
