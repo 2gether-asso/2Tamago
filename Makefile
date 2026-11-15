@@ -5,13 +5,13 @@ COMPOSE      := docker compose
 COMPOSE_PROD := docker compose -f docker-compose.prod.yml
 
 # BASE=<git ref> (e.g. BASE=origin/main) restricts test, test-e2e, lint, check,
-# format and format-check to what changed since the merge-base with that ref (a PR diff),
+# check-build, format and check-format to what changed since the merge-base with that ref (a PR diff),
 # uncommitted files included. Unset: everything runs.
 BASE         ?=
 AFFECTED     := node scripts/affected.mjs
 
 .DEFAULT_GOAL := help
-.PHONY: help install dev build test test-e2e check lint format format-check ci db-generate vapid-keys \
+.PHONY: help install dev build check-build test test-e2e check lint format check-format ci db-generate vapid-keys \
 	db-up db-down up down logs ps images prod-pull prod-up prod-down clean
 
 help: ## List the targets
@@ -25,8 +25,11 @@ install: ## Install the dependencies
 dev: install ## Run engine (watch), API (:3000) and web (:4321, proxies /api)
 	pnpm dev
 
-build: ## Build every package
+build: ## Build every package (global: used for deployments)
 	pnpm build
+
+check-build: ## Build only the affected packages to check they compile; BASE=<ref>
+	$(AFFECTED) check-build $(BASE)
 
 test: ## Run every test suite (engine, API with e2e, web); BASE=<ref>: only those affected by the changes
 	$(AFFECTED) test $(BASE)
@@ -37,8 +40,8 @@ check: ## Type-check every package; BASE=<ref>: only the affected packages
 format: ## Format the code with Prettier; BASE=<ref>: only the changed files
 	$(AFFECTED) format $(BASE)
 
-format-check: ## Check the formatting; BASE=<ref>: only the changed files
-	$(AFFECTED) format-check $(BASE)
+check-format: ## Check the formatting; BASE=<ref>: only the changed files
+	$(AFFECTED) check-format $(BASE)
 
 test-e2e: ## Browser tests (Playwright); BASE=<ref>: skipped unless the changes reach them; needs `make build` and `pnpm --filter @2tamago/web exec playwright install chromium`
 	$(AFFECTED) test-e2e $(BASE)
@@ -46,7 +49,7 @@ test-e2e: ## Browser tests (Playwright); BASE=<ref>: skipped unless the changes 
 lint: ## Lint with Biome (formatting stays with Prettier); BASE=<ref>: only the changed files
 	$(AFFECTED) lint $(BASE)
 
-ci: format-check lint build check test ## What the CI runs
+ci: check-format lint build check test ## What the CI runs
 
 db-generate: ## Generate a SQL migration after editing api/src/database/schema.ts
 	pnpm --filter @2tamago/api db:generate

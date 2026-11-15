@@ -2,7 +2,7 @@
 // Runs format / lint / check / test / test-e2e only on what changed since a base commit
 // (e.g. `BASE=origin/main make test`, the same set as a PR diff).
 //
-//   node scripts/affected.mjs <format|format-check|lint|check|test|test-e2e> [base]
+//   node scripts/affected.mjs <format|check-format|lint|check|check-build|test|test-e2e> [base]
 //
 // `base` (or $BASE) is any git ref. The comparison starts at the merge-base of
 // `base` and HEAD, and includes uncommitted and untracked files. Without a
@@ -70,7 +70,7 @@ const vitest = (dir, whole, extra = []) => {
 
 switch (task) {
   case 'format':
-  case 'format-check': {
+  case 'check-format': {
     const mode = task === 'format' ? '--write' : '--check';
     if (all) run('pnpm', [task === 'format' ? 'format' : 'format:check']);
     else if (files.length === 0) console.log('Nothing to format.');
@@ -106,6 +106,13 @@ switch (task) {
     else for (const dir of plan.keys()) run('pnpm', ['--filter', PACKAGES[dir].name, 'check']);
     break;
   }
+  case 'check-build': {
+    // Dependencies first (plan order: core, api, web); web needs the built engine.
+    if (all) run('pnpm', ['build']);
+    else if (plan.size === 0) console.log('No package affected: nothing to build.');
+    else for (const dir of plan.keys()) run('pnpm', ['--filter', PACKAGES[dir].name, 'build']);
+    break;
+  }
   case 'test': {
     if (all) run('pnpm', ['test']);
     else if (plan.size === 0) console.log('No package affected: no tests to run.');
@@ -127,6 +134,8 @@ switch (task) {
     break;
   }
   default:
-    console.error('Usage: affected.mjs <format|format-check|lint|check|test|test-e2e> [base]');
+    console.error(
+      'Usage: affected.mjs <format|check-format|lint|check|check-build|test|test-e2e> [base]',
+    );
     process.exit(2);
 }
