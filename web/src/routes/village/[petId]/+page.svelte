@@ -1,8 +1,10 @@
 <script lang="ts">
-  import { isSnack, type ItemId } from '@2tamago/core';
+  import { characterSheet, isSnack, type ItemId } from '@2tamago/core';
   import type { CareActionBody, VisitResponse } from '@2tamago/core/contracts';
   import PetSprite from '#lib/components/PetSprite.svelte';
   import RoomScene from '#lib/components/RoomScene.svelte';
+  import SheetHistory from '#lib/components/SheetHistory.svelte';
+  import SheetStats from '#lib/components/SheetStats.svelte';
   import StatBar from '#lib/components/StatBar.svelte';
   import { api } from '#lib/api.ts';
   import { game } from '#lib/game.svelte.ts';
@@ -171,6 +173,17 @@
         <StatBar icon="❤️" label={t('stat.health')} value={pet.stats.health} />
         <StatBar icon="🎓" label={t('stat.discipline')} value={pet.stats.discipline} />
       {/if}
+    </section>
+
+    {@const sheet = characterSheet(pet)}
+    <section class="card">
+      <h2>{t('rpg.stats')} · {t('rpg.level', { level: sheet.level })}</h2>
+      <SheetStats {sheet} showProgress={false} />
+    </section>
+
+    <section class="card">
+      <h2>{t('rpg.history')}</h2>
+      <SheetHistory {sheet} name={pet.name} limit={5} />
     </section>
   {/if}
 {:else}
