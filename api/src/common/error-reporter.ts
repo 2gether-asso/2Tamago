@@ -29,14 +29,15 @@ export function captureError(error: unknown): void {
 }
 
 /**
- * Reports unexpected errors (anything but a 4xx), then lets Nest answer as usual. Registered
+ * Reports unexpected errors (anything but a 4xx or a deliberate 503), then lets Nest answer as usual. Registered
  * before the more specific filters, which Nest tries first.
  */
 @Catch()
 export class ErrorReportingFilter extends BaseExceptionFilter {
   override catch(exception: unknown, host: ArgumentsHost): void {
     const status = exception instanceof HttpException ? exception.getStatus() : 500;
-    if (status >= 500) Sentry.captureException(exception);
+    // 503 is a deliberate "not ready" answer (health probe), not a bug.
+    if (status >= 500 && status !== 503) Sentry.captureException(exception);
     super.catch(exception, host);
   }
 }
