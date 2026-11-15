@@ -165,7 +165,9 @@
   header {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     justify-content: space-between;
+    gap: 0.4rem 1rem;
     padding: 0.8rem 1rem;
     max-width: 56rem;
     margin: 0 auto;
@@ -231,8 +233,10 @@
     left: 0;
     right: 0;
     display: flex;
-    justify-content: center;
-    gap: 0.2rem;
+    justify-content: safe center;
+    gap: 0.1rem;
+    overflow-x: auto;
+    scrollbar-width: none;
     padding: 0.4rem 0.4rem calc(0.4rem + env(safe-area-inset-bottom, 0px));
     background: color-mix(in srgb, var(--surface) 82%, transparent);
     backdrop-filter: blur(16px) saturate(140%);
@@ -242,9 +246,14 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 0.3rem 0.7rem;
+    flex: 1 1 0;
+    min-width: 3.4rem;
+    max-width: 5.5rem;
+    padding: 0.3rem 0.2rem;
     border-radius: var(--radius-md);
-    font-size: 0.75rem;
+    font-size: 0.7rem;
+    text-align: center;
+    overflow-wrap: anywhere;
     font-weight: 600;
     color: var(--muted);
     text-decoration: none;
