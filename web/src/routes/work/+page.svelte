@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { WORK } from '@2tamago/core';
+  import { applyAction, GameError, WORK } from '@2tamago/core';
   import type { WorkStatus } from '@2tamago/core/contracts';
   import { api } from '#lib/api.ts';
   import { game } from '#lib/game.svelte.ts';
-  import { t } from '#lib/i18n/index.svelte.ts';
+  import { t, type MessageKey } from '#lib/i18n/index.svelte.ts';
   import { toasts } from '#lib/toasts.svelte.ts';
 
   let status = $state.raw<WorkStatus | null>(null);
@@ -33,6 +33,19 @@
   }
   let playerWait = $derived(wait(status?.playerAvailableAt));
   let petWait = $derived(wait(status?.petAvailableAt));
+
+  /** Why the companion cannot work right now (the engine's refusal code), if it cannot. */
+  let petBlocker = $derived.by(() => {
+    const pet = game.pet;
+    if (!pet || !game.rules) return null;
+    try {
+      applyAction(pet, { type: 'work' }, now + game.clockOffset, game.rules);
+      return null;
+    } catch (e) {
+      if (e instanceof GameError) return e.code;
+      throw e;
+    }
+  });
 
   // The skill game: a few sums, three answers each.
   interface Question {
@@ -135,10 +148,22 @@
     {#if status}
       <p>{t('work.pet.text', { min: status.petWageRange.min, max: status.petWageRange.max })}</p>
     {/if}
-    <button class="primary" disabled={busy || !status || petWait !== null} onclick={sendPet}>
+    <button
+      class="primary"
+      disabled={busy || !status || petWait !== null || petBlocker !== null}
+      onclick={sendPet}
+    >
       {t('work.pet.start')}
     </button>
-    <small class="muted">{petWait ? t('work.wait', { time: petWait }) : t('work.ready')}</small>
+    <small class="muted">
+      {#if petWait}
+        {t('work.wait', { time: petWait })}
+      {:else if petBlocker}
+        {t(`error.${petBlocker}` as MessageKey)}
+      {:else}
+        {t('work.ready')}
+      {/if}
+    </small>
   {:else}
     <p class="muted">{t('work.pet.no_pet')}</p>
   {/if}
