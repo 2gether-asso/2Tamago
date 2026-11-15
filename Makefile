@@ -4,8 +4,8 @@
 COMPOSE      := docker compose
 COMPOSE_PROD := docker compose -f docker-compose.prod.yml
 
-# BASE=<git ref> (e.g. BASE=origin/main) restricts test, test-e2e, format and
-# format-check to what changed since the merge-base with that ref (a PR diff),
+# BASE=<git ref> (e.g. BASE=origin/main) restricts test, test-e2e, lint, check,
+# format and format-check to what changed since the merge-base with that ref (a PR diff),
 # uncommitted files included. Unset: everything runs.
 BASE         ?=
 AFFECTED     := node scripts/affected.mjs
@@ -31,8 +31,8 @@ build: ## Build every package
 test: ## Run every test suite (engine, API with e2e, web); BASE=<ref>: only those affected by the changes
 	$(AFFECTED) test $(BASE)
 
-check: ## Type-check every package
-	pnpm check
+check: ## Type-check every package; BASE=<ref>: only the affected packages
+	$(AFFECTED) check $(BASE)
 
 format: ## Format the code with Prettier; BASE=<ref>: only the changed files
 	$(AFFECTED) format $(BASE)
@@ -43,8 +43,8 @@ format-check: ## Check the formatting; BASE=<ref>: only the changed files
 test-e2e: ## Browser tests (Playwright); BASE=<ref>: skipped unless the changes reach them; needs `make build` and `pnpm --filter @2tamago/web exec playwright install chromium`
 	$(AFFECTED) test-e2e $(BASE)
 
-lint: ## Lint with Biome (formatting stays with Prettier)
-	pnpm lint
+lint: ## Lint with Biome (formatting stays with Prettier); BASE=<ref>: only the changed files
+	$(AFFECTED) lint $(BASE)
 
 ci: format-check lint build check test ## What the CI runs
 

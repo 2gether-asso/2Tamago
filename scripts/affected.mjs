@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-// Runs format / test / test-e2e only on what changed since a base commit
+// Runs format / lint / check / test / test-e2e only on what changed since a base commit
 // (e.g. `BASE=origin/main make test`, the same set as a PR diff).
 //
-//   node scripts/affected.mjs <format|format-check|test|test-e2e> [base]
+//   node scripts/affected.mjs <format|format-check|lint|check|test|test-e2e> [base]
 //
 // `base` (or $BASE) is any git ref. The comparison starts at the merge-base of
 // `base` and HEAD, and includes uncommitted and untracked files. Without a
@@ -85,6 +85,27 @@ switch (task) {
       ]);
     break;
   }
+  case 'lint': {
+    if (all) run('pnpm', ['lint']);
+    else if (files.length === 0) console.log('Nothing to lint.');
+    else
+      run('pnpm', [
+        'exec',
+        'biome',
+        'lint',
+        '--no-errors-on-unmatched',
+        '--files-ignore-unknown=true',
+        ...files,
+      ]);
+    break;
+  }
+  case 'check': {
+    // Type-checking is not incremental: it runs per affected package.
+    if (all) run('pnpm', ['check']);
+    else if (plan.size === 0) console.log('No package affected: nothing to type-check.');
+    else for (const dir of plan.keys()) run('pnpm', ['--filter', PACKAGES[dir].name, 'check']);
+    break;
+  }
   case 'test': {
     if (all) run('pnpm', ['test']);
     else if (plan.size === 0) console.log('No package affected: no tests to run.');
@@ -106,6 +127,6 @@ switch (task) {
     break;
   }
   default:
-    console.error('Usage: affected.mjs <format|format-check|test|test-e2e> [base]');
+    console.error('Usage: affected.mjs <format|format-check|lint|check|test|test-e2e> [base]');
     process.exit(2);
 }
