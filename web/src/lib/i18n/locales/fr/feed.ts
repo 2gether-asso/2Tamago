@@ -16,6 +16,7 @@ export const feed = {
   'event.cured': '{name} est guéri !',
   'event.care_mistake': '{name} s’est senti délaissé…',
   'event.fell_asleep_exhausted': '{name} s’est endormi d’épuisement.',
+  'event.fell_asleep_drowsy': '{name} a sommeil et va se coucher.',
   'event.fell_asleep': 'Bonne nuit {name}.',
   'event.woke_up': '{name} est réveillé.',
   'event.attention_call': '{name} fait un caprice !',
