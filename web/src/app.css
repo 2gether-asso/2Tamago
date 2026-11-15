@@ -150,9 +150,11 @@ body::after {
   *,
   *::before,
   *::after {
+    /* biome-ignore-start lint/complexity/noImportantStyles: reduced motion must win over any component style */
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
+    /* biome-ignore-end lint/complexity/noImportantStyles: reduced motion */
   }
 }
 
