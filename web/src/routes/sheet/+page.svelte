@@ -66,6 +66,9 @@
 {/if}
 
 <style>
+  section.card {
+    margin-block: 1rem;
+  }
   .bars {
     display: grid;
     gap: 0.5rem;
