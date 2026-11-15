@@ -174,3 +174,20 @@ describe('time helpers', () => {
     expect(gameHours(rules, 24)).toBe(24 * 3_600_000);
   });
 });
+
+describe('drowsiness', () => {
+  it('puts a tired pet to bed by itself in the daytime, without a mood penalty', () => {
+    const pet = hatchedAt(10);
+    const tired: PetState = { ...pet, stats: { ...pet.stats, energy: rules.drowsyEnergy - 1 } };
+    const { state, events } = simulate(tired, at(10.1), rules);
+    expect(state.asleep).toBe(true);
+    const fell = events.find((e) => e.type === 'fell_asleep');
+    expect(fell?.data).toMatchObject({ exhausted: false, drowsy: true });
+  });
+
+  it('stays up while it is rested', () => {
+    const pet = hatchedAt(10);
+    const rested = simulate(pet, at(10.1), rules).state;
+    expect(rested.asleep).toBe(false);
+  });
+});

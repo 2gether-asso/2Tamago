@@ -92,6 +92,7 @@ export const rulesOverridesBody = z
       .partial()
       .strict(),
     energyRecoveryPerHour: nonNegative,
+    drowsyEnergy: z.number().min(0).max(100),
     disciplineDecayPerHour: nonNegative,
     hygieneLossPerPoopPerHour: nonNegative,
     poopIntervalHours: positive,

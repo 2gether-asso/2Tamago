@@ -96,7 +96,7 @@ function tick(state: PetState, t: number, rules: GameRules, events: PetEvent[]):
 
   const night = isNight(rules, t, state.stage);
   decay(state, dtH, rules, night);
-  sleepCycle(state, t, night, events);
+  sleepCycle(state, t, night, rules, events);
   poop(state, t, rules, events);
   sickness(state, t, dtH, rules, events);
   health(state, t, dtH, rules, events);
@@ -149,7 +149,13 @@ function decay(state: PetState, dtH: number, rules: GameRules, night: boolean): 
   clampStats(s);
 }
 
-function sleepCycle(state: PetState, t: number, night: boolean, events: PetEvent[]): void {
+function sleepCycle(
+  state: PetState,
+  t: number,
+  night: boolean,
+  rules: GameRules,
+  events: PetEvent[],
+): void {
   // Sunrise: the lights come back on by themselves.
   if (state.lightsOff && !night) state.lightsOff = false;
   const bedtime = night && state.lightsOff === true;
@@ -165,6 +171,10 @@ function sleepCycle(state: PetState, t: number, night: boolean, events: PetEvent
       state.asleep = true;
       state.stats.happiness = clamp(state.stats.happiness - 10);
       events.push({ type: 'fell_asleep', at: t, data: { exhausted: true } });
+    } else if (state.stats.energy <= rules.drowsyEnergy) {
+      // Drowsy: goes to bed on its own before collapsing, like a Sim would.
+      state.asleep = true;
+      events.push({ type: 'fell_asleep', at: t, data: { exhausted: false, drowsy: true } });
     } else if (bedtime) {
       state.asleep = true;
       events.push({ type: 'fell_asleep', at: t, data: { exhausted: false, bedtime: true } });

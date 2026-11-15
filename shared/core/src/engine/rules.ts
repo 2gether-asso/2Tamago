@@ -43,6 +43,8 @@ export interface GameRules {
   awakeDecayPerHour: { satiety: number; happiness: number; energy: number; hygiene: number };
   asleepDecayPerHour: { satiety: number; happiness: number; hygiene: number };
   energyRecoveryPerHour: number;
+  /** Below this energy, an awake pet at home puts itself to bed (without being unhappy about it). */
+  drowsyEnergy: number;
   disciplineDecayPerHour: number;
   hygieneLossPerPoopPerHour: number;
 
@@ -142,6 +144,7 @@ export const DEFAULT_RULES: GameRules = {
   awakeDecayPerHour: { satiety: 6, happiness: 5, energy: 6, hygiene: 3 },
   asleepDecayPerHour: { satiety: 2, happiness: 1, hygiene: 1 },
   energyRecoveryPerHour: 12,
+  drowsyEnergy: 15,
   disciplineDecayPerHour: 0.5,
   hygieneLossPerPoopPerHour: 4,
 
