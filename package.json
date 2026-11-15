@@ -16,8 +16,8 @@
     "lint": "biome lint ."
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.6.6",
-    "prettier": "^3.6.2",
+    "@biomejs/biome": "^2.6.7",
+    "prettier": "^3.10.0",
     "prettier-plugin-svelte": "^4.1.1"
   }
 }
