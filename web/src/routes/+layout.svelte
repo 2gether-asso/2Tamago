@@ -165,7 +165,9 @@
   header {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     justify-content: space-between;
+    gap: 0.4rem 1rem;
     padding: 0.8rem 1rem;
     max-width: 56rem;
     margin: 0 auto;
