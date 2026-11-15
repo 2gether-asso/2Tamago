@@ -232,9 +232,15 @@
           <StatBar icon="⚡" label={t('stat.energy')} value={pet.stats.energy} />
           <StatBar icon="🛁" label={t('stat.hygiene')} value={pet.stats.hygiene} />
           <StatBar icon="❤️" label={t('stat.health')} value={pet.stats.health} />
-          <StatBar icon="🎓" label={t('stat.discipline')} value={pet.stats.discipline} />
+          <StatBar
+            icon="🎓"
+            label={t('stat.discipline')}
+            value={pet.stats.discipline}
+            hint={t('stat.discipline.hint')}
+          />
           <StatBar icon="💞" label={t('stat.bond')} value={pet.bond} />
         </div>
+        <p class="muted">🎓 {t('stat.discipline.hint')}</p>
         {#if game.rules}
           {@const diet = dietOf(pet, game.rules)}
           <p class="diet" title={t(`diet.${diet}.hint`)}>

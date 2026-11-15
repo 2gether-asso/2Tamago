@@ -107,6 +107,8 @@ export const catalog: Record<keyof typeof fr, string> = {
   'stat.hygiene': 'Cleanliness',
   'stat.health': 'Health',
   'stat.discipline': 'Discipline',
+  'stat.discipline.hint':
+    'Discipline only goes up when you scold during a tantrum (a sudden call for attention, about every 10 h). It slowly fades over time and helps training and evolution.',
   'stat.bond': 'Bond',
   'stat.title': '{label}: {value} / 100',
 
