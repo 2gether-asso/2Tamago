@@ -76,9 +76,9 @@
     </p>
 
     <div class="actions">
-      <button type="button" class="link" onclick={() => (open = false)}
-        >{t('feedback.cancel')}</button
-      >
+      <button type="button" class="link" onclick={() => (open = false)}>
+        {t('feedback.cancel')}
+      </button>
       <button class="primary" disabled={!valid || sending}>
         {sending ? t('feedback.sending') : t('feedback.send')}
       </button>

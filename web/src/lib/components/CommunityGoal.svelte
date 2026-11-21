@@ -58,9 +58,9 @@
     </div>
     <p class="figures">
       <strong>{t('goal.progress', { progress: goal.progress, target: goal.target })}</strong>
-      <span class="muted"
-        >{goal.mine > 0 ? t('goal.mine', { count: goal.mine }) : t('goal.none')}</span
-      >
+      <span class="muted">
+        {goal.mine > 0 ? t('goal.mine', { count: goal.mine }) : t('goal.none')}
+      </span>
     </p>
     {#if goal.reached}<p class="reached">{t('goal.reached')}</p>{/if}
     {#if goal.canClaim}

@@ -134,9 +134,9 @@
       {#if player.avatarUrl}
         <img class="avatar" src={player.avatarUrl} alt="" referrerpolicy="no-referrer" />
       {:else}
-        <span class="avatar initial" aria-hidden="true"
-          >{player.displayName.slice(0, 1).toUpperCase()}</span
-        >
+        <span class="avatar initial" aria-hidden="true">
+          {player.displayName.slice(0, 1).toUpperCase()}
+        </span>
       {/if}
       <div>
         <h1 id="player-title">{player.displayName}</h1>
@@ -223,19 +223,20 @@
             {#each TRICKS as id (id)}
               <li>
                 <span>{trickLabel(id)}</span>
-                <span aria-hidden="true"
-                  >{'★'.repeat(trickLevel(pet.tricks[id]))}{'☆'.repeat(
+                <span aria-hidden="true">
+                  {'★'.repeat(trickLevel(pet.tricks[id]))}{'☆'.repeat(
                     3 - trickLevel(pet.tricks[id]),
-                  )}</span
-                >
+                  )}
+                </span>
               </li>
             {/each}
           </ul>
         {/if}
       {/if}
       {#if !player.isYou}
-        <a class="link-button primary-link" href="/village/{profile.pet.id}">{t('profile.visit')}</a
-        >
+        <a class="link-button primary-link" href="/village/{profile.pet.id}">
+          {t('profile.visit')}
+        </a>
       {/if}
     {:else}
       <p class="muted center">{t('profile.no_pet')}</p>

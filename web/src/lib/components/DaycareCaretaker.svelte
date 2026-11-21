@@ -57,11 +57,13 @@
                 run(
                   () => api.daycareAccept(invitation.id),
                   t('daycare.accepted_toast', { pet: invitation.petName }),
-                )}>{t('daycare.accept')}</button
+                )}
             >
-            <button disabled={busy} onclick={() => run(() => api.daycareDecline(invitation.id))}
-              >{t('daycare.decline')}</button
-            >
+              {t('daycare.accept')}
+            </button>
+            <button disabled={busy} onclick={() => run(() => api.daycareDecline(invitation.id))}>
+              {t('daycare.decline')}
+            </button>
           </div>
         </div>
       {/each}
@@ -79,9 +81,9 @@
           </p>
           <div class="actions">
             <a class="link-button" href="/village/{stay.petId}">{t('daycare.look_after')}</a>
-            <button disabled={busy} onclick={() => run(() => api.daycareEnd(stay.id))}
-              >{t('daycare.give_back')}</button
-            >
+            <button disabled={busy} onclick={() => run(() => api.daycareEnd(stay.id))}>
+              {t('daycare.give_back')}
+            </button>
           </div>
         </div>
       {/each}

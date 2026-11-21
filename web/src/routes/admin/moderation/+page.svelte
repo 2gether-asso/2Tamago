@@ -147,28 +147,30 @@
             <button
               onclick={() =>
                 (editing = { kind: 'player', id: person.playerId, name: person.playerName })}
-              >{t('admin.moderation.rename_player')}</button
             >
+              {t('admin.moderation.rename_player')}
+            </button>
             {#if person.petId}
               {@const petId = person.petId}
               <button
                 onclick={() => (editing = { kind: 'pet', id: petId, name: person.petName ?? '' })}
-                >{t('admin.moderation.rename_pet')}</button
               >
+                {t('admin.moderation.rename_pet')}
+              </button>
             {/if}
             {#if person.nameLocked}
-              <button disabled={busy} onclick={() => unlock(person)}
-                >{t('admin.moderation.unlock')}</button
-              >
+              <button disabled={busy} onclick={() => unlock(person)}>
+                {t('admin.moderation.unlock')}
+              </button>
             {/if}
           </div>
           {#if editing && editing.id === (editing.kind === 'pet' ? person.petId : person.playerId)}
             <form class="row" onsubmit={rename}>
               <input bind:value={editing.name} minlength="2" maxlength="32" required />
               <button class="primary" disabled={busy}>{t('admin.moderation.apply')}</button>
-              <button type="button" onclick={() => (editing = null)}
-                >{t('admin.moderation.cancel')}</button
-              >
+              <button type="button" onclick={() => (editing = null)}>
+                {t('admin.moderation.cancel')}
+              </button>
             </form>
           {/if}
         </div>
