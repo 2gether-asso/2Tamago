@@ -345,8 +345,8 @@ describe('2Tamago API (e2e)', () => {
 
     await adopt(bob, 'Caillou II');
     const album = (await bob.get('/api/album').expect(200)).body;
-    expect(album).toHaveLength(1);
-    expect(album[0].name).toBe('Caillou');
+    expect(album.map((entry: { name: string }) => entry.name)).toEqual(['Caillou II', 'Caillou']);
+    expect(album.map((entry: { status: string }) => entry.status)).toEqual(['alive', 'gone']);
   });
 
   it('lets the owner lay one flower a day for a companion who is gone', async () => {

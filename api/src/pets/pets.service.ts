@@ -19,7 +19,7 @@ import type {
   Notice,
   OwnerActionBody,
 } from '@2tamago/core/contracts';
-import { and, desc, eq, ne, type SQL } from 'drizzle-orm';
+import { desc, eq, type SQL } from 'drizzle-orm';
 import { AnnouncementService } from '../announcements/announcement.service.js';
 import { ActivityService } from '../activity/activity.service.js';
 import { Clock } from '../common/clock.js';
@@ -148,7 +148,7 @@ export class PetsService {
     const rows = await this.db
       .select()
       .from(pets)
-      .where(and(eq(pets.ownerId, playerId), ne(pets.status, 'alive')))
+      .where(eq(pets.ownerId, playerId))
       .orderBy(desc(pets.createdAt));
     const today = this.players.today();
     const flowerRows = await this.db

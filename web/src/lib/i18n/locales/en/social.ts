@@ -118,8 +118,9 @@ export const social: Record<keyof typeof fr, string> = {
   'contest.claimed_toast_other': 'Contest prize: +{count} coins!',
 
   'album.title': 'Album',
-  'album.intro': 'The companions who shared your life.',
+  'album.intro': 'Every companion who shared your life, including the current one.',
   'album.empty': 'Your album is empty for now.',
+  'album.alive': '🌱 With you',
   'album.retired': '🌅 Retired',
   'album.flower': '🌸 Lay a flower',
   'album.flower_done': '🌸 Flower laid today',
