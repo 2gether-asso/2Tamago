@@ -709,6 +709,7 @@ export type Notice =
   | { code: 'coins_earned'; count: number }
   | { code: 'pet_happy'; petName: string }
   | { code: 'gift_given'; item: ItemId; petName: string }
+  | { code: 'pet_rescued'; item: ItemId; petName: string }
   | { code: 'walk_found_coins'; count: number }
   | { code: 'walk_found_item'; item: ItemId }
   | { code: 'walk_met'; petName: string; ownerName: string };
@@ -917,6 +918,7 @@ export type ActivityKind =
   | 'pet_event'
   | 'visit_caress'
   | 'visit_gift'
+  | 'visit_rescue'
   | 'encounter'
   | 'daily_bonus'
   | 'community_reward'

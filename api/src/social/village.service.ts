@@ -184,6 +184,33 @@ export class VillageService {
     };
   }
 
+  /** Medicine from a visitor for a sick pet in danger (the owner is told in their feed). */
+  async rescue(viewerId: string, petId: string, item: ItemId): Promise<ActionResponse> {
+    const visitor = await this.players.get(this.db, viewerId);
+    const result = await this.pets.mutate(eq(pets.id, petId), async (state, now, tx, row) => {
+      this.assertVisitable(row.ownerId, viewerId, row.status);
+      const change = applyAction(state, { type: 'visitorMedicine', item }, now, this.rules);
+      if (!(await this.players.takeItem(tx, viewerId, item))) {
+        throw new ConflictException({
+          statusCode: 409,
+          code: 'missing_item',
+        });
+      }
+      await this.activity.record(tx, row.ownerId, 'visit_rescue', {
+        visitorName: visitor.displayName,
+        petName: state.name,
+        item,
+      });
+      return change;
+    });
+    return {
+      pet: toPetDto(result.row, result.ownerName),
+      events: [],
+      coins: await this.players.coinsOf(viewerId),
+      notices: [{ code: 'pet_rescued', item, petName: result.row.state.name }],
+    };
+  }
+
   private assertVisitable(ownerId: string, viewerId: string, status: string): void {
     if (ownerId === viewerId) {
       throw new ForbiddenException({
