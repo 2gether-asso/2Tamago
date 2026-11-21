@@ -356,14 +356,17 @@ describe('2Tamago API (e2e)', () => {
     clock.advance(hours(24 * 6));
     await bob.get('/api/me').expect(200);
     await adopt(bob, 'Caillou II');
-    const [gone] = (await bob.get('/api/album').expect(200)).body;
+    const goneEntry = (body: { petId: string; status: string }[]) =>
+      body.find((entry) => entry.status === 'gone');
+    const gone = goneEntry((await bob.get('/api/album').expect(200)).body);
+    if (!gone) throw new Error('expected a companion who is gone in the album');
     expect(gone).toMatchObject({ flowers: 0, flowerToday: false });
 
     await bob.post(`/api/album/${gone.petId}/flower`).expect(204);
     const second = await bob.post(`/api/album/${gone.petId}/flower`).expect(409);
     expect(second.body.code).toBe('already_flowered');
     await alice.post(`/api/album/${gone.petId}/flower`).expect(404);
-    expect((await bob.get('/api/album').expect(200)).body[0]).toMatchObject({
+    expect(goneEntry((await bob.get('/api/album').expect(200)).body)).toMatchObject({
       flowers: 1,
       flowerToday: true,
     });
