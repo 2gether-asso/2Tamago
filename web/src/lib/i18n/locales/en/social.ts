@@ -121,6 +121,10 @@ export const social: Record<keyof typeof fr, string> = {
   'album.intro': 'The companions who shared your life.',
   'album.empty': 'Your album is empty for now.',
   'album.retired': '🌅 Retired',
+  'album.flower': '🌸 Lay a flower',
+  'album.flower_done': '🌸 Flower laid today',
+  'album.flowers_one': '{count} 🌸',
+  'album.flowers_other': '{count} 🌸',
   'album.left': '🍃 Left',
 
   'journal.title': 'Journal',

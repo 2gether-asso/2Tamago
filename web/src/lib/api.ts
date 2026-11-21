@@ -143,6 +143,7 @@ export const api = {
   startWalk: (zone: WalkZoneId) => call<ActionResponse>('POST', '/pet/walk', { zone }),
   returnFromWalk: () => call<WalkResponse>('POST', '/pet/walk/return'),
   album: () => call<AlbumEntry[]>('GET', '/album'),
+  layFlower: (petId: string) => call<void>('POST', `/album/${petId}/flower`),
 
   buy: (body: BuyBody) => call<{ coins: number; inventory: Inventory }>('POST', '/shop/buy', body),
 

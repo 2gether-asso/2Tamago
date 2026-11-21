@@ -25,7 +25,7 @@ import { ActivityService } from '../activity/activity.service.js';
 import { Clock } from '../common/clock.js';
 import { GameRulesService } from '../game/game-rules.service.js';
 import type { Database, Transaction } from '../database/database.js';
-import { pets, players, type PetRow } from '../database/schema.js';
+import { petFlowers, pets, players, type PetRow } from '../database/schema.js';
 import { NameFilterService } from '../moderation/name-filter.service.js';
 import { PlayersService } from '../players/players.service.js';
 import { notableEvents, toPetDto } from './pet-mapper.js';
@@ -150,6 +150,19 @@ export class PetsService {
       .from(pets)
       .where(and(eq(pets.ownerId, playerId), ne(pets.status, 'alive')))
       .orderBy(desc(pets.createdAt));
+    const today = this.players.today();
+    const flowerRows = await this.db
+      .select({ petId: petFlowers.petId, day: petFlowers.day })
+      .from(petFlowers)
+      .innerJoin(pets, eq(pets.id, petFlowers.petId))
+      .where(eq(pets.ownerId, playerId));
+    const flowers = new Map<string, { count: number; today: boolean }>();
+    for (const { petId, day } of flowerRows) {
+      const entry = flowers.get(petId) ?? { count: 0, today: false };
+      entry.count += 1;
+      entry.today ||= day === today;
+      flowers.set(petId, entry);
+    }
     return rows.map(({ id, state }) => ({
       petId: id,
       name: state.name,
@@ -161,7 +174,32 @@ export class PetsService {
       status: state.status as AlbumEntry['status'],
       bornAt: state.bornAt,
       endedAt: state.endedAt,
+      flowers: flowers.get(id)?.count ?? 0,
+      flowerToday: flowers.get(id)?.today ?? false,
     }));
+  }
+
+  /** Lays a flower for one of the player's companions who is gone, once a day. */
+  async layFlower(playerId: string, petId: string): Promise<void> {
+    const [row] = await this.db
+      .select({ status: pets.status })
+      .from(pets)
+      .where(and(eq(pets.id, petId), eq(pets.ownerId, playerId)));
+    if (!row || row.status !== 'gone') {
+      throw new NotFoundException({ statusCode: 404, code: 'no_pet' });
+    }
+    const inserted = await this.db
+      .insert(petFlowers)
+      .values({ petId, day: this.players.today() })
+      .onConflictDoNothing()
+      .returning();
+    if (inserted.length === 0) {
+      throw new ConflictException({
+        statusCode: 409,
+        message: 'Tu as déjà déposé une fleur aujourd’hui.',
+        code: 'already_flowered',
+      });
+    }
   }
 
   /**

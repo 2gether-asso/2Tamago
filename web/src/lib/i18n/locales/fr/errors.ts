@@ -53,6 +53,7 @@ export const errors = {
   'error.no_event': 'Cet événement n’existe plus.',
   'error.no_entry': 'Ce compagnon n’est pas inscrit au concours de cette semaine.',
   'error.no_prize': 'Pas de récompense pour toi dans ce concours.',
+  'error.already_flowered': 'Tu as déjà déposé une fleur pour ce compagnon aujourd’hui.',
   'error.already_caressed': 'Tu as déjà caressé ce compagnon aujourd’hui.',
   'error.already_claimed': 'Tu as déjà récupéré la récompense de cette semaine.',
   'error.goal_not_reached': 'Le village n’a pas encore atteint son objectif.',
