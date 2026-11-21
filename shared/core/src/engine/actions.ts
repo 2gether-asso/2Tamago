@@ -1,4 +1,4 @@
-import { getItem, isAccessory, isSnack, type ItemId } from './catalog.js';
+import { getItem, isAccessory, isMedicine, isSnack, type ItemId } from './catalog.js';
 import { recordMeal } from './diet.js';
 import { GameError } from './errors.js';
 import { alignToGrid, gameHours, type GameRules } from './rules.js';
@@ -112,7 +112,9 @@ export type SystemAction =
   /** `seed` picks the walk event (default: derived from the pet and the walk, see `walkSeed`). */
   | { type: 'endOuting'; seed?: number }
   | { type: 'visitorCaress' }
-  | { type: 'visitorTreat'; item: ItemId };
+  | { type: 'visitorTreat'; item: ItemId }
+  /** A visitor's medicine, only for a sick pet in danger (see `isCritical`). */
+  | { type: 'visitorMedicine'; item: ItemId };
 
 export type PetAction = OwnerAction | SystemAction;
 
@@ -205,9 +207,14 @@ export function applyAction(
       add('hygiene', 40);
       break;
     }
-    case 'medicine': {
+    case 'medicine':
+    case 'visitorMedicine': {
       requireHome();
       if (state.sickSince === null) throw new GameError('not_sick');
+      if (action.type === 'visitorMedicine') {
+        if (!isCritical(state)) throw new GameError('not_critical');
+        if (!isMedicine(action.item)) throw new GameError('unknown_item');
+      }
       let dose = rules.freeMedicineDose;
       let cure = false;
       if (action.item !== undefined) {
@@ -400,6 +407,13 @@ export function caressReady(state: PetState, now: number, rules: GameRules): boo
 }
 
 /** Games the pet is still willing to play at `now` (the quota refills one by one over time). */
+/** Health at or below which a sick pet is in danger: visitors can then give it medicine. */
+export const CRITICAL_HEALTH = 30;
+
+export function isCritical(state: PetState): boolean {
+  return state.status === 'alive' && state.sickSince !== null && state.stats.health <= CRITICAL_HEALTH;
+}
+
 /** Energy needed to start a game (the web app disables Play below it). */
 export const PLAY_MIN_ENERGY = 10;
 
