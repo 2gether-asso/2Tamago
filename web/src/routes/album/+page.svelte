@@ -34,7 +34,7 @@
             form={pet.form}
             color={pet.color}
             traits={pet.traits}
-            mood={pet.status === 'retired' ? 'happy' : 'gone'}
+            mood={pet.status === 'gone' ? 'gone' : 'happy'}
             size={100}
           />
           <strong>{pet.name}</strong>
@@ -42,9 +42,13 @@
             {stageLabel(pet.stage)}{pet.form ? ` · ${formLabel(pet.form)}` : ''}
           </small>
           <small class="muted">
-            {format.format(pet.bornAt)} → {pet.endedAt ? format.format(pet.endedAt) : '?'}
+            {format.format(pet.bornAt)} → {pet.endedAt
+              ? format.format(pet.endedAt)
+              : pet.status === 'alive'
+                ? '…'
+                : '?'}
           </small>
-          <small>{pet.status === 'retired' ? t('album.retired') : t('album.left')}</small>
+          <small>{t(`album.${pet.status === 'gone' ? 'left' : pet.status}`)}</small>
           {#if pet.status === 'gone'}
             {#if pet.flowers > 0}<small>{t('album.flowers', { count: pet.flowers })}</small>{/if}
             <button disabled={pet.flowerToday} onclick={() => layFlower(pet.petId)}>

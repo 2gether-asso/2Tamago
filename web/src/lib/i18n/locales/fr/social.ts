@@ -117,8 +117,9 @@ export const social = {
   'contest.claimed_toast_other': 'Récompense du concours : +{count} pièces !',
 
   'album.title': 'Album',
-  'album.intro': 'Les compagnons qui ont partagé ta vie.',
+  'album.intro': 'Tous les compagnons qui ont partagé ta vie, y compris l’actuel.',
   'album.empty': 'Ton album est vide pour l’instant.',
+  'album.alive': '🌱 Avec toi',
   'album.retired': '🌅 Retraité',
   'album.flower': '🌸 Déposer une fleur',
   'album.flower_done': '🌸 Fleur déposée aujourd’hui',
