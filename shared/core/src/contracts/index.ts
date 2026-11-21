@@ -948,7 +948,7 @@ export interface AlbumEntry {
   form: Form | null;
   color: number;
   traits: PetTraits;
-  status: 'gone' | 'retired';
+  status: 'alive' | 'gone' | 'retired';
   bornAt: number;
   endedAt: number | null;
   /** Flowers laid for this companion so far (only companions who are gone receive them). */
