@@ -19,7 +19,7 @@ import type {
   Notice,
   OwnerActionBody,
 } from '@2tamago/core/contracts';
-import { desc, eq, type SQL } from 'drizzle-orm';
+import { and, desc, eq, type SQL } from 'drizzle-orm';
 import { AnnouncementService } from '../announcements/announcement.service.js';
 import { ActivityService } from '../activity/activity.service.js';
 import { Clock } from '../common/clock.js';
