@@ -10,6 +10,7 @@
     "build": "pnpm -r --workspace-concurrency=1 build",
     "dev": "pnpm --filter @2tamago/core build && pnpm -r --parallel --filter @2tamago/core --filter @2tamago/api --filter @2tamago/web dev",
     "test": "pnpm -r test",
+    "test:unit": "pnpm -r test:unit",
     "check": "pnpm -r check",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
