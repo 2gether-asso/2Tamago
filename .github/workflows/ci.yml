@@ -5,8 +5,42 @@ on:
     branches: [main]
   pull_request:
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
 jobs:
-  test:
+  lint:
+    name: Format and lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+      - run: pnpm format:check
+      - run: pnpm lint
+
+  build:
+    name: Build and type-check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+      - run: pnpm build
+      - run: pnpm check
+
+  unit:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+      - run: pnpm test:unit
+
+  e2e-api:
+    name: API e2e tests
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -24,18 +58,10 @@ jobs:
           --health-retries 10
     steps:
       - uses: actions/checkout@v7
-      - uses: pnpm/action-setup@v6
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 24
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm format:check
-      - run: pnpm lint
-      - run: pnpm build
-      - run: pnpm check
-      - run: pnpm test
-      - name: API e2e tests against PostgreSQL
+      - uses: ./.github/actions/setup
+      - name: Against PGlite (the development default)
+        run: pnpm --filter @2tamago/api test:e2e
+      - name: Against PostgreSQL
         run: pnpm --filter @2tamago/api test:e2e
         env:
           TEST_DATABASE_URL: postgres://tamago:tamago@localhost:5432/tamago_test
@@ -45,9 +71,16 @@ jobs:
           pnpm --filter @2tamago/api test:e2e test/auth.e2e-spec.ts
         env:
           TEST_AUTH_DATABASE_URL: postgres://tamago:tamago@localhost:5432/tamago_auth_test
+
+  e2e-web:
+    name: Browser tests (Playwright)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+      - run: pnpm build
       - run: pnpm --filter @2tamago/web exec playwright install --with-deps chromium
-      - name: Browser tests (Playwright)
-        run: pnpm --filter @2tamago/web test:e2e
+      - run: pnpm --filter @2tamago/web test:e2e
       - uses: actions/upload-artifact@v7
         if: failure()
         with:

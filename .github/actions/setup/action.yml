@@ -1,0 +1,15 @@
+name: Set up the workspace
+description: Install pnpm, Node.js and the dependencies, then build the shared engine
+
+runs:
+  using: composite
+  steps:
+    - uses: pnpm/action-setup@v6
+    - uses: actions/setup-node@v7
+      with:
+        node-version: 24
+        cache: pnpm
+    - run: pnpm install --frozen-lockfile
+      shell: bash
+    - run: pnpm --filter @2tamago/core build
+      shell: bash

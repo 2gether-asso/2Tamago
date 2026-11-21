@@ -23,6 +23,7 @@
     "build": "tsc -p tsconfig.build.json",
     "dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
     "test": "vitest run",
+    "test:unit": "vitest run",
     "check": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
