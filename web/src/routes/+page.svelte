@@ -262,48 +262,56 @@
     <section class="card">
       <h3>{t('home.care')}</h3>
       <div class="actions">
-        <button disabled={!awake || game.busy} onclick={() => (picking = 'feed')}
-          >{t('action.feed')}</button
-        >
+        <button disabled={!awake || game.busy} onclick={() => (picking = 'feed')}>
+          {t('action.feed')}
+        </button>
         <button
           disabled={!awake || game.busy || playsLeft < 1 || pet.stats.energy < PLAY_MIN_ENERGY}
-          onclick={() => (playing = true)}>{t('action.play')} ({playsLeft})</button
+          onclick={() => (playing = true)}
         >
-        <button disabled={!free || game.busy} onclick={() => game.act({ type: 'clean' })}
-          >{t('action.clean')}</button
-        >
+          {t('action.play')} ({playsLeft})
+        </button>
+        <button disabled={!free || game.busy} onclick={() => game.act({ type: 'clean' })}>
+          {t('action.clean')}
+        </button>
         {#if pet.sickSince !== null}
-          <button disabled={!free || game.busy} onclick={() => (picking = 'medicine')}
-            >{t('action.medicine')}</button
-          >
+          <button disabled={!free || game.busy} onclick={() => (picking = 'medicine')}>
+            {t('action.medicine')}
+          </button>
         {/if}
         {#if pet.asleep}
-          <button disabled={!free || game.busy} onclick={() => game.act({ type: 'wake' })}
-            >{t('action.wake')}</button
-          >
+          <button disabled={!free || game.busy} onclick={() => game.act({ type: 'wake' })}>
+            {t('action.wake')}
+          </button>
         {:else}
-          <button disabled={!awake || game.busy} onclick={() => game.act({ type: 'sleep' })}
-            >{t('action.sleep')}</button
-          >
+          <button disabled={!awake || game.busy} onclick={() => game.act({ type: 'sleep' })}>
+            {t('action.sleep')}
+          </button>
         {/if}
         {#if pet.lightsOff}
           <button
             disabled={!free || game.busy}
-            onclick={() => game.act({ type: 'lights', on: true })}>{t('action.lights_on')}</button
+            onclick={() => game.act({ type: 'lights', on: true })}
           >
+            {t('action.lights_on')}
+          </button>
         {:else if night}
           <button
             disabled={!free || game.busy}
-            onclick={() => game.act({ type: 'lights', on: false })}>{t('action.lights_off')}</button
+            onclick={() => game.act({ type: 'lights', on: false })}
           >
+            {t('action.lights_off')}
+          </button>
         {/if}
         <button
           disabled={!awake || game.busy || !canPraise}
-          onclick={() => game.act({ type: 'praise' })}>{t('action.praise')}</button
+          onclick={() => game.act({ type: 'praise' })}
         >
-        <button disabled={!awake || game.busy} onclick={() => game.act({ type: 'scold' })}
-          >{t('action.scold')}</button
-        >
+          {t('action.praise')}
+        </button>
+        <button disabled={!awake || game.busy} onclick={() => game.act({ type: 'scold' })}>
+          {t('action.scold')}
+        </button>
       </div>
       {#if awake && playsLeft < 1 && nextPlayAt}
         <p class="muted">
@@ -348,8 +356,10 @@
         <button
           class="primary"
           disabled={game.busy}
-          onclick={() => game.act({ type: 'endVacation' })}>{t('home.vacation.end')}</button
+          onclick={() => game.act({ type: 'endVacation' })}
         >
+          {t('home.vacation.end')}
+        </button>
       {:else}
         <p class="muted">
           {t('home.vacation.intro', {
@@ -366,8 +376,10 @@
           disabled={!free || game.busy || vacationAvailableOn !== null}
           onclick={() =>
             confirm(t('home.vacation.start_confirm', { name: pet.name })) &&
-            game.act({ type: 'startVacation' })}>{t('home.vacation.start')}</button
+            game.act({ type: 'startVacation' })}
         >
+          {t('home.vacation.start')}
+        </button>
       {/if}
     </section>
 
@@ -411,8 +423,10 @@
               </div>
               <button
                 disabled={!awake || !open || tired || game.busy}
-                onclick={() => game.startWalk(id)}>{t('home.zone_go')}</button
+                onclick={() => game.startWalk(id)}
               >
+                {t('home.zone_go')}
+              </button>
             </div>
           {/each}
         </div>
@@ -425,28 +439,30 @@
         <div class="actions">
           <select bind:value={trick} aria-label={t('home.trick_to_learn')}>
             {#each TRICKS as id (id)}
-              <option value={id}
-                >{trickLabel(id)} — {'★'.repeat(trickLevel(pet.tricks[id]))}{'☆'.repeat(
+              <option value={id}>
+                {trickLabel(id)} — {'★'.repeat(trickLevel(pet.tricks[id]))}{'☆'.repeat(
                   3 - trickLevel(pet.tricks[id]),
-                )}</option
-              >
+                )}
+              </option>
             {/each}
           </select>
-          <button disabled={!awake || game.busy} onclick={() => game.act({ type: 'train', trick })}
-            >{t('action.train')}</button
-          >
+          <button disabled={!awake || game.busy} onclick={() => game.act({ type: 'train', trick })}>
+            {t('action.train')}
+          </button>
           {#if pet.outing}
-            <button class="primary" disabled={walkLeft > 0 || game.busy} onclick={returnFromWalk}
-              >{t('action.return')}</button
-            >
+            <button class="primary" disabled={walkLeft > 0 || game.busy} onclick={returnFromWalk}>
+              {t('action.return')}
+            </button>
           {/if}
           {#if pet.stage === 'elder'}
             <button
               disabled={game.busy}
               onclick={() =>
                 confirm(t('home.retire_confirm', { name: pet.name })) &&
-                game.act({ type: 'retire' })}>{t('action.retire')}</button
+                game.act({ type: 'retire' })}
             >
+              {t('action.retire')}
+            </button>
           {/if}
         </div>
         <TrickPad

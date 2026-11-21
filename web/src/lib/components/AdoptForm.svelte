@@ -89,8 +89,10 @@
       class="dice"
       onclick={randomizeSpecies}
       title={t('adopt.randomize_species')}
-      aria-label={t('adopt.randomize_species')}>🎲</button
+      aria-label={t('adopt.randomize_species')}
     >
+      🎲
+    </button>
   </div>
   <div class="species">
     {#each SPECIES as option (option)}
@@ -121,8 +123,10 @@
       class="dice"
       onclick={randomizeColor}
       title={t('adopt.randomize_color')}
-      aria-label={t('adopt.randomize_color')}>🎲</button
+      aria-label={t('adopt.randomize_color')}
     >
+      🎲
+    </button>
   </div>
   <div class="row">
     <label>
@@ -140,8 +144,10 @@
       class="dice"
       onclick={randomizeName}
       title={t('adopt.randomize_name')}
-      aria-label={t('adopt.randomize_name')}>🎲</button
+      aria-label={t('adopt.randomize_name')}
     >
+      🎲
+    </button>
   </div>
   <button class="primary" disabled={game.busy || !name.trim()}>{t('adopt.submit')}</button>
 </form>

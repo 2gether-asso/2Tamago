@@ -98,41 +98,41 @@
         <p class="muted">{t('daycare.care_intro')}</p>
         <div class="actions">
           <button disabled={busy} onclick={() => care({ type: 'feed' })}>{t('action.feed')}</button>
-          <button disabled={busy} onclick={() => care({ type: 'clean' })}
-            >{t('action.clean')}</button
-          >
+          <button disabled={busy} onclick={() => care({ type: 'clean' })}>
+            {t('action.clean')}
+          </button>
           {#if pet.sickSince !== null}
-            <button disabled={busy} onclick={() => care({ type: 'medicine' })}
-              >{t('action.medicine')}</button
-            >
+            <button disabled={busy} onclick={() => care({ type: 'medicine' })}>
+              {t('action.medicine')}
+            </button>
           {/if}
           {#if pet.asleep}
-            <button disabled={busy} onclick={() => care({ type: 'wake' })}
-              >{t('action.wake')}</button
-            >
+            <button disabled={busy} onclick={() => care({ type: 'wake' })}>
+              {t('action.wake')}
+            </button>
           {:else}
-            <button disabled={busy} onclick={() => care({ type: 'sleep' })}
-              >{t('action.sleep')}</button
-            >
+            <button disabled={busy} onclick={() => care({ type: 'sleep' })}>
+              {t('action.sleep')}
+            </button>
           {/if}
           {#if pet.lightsOff}
-            <button disabled={busy} onclick={() => care({ type: 'lights', on: true })}
-              >{t('action.lights_on')}</button
-            >
+            <button disabled={busy} onclick={() => care({ type: 'lights', on: true })}>
+              {t('action.lights_on')}
+            </button>
           {:else}
-            <button disabled={busy} onclick={() => care({ type: 'lights', on: false })}
-              >{t('action.lights_off')}</button
-            >
+            <button disabled={busy} onclick={() => care({ type: 'lights', on: false })}>
+              {t('action.lights_off')}
+            </button>
           {/if}
-          <button disabled={busy} onclick={() => care({ type: 'praise' })}
-            >{t('action.praise')}</button
-          >
-          <button disabled={busy} onclick={() => care({ type: 'scold' })}
-            >{t('action.scold')}</button
-          >
-          <button disabled={busy} onclick={() => care({ type: 'caress' })}
-            >{t('daycare.care_caress')}</button
-          >
+          <button disabled={busy} onclick={() => care({ type: 'praise' })}>
+            {t('action.praise')}
+          </button>
+          <button disabled={busy} onclick={() => care({ type: 'scold' })}>
+            {t('action.scold')}
+          </button>
+          <button disabled={busy} onclick={() => care({ type: 'caress' })}>
+            {t('daycare.care_caress')}
+          </button>
         </div>
       </div>
     {/if}

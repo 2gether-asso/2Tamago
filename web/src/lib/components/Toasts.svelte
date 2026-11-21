@@ -4,8 +4,9 @@
 
 <div class="toasts" aria-live="polite">
   {#each toasts.items as toast (toast.id)}
-    <button class="toast {toast.kind}" onclick={() => toasts.dismiss(toast.id)}>{toast.text}</button
-    >
+    <button class="toast {toast.kind}" onclick={() => toasts.dismiss(toast.id)}>
+      {toast.text}
+    </button>
   {/each}
 </div>
 

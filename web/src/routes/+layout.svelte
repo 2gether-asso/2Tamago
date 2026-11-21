@@ -104,15 +104,15 @@
   {@render children()}
 {:else}
   <header>
-    <a class="brand" href="/"
-      ><span aria-hidden="true">🥚</span> <span class="name">2Tamago</span></a
-    >
+    <a class="brand" href="/">
+      <span aria-hidden="true">🥚</span> <span class="name">2Tamago</span>
+    </a>
     {#if game.player}
       <div class="who">
         <span class="coins" title={t('header.coins')}>🪙 {game.player.coins}</span>
-        <a class="who-name" href="/players/{game.player.id}" title={t('profile.mine')}
-          >{game.player.displayName}</a
-        >
+        <a class="who-name" href="/players/{game.player.id}" title={t('profile.mine')}>
+          {game.player.displayName}
+        </a>
         <a class="who-name" href="/account">{t('account.link')}</a>
         <button class="link" onclick={logout}>{t('header.logout')}</button>
         {#if clientConfig.feedbackEnabled}

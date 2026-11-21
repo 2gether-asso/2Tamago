@@ -152,25 +152,30 @@
     {#each ids as id (id)}
       {@const quantity = current(side, id)}
       <div class="item" class:picked={quantity > 0}>
-        <span
-          >{itemLabel(id)}{#if side === 'give' && wishedByThem.has(id)}
-            <span title={t('trade.wish_they_want')} aria-label={t('trade.wish_they_want')}>💖</span
-            >{/if}</span
-        >
+        <span>
+          {itemLabel(id)}{#if side === 'give' && wishedByThem.has(id)}
+            <span title={t('trade.wish_they_want')} aria-label={t('trade.wish_they_want')}>
+              💖
+            </span>{/if}
+        </span>
         <span class="stepper">
           <button
             type="button"
             aria-label="−"
             disabled={quantity === 0}
-            onclick={() => set(side, id, quantity - 1)}>−</button
+            onclick={() => set(side, id, quantity - 1)}
           >
+            −
+          </button>
           <output>{quantity}</output>
           <button
             type="button"
             aria-label="+"
             disabled={quantity >= limit(side, id) || full(side, id)}
-            onclick={() => set(side, id, quantity + 1)}>+</button
+            onclick={() => set(side, id, quantity + 1)}
           >
+            +
+          </button>
         </span>
       </div>
     {/each}
@@ -197,12 +202,12 @@
       <p class="muted"><small>{t('trade.ask_hint')}</small></p>
       {#if target && target.wishlist.length > 0}
         <p class="muted">
-          <small
-            >{t('trade.wish_their_list', {
+          <small>
+            {t('trade.wish_their_list', {
               name: targetName,
               items: target.wishlist.map(itemLabel).join(', '),
-            })}</small
-          >
+            })}
+          </small>
         </p>
       {/if}
       {#if askable.length === 0}
@@ -216,16 +221,16 @@
         <p class="muted"><small>{t('trade.wish_ask_hint', { name: targetName })}</small></p>
         <div class="wishes">
           {#each askableWishes as id (id)}
-            <button type="button" disabled={asking !== null} onclick={() => askFor(id)}
-              >💖 {itemLabel(id)}</button
-            >
+            <button type="button" disabled={asking !== null} onclick={() => askFor(id)}>
+              💖 {itemLabel(id)}
+            </button>
           {/each}
         </div>
       {/if}
       <div class="actions">
-        <button class="primary" type="button" disabled={!canSend || sending} onclick={send}
-          >{t('trade.send')}</button
-        >
+        <button class="primary" type="button" disabled={!canSend || sending} onclick={send}>
+          {t('trade.send')}
+        </button>
         <button type="button" onclick={() => (open = false)}>{t('trade.close')}</button>
       </div>
     </div>

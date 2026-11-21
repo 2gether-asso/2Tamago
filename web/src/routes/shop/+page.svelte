@@ -53,10 +53,10 @@
 </script>
 
 {#snippet buy(item: { id: string; price: number })}
-  <button disabled={game.busy || coins < priceOf(item)} onclick={() => game.buy(item.id as ItemId)}
-    >🪙 {priceOf(item)}{#if priceOf(item) < item.price}
-      <s class="was">{item.price}</s>{/if}</button
-  >
+  <button disabled={game.busy || coins < priceOf(item)} onclick={() => game.buy(item.id as ItemId)}>
+    🪙 {priceOf(item)}{#if priceOf(item) < item.price}
+      <s class="was">{item.price}</s>{/if}
+  </button>
 {/snippet}
 
 <h1>{t('shop.title')}</h1>
@@ -106,8 +106,9 @@
         disabled={wishlist.busy ||
           (!wishlist.has(item.id as ItemId) && wishlist.items.length >= wishlist.max)}
         onclick={() => wishlist.toggle(item.id as ItemId)}
-        >{wishlist.has(item.id as ItemId) ? '💖' : '🤍'}</button
       >
+        {wishlist.has(item.id as ItemId) ? '💖' : '🤍'}
+      </button>
       <small class="muted">
         {Object.entries(item.effects)
           .map(([k, v]) => `${t(`stat.${k as 'satiety' | 'happiness' | 'energy'}`)} +${v}`)
@@ -117,9 +118,10 @@
       <button
         disabled={game.busy || coins < priceOf(item)}
         onclick={() => game.buy(item.id as ItemId)}
-        >🪙 {priceOf(item)}{#if priceOf(item) < item.price}
-          <s class="was">{item.price}</s>{/if}</button
       >
+        🪙 {priceOf(item)}{#if priceOf(item) < item.price}
+          <s class="was">{item.price}</s>{/if}
+      </button>
     </div>
   {/each}
 </div>
@@ -169,17 +171,19 @@
         disabled={wishlist.busy ||
           (!wishlist.has(item.id as ItemId) && wishlist.items.length >= wishlist.max)}
         onclick={() => wishlist.toggle(item.id as ItemId)}
-        >{wishlist.has(item.id as ItemId) ? '💖' : '🤍'}</button
       >
+        {wishlist.has(item.id as ItemId) ? '💖' : '🤍'}
+      </button>
       {#if owned}
         <small>{t('shop.owned')}</small>
       {:else}
         <button
           disabled={game.busy || coins < priceOf(item)}
           onclick={() => game.buy(item.id as ItemId)}
-          >🪙 {priceOf(item)}{#if priceOf(item) < item.price}
-            <s class="was">{item.price}</s>{/if}</button
         >
+          🪙 {priceOf(item)}{#if priceOf(item) < item.price}
+            <s class="was">{item.price}</s>{/if}
+        </button>
       {/if}
     </div>
   {/each}
@@ -200,8 +204,9 @@
         disabled={wishlist.busy ||
           (!wishlist.has(item.id as ItemId) && wishlist.items.length >= wishlist.max)}
         onclick={() => wishlist.toggle(item.id as ItemId)}
-        >{wishlist.has(item.id as ItemId) ? '💖' : '🤍'}</button
       >
+        {wishlist.has(item.id as ItemId) ? '💖' : '🤍'}
+      </button>
       {#if owned}
         <small>{t('shop.owned')}</small>
       {:else}

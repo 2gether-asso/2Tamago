@@ -79,8 +79,10 @@
     class="basket"
     style:left="{game.basket}%"
     style:top="{CATCH.basketTop}%"
-    style:width="{CATCH.basketHalf * 2}%">🧺</span
+    style:width="{CATCH.basketHalf * 2}%"
   >
+    🧺
+  </span>
 </div>
 
 {#if over}

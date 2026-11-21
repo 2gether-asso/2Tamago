@@ -118,9 +118,9 @@
           disabled={isAccessory(pick)}
           aria-label={t('admin.codes.quantity')}
         />
-        <button type="button" disabled={Object.keys(items).length >= 4} onclick={addItem}
-          >{t('admin.codes.add_item')}</button
-        >
+        <button type="button" disabled={Object.keys(items).length >= 4} onclick={addItem}>
+          {t('admin.codes.add_item')}
+        </button>
       </div>
       <div class="chips">
         {#each Object.entries(items) as [id, count] (id)}
@@ -131,9 +131,9 @@
       </div>
     </fieldset>
 
-    <button class="primary" disabled={busy || (coins === 0 && Object.keys(items).length === 0)}
-      >{t('admin.codes.create')}</button
-    >
+    <button class="primary" disabled={busy || (coins === 0 && Object.keys(items).length === 0)}>
+      {t('admin.codes.create')}
+    </button>
   </form>
 
   {#if error}

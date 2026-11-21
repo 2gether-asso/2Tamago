@@ -64,13 +64,15 @@
               class="primary"
               disabled={busy}
               onclick={() => run(() => api.tradeAccept(trade.id), t('trade.accepted_toast'))}
-              >{t('trade.accept')}</button
             >
+              {t('trade.accept')}
+            </button>
             <button
               disabled={busy}
               onclick={() => run(() => api.tradeDecline(trade.id), t('trade.declined_toast'))}
-              >{t('trade.decline')}</button
             >
+              {t('trade.decline')}
+            </button>
           </div>
         </div>
       {/each}
@@ -95,8 +97,9 @@
           <button
             disabled={busy}
             onclick={() => run(() => api.tradeCancel(trade.id), t('trade.withdrawn_toast'))}
-            >{t('trade.withdraw')}</button
           >
+            {t('trade.withdraw')}
+          </button>
         </div>
       {/each}
     {/if}
