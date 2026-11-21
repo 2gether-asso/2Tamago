@@ -53,6 +53,7 @@ export const errors: Record<keyof typeof fr, string> = {
   'error.no_event': 'This event no longer exists.',
   'error.no_entry': 'This companion is not entered in this week’s contest.',
   'error.no_prize': 'No prize for you in this contest.',
+  'error.already_flowered': 'You already laid a flower for this companion today.',
   'error.already_caressed': 'You already petted this companion today.',
   'error.already_claimed': 'You already collected this week’s reward.',
   'error.goal_not_reached': 'The village has not reached its goal yet.',

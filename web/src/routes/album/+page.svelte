@@ -2,9 +2,19 @@
   import PetSprite from '#lib/components/PetSprite.svelte';
   import { api } from '#lib/api.ts';
   import { formLabel, stageLabel } from '#lib/texts.ts';
+  import { toasts } from '#lib/toasts.svelte.ts';
   import { intlTag, t } from '#lib/i18n/index.svelte.ts';
 
-  const album = api.album();
+  let album = $state(api.album());
+
+  async function layFlower(petId: string) {
+    try {
+      await api.layFlower(petId);
+      album = api.album();
+    } catch (e) {
+      toasts.push((e as Error).message, 'error');
+    }
+  }
   let format = $derived(new Intl.DateTimeFormat(intlTag(), { dateStyle: 'medium' }));
 </script>
 
@@ -35,6 +45,12 @@
             {format.format(pet.bornAt)} → {pet.endedAt ? format.format(pet.endedAt) : '?'}
           </small>
           <small>{pet.status === 'retired' ? t('album.retired') : t('album.left')}</small>
+          {#if pet.status === 'gone'}
+            {#if pet.flowers > 0}<small>{t('album.flowers', { count: pet.flowers })}</small>{/if}
+            <button disabled={pet.flowerToday} onclick={() => layFlower(pet.petId)}>
+              {pet.flowerToday ? t('album.flower_done') : t('album.flower')}
+            </button>
+          {/if}
         </div>
       {/each}
     </div>

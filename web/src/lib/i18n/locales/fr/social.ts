@@ -120,6 +120,10 @@ export const social = {
   'album.intro': 'Les compagnons qui ont partagé ta vie.',
   'album.empty': 'Ton album est vide pour l’instant.',
   'album.retired': '🌅 Retraité',
+  'album.flower': '🌸 Déposer une fleur',
+  'album.flower_done': '🌸 Fleur déposée aujourd’hui',
+  'album.flowers_one': '{count} 🌸',
+  'album.flowers_other': '{count} 🌸',
   'album.left': '🍃 Parti',
 
   'journal.title': 'Journal',
