@@ -347,6 +347,7 @@ describe('2Tamago API (e2e)', () => {
     const alice = await signIn('Alice');
     await adopt(bob, 'Caillou');
     clock.advance(hours(24 * 6));
+    await bob.get('/api/me').expect(200);
     await adopt(bob, 'Caillou II');
     const [gone] = (await bob.get('/api/album').expect(200)).body;
     expect(gone).toMatchObject({ flowers: 0, flowerToday: false });
