@@ -37,7 +37,8 @@ export const feed = {
     'Objectif du village atteint : +{count} pièces pour ta participation.',
   'activity.visit_caress': '{visitorName} est passé caresser {petName}.',
   'activity.visit_gift': '{visitorName} a offert {item} à {petName}.',
-  'activity.visit_rescue': '{visitorName} a soigné {petName} avec {item} alors qu’il était en danger.',
+  'activity.visit_rescue':
+    '{visitorName} a soigné {petName} avec {item} alors qu’il était en danger.',
   'activity.daycare_invite':
     '{ownerName} aimerait te confier {petName} : réponds depuis le village.',
   'activity.daycare_accepted': '{caretakerName} s’occupe de {petName}.',

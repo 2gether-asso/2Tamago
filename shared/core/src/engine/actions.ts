@@ -411,7 +411,9 @@ export function caressReady(state: PetState, now: number, rules: GameRules): boo
 export const CRITICAL_HEALTH = 30;
 
 export function isCritical(state: PetState): boolean {
-  return state.status === 'alive' && state.sickSince !== null && state.stats.health <= CRITICAL_HEALTH;
+  return (
+    state.status === 'alive' && state.sickSince !== null && state.stats.health <= CRITICAL_HEALTH
+  );
 }
 
 /** Energy needed to start a game (the web app disables Play below it). */
