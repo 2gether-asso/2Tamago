@@ -136,4 +136,6 @@ export const social: Record<keyof typeof fr, string> = {
   'visit.caress': 'Pet 🤚',
   'visit.on_vacation': '{name} is on vacation: no pets or gifts for now.',
   'visit.gift': 'Give: {item} ×{count}',
+  'visit.rescue': 'Save with: {item} ×{count}',
+  'visit.in_danger': '{name} is sick and in danger: a medicine can save it!',
 };

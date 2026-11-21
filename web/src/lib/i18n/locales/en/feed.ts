@@ -6,6 +6,7 @@ export const feed: Record<keyof typeof fr, string> = {
   'notice.coins_earned_other': '+{count} coins',
   'notice.pet_happy': '{petName} is thrilled!',
   'notice.gift_given': '{item} given to {petName}!',
+  'notice.pet_rescued': '{petName} took {item}: saved!',
   'notice.walk_found_coins_one': '+{count} coin found',
   'notice.walk_found_coins_other': '+{count} coins found',
   'notice.walk_found_item': 'Found: {item}',
@@ -36,6 +37,7 @@ export const feed: Record<keyof typeof fr, string> = {
   'activity.community_reward_other': 'Village goal reached: +{count} coins for taking part.',
   'activity.visit_caress': '{visitorName} stopped by to pet {petName}.',
   'activity.visit_gift': '{visitorName} gave {item} to {petName}.',
+  'activity.visit_rescue': '{visitorName} healed {petName} with {item} when it was in danger.',
   'activity.daycare_invite':
     '{ownerName} would like to entrust you with {petName}: answer from the village.',
   'activity.daycare_accepted': '{caretakerName} is looking after {petName}.',

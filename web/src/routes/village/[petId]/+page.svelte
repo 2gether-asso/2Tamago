@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { characterSheet, isSnack, type ItemId } from '@2tamago/core';
+  import { characterSheet, isCritical, isMedicine, isSnack, type ItemId } from '@2tamago/core';
   import type { CareActionBody, VisitResponse } from '@2tamago/core/contracts';
   import PetSprite from '#lib/components/PetSprite.svelte';
   import RoomScene from '#lib/components/RoomScene.svelte';
@@ -28,6 +28,11 @@
   let snacks = $derived(
     (Object.entries(game.inventory) as [ItemId, number][]).filter(
       ([id, n]) => n > 0 && isSnack(id),
+    ),
+  );
+  let medicines = $derived(
+    (Object.entries(game.inventory) as [ItemId, number][]).filter(
+      ([id, n]) => n > 0 && isMedicine(id),
     ),
   );
   let isMine = $derived(visit?.pet.ownerId === game.player?.id);
@@ -160,6 +165,24 @@
           </button>
         {/each}
       </div>
+      {#if isCritical(pet)}
+        <p class="muted">{t('visit.in_danger', { name: pet.name })}</p>
+        <div class="actions">
+          {#each medicines as [id, count] (id)}
+            <button
+              class="primary"
+              disabled={busy || !!pet.outing}
+              onclick={() =>
+                interact(
+                  () => api.rescue(visit!.pet.id, id),
+                  () => game.useItem(id),
+                )}
+            >
+              {t('visit.rescue', { item: itemLabel(id), count })}
+            </button>
+          {/each}
+        </div>
+      {/if}
     {/if}
   </section>
 

@@ -135,4 +135,6 @@ export const social = {
   'visit.caress': 'Caresser 🤚',
   'visit.on_vacation': '{name} est en vacances : pas de caresse ni de cadeau pour l’instant.',
   'visit.gift': 'Offrir : {item} ×{count}',
+  'visit.rescue': 'Sauver avec : {item} ×{count}',
+  'visit.in_danger': '{name} est malade et en danger : un médicament peut le sauver !',
 } as const;

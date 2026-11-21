@@ -128,6 +128,12 @@ export function activityText(entry: ActivityDto): string {
         item: String(d.item) in ITEMS ? itemLabel(d.item as ItemId) : t('item.unknown'),
         petName: String(d.petName),
       });
+    case 'visit_rescue':
+      return t('activity.visit_rescue', {
+        visitorName: String(d.visitorName),
+        item: String(d.item) in ITEMS ? itemLabel(d.item as ItemId) : t('item.unknown'),
+        petName: String(d.petName),
+      });
     case 'community_reward':
       return t('activity.community_reward', { count: Number(d.coins) });
     case 'trade_offer':
@@ -182,6 +188,8 @@ export function noticeText(notice: Notice): string {
       return t(`notice.${notice.code}`, { count: notice.count });
     case 'pet_happy':
       return t('notice.pet_happy', { petName: notice.petName });
+    case 'pet_rescued':
+      return t('notice.pet_rescued', { item: itemLabel(notice.item), petName: notice.petName });
     case 'gift_given':
       return t('notice.gift_given', { item: itemLabel(notice.item), petName: notice.petName });
     case 'walk_found_item':
