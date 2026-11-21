@@ -951,6 +951,9 @@ export interface AlbumEntry {
   status: 'gone' | 'retired';
   bornAt: number;
   endedAt: number | null;
+  /** Flowers laid for this companion so far (only companions who are gone receive them). */
+  flowers: number;
+  flowerToday: boolean;
 }
 
 /**
@@ -960,6 +963,7 @@ export interface AlbumEntry {
 export const API_ERROR_CODES = [
   'already_caressed',
   'already_claimed',
+  'already_flowered',
   'already_has_pet',
   'already_owned',
   'code_already_redeemed',

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Post } from '@nestjs/common';
 import {
   adoptBody,
   ownerActionBody,
@@ -34,5 +34,14 @@ export class PetsController {
   @Get('album')
   album(@CurrentSession() session: Session) {
     return this.pets.album(session.playerId);
+  }
+
+  @Post('album/:petId/flower')
+  @HttpCode(204)
+  async flower(
+    @CurrentSession() session: Session,
+    @Param('petId', ParseUUIDPipe) petId: string,
+  ): Promise<void> {
+    await this.pets.layFlower(session.playerId, petId);
   }
 }

@@ -342,6 +342,28 @@ describe('2Tamago API (e2e)', () => {
     expect(album[0].name).toBe('Caillou');
   });
 
+  it('lets the owner lay one flower a day for a companion who is gone', async () => {
+    const bob = await signIn('Bob');
+    const alice = await signIn('Alice');
+    await adopt(bob, 'Caillou');
+    clock.advance(hours(24 * 6));
+    await adopt(bob, 'Caillou II');
+    const [gone] = (await bob.get('/api/album').expect(200)).body;
+    expect(gone).toMatchObject({ flowers: 0, flowerToday: false });
+
+    await bob.post(`/api/album/${gone.petId}/flower`).expect(204);
+    const second = await bob.post(`/api/album/${gone.petId}/flower`).expect(409);
+    expect(second.body.code).toBe('already_flowered');
+    await alice.post(`/api/album/${gone.petId}/flower`).expect(404);
+    expect((await bob.get('/api/album').expect(200)).body[0]).toMatchObject({
+      flowers: 1,
+      flowerToday: true,
+    });
+
+    clock.advance(hours(24));
+    await bob.post(`/api/album/${gone.petId}/flower`).expect(204);
+  });
+
   it('connects players: village, caresses, gifts and walks', async () => {
     const alice = await signIn('Alice');
     const bob = await signIn('Bob');
