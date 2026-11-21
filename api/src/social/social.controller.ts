@@ -58,6 +58,16 @@ export class SocialController {
     return this.village.gift(session.playerId, petId, body.item);
   }
 
+  @Post('village/:petId/rescue')
+  @HttpCode(200)
+  rescue(
+    @CurrentSession() session: Session,
+    @Param('petId', { schema: uuidParam }) petId: string,
+    @Body({ schema: giftBody }) body: GiftBody,
+  ) {
+    return this.village.rescue(session.playerId, petId, body.item);
+  }
+
   @Put('players/:playerId/favorite')
   async follow(
     @CurrentSession() session: Session,

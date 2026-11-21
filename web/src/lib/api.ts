@@ -153,6 +153,8 @@ export const api = {
   village: () => call<VillagePet[]>('GET', '/village'),
   visit: (petId: string) => call<VisitResponse>('GET', `/village/${petId}`),
   caress: (petId: string) => call<ActionResponse>('POST', `/village/${petId}/caress`),
+  rescue: (petId: string, item: string) =>
+    call<ActionResponse>('POST', `/village/${petId}/rescue`, { item }),
   gift: (petId: string, item: string) =>
     call<ActionResponse>('POST', `/village/${petId}/gift`, { item }),
 
