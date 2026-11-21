@@ -21,6 +21,13 @@ import { Clock } from '../src/common/clock.js';
 import { AppConfig } from '../src/config/app-config.js';
 import { setupApp } from '../src/setup-app.js';
 
+// Traits are rolled from a random seed at adoption, and some rolls tire a pet out before the
+// scenarios below expect it to: pin the seed so the tests do not depend on luck.
+vi.mock('node:crypto', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('node:crypto')>()),
+  randomInt: () => 1,
+}));
+
 class FakeClock extends Clock {
   time = Date.UTC(2026, 10, 7, 9);
   override now() {
