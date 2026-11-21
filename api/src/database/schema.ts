@@ -111,6 +111,19 @@ export const interactions = pgTable(
   ],
 );
 
+/** A flower laid by the owner in memory of a companion who is gone: one per pet, per day. */
+export const petFlowers = pgTable(
+  'pet_flowers',
+  {
+    petId: uuid('pet_id')
+      .notNull()
+      .references(() => pets.id, { onDelete: 'cascade' }),
+    day: text().notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [primaryKey({ columns: [t.petId, t.day] })],
+);
+
 export const walks = pgTable(
   'walks',
   {
