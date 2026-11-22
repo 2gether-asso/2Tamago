@@ -157,6 +157,8 @@ function decay(state: PetState, dtH: number, rules: GameRules, night: boolean): 
     s.happiness -= d.happiness * happinessK;
     s.hygiene -= d.hygiene * hygieneK + messLoss;
     s.energy -= d.energy * k * modOf(state, rules, 'energyDecay');
+    // Being up and about burns a little: normal meals keep the weight steady.
+    state.weight = Math.max(MIN_WEIGHT, state.weight - rules.metabolismPerHour * dtH);
   }
   s.discipline -= rules.disciplineDecayPerHour * dtH;
   clampStats(s);
@@ -339,6 +341,9 @@ export function pickForm(state: PetState, from: Stage): Form {
   if (mistakes >= 4 || unruly) return 'rascal';
   return 'gentle';
 }
+
+/** The lightest a pet gets, whatever it does. */
+export const MIN_WEIGHT = 5;
 
 export function clamp(value: number, min = 0, max = 100): number {
   return Math.min(max, Math.max(min, value));

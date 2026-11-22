@@ -2,7 +2,7 @@ import { getItem, isAccessory, isMedicine, isSnack, type ItemId } from './catalo
 import { recordMeal } from './diet.js';
 import { GameError } from './errors.js';
 import { alignToGrid, gameHours, type GameRules } from './rules.js';
-import { clamp, endVacation, simulate } from './simulate.js';
+import { clamp, endVacation, MIN_WEIGHT, simulate } from './simulate.js';
 import { isNight } from './night.js';
 import { applyHeirloom, type Heirloom } from './heirloom.js';
 import { gainXp, resolveWalkEvent, walkSeed } from './rpg.js';
@@ -196,15 +196,16 @@ export function applyAction(
       add('happiness', 10 + score * 5);
       add('energy', -10);
       add('satiety', -3);
-      state.weight = Math.max(5, state.weight - 1);
+      state.weight = Math.max(MIN_WEIGHT, state.weight - 1);
       state.bond = clamp(state.bond + 2);
       gainXp(state, 'agility', 2, at, events);
       break;
     }
     case 'clean': {
       requireHome();
+      // One tap is a full bath: cleaning is a chore, so it should not take several.
       state.poops = 0;
-      add('hygiene', 40);
+      s.hygiene = 100;
       break;
     }
     case 'medicine':
@@ -392,7 +393,7 @@ export function applyAction(
       add('happiness', 15);
       add('energy', -walkEnergyCost(zone, weather));
       add('satiety', -zone.satietyCost);
-      state.weight = Math.max(5, state.weight - 2);
+      state.weight = Math.max(MIN_WEIGHT, state.weight - 2);
       state.bond = clamp(state.bond + zone.bondGain);
       gainXp(state, 'vigor', zone.vigorXp, at, events);
       resolveWalkEvent(state, zone.id, seed, at, events);

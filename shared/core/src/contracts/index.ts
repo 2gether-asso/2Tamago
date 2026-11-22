@@ -103,6 +103,7 @@ export const rulesOverridesBody = z
     starvingHealthLossPerHour: nonNegative,
     healthRegenPerHour: nonNegative,
     overweightThreshold: nonNegative,
+    metabolismPerHour: nonNegative,
     freeMealSatiety: z.number().min(0).max(100),
     fullSatiety: z.number().min(0).max(100),
     overfeedWeight: nonNegative,

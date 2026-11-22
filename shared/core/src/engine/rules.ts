@@ -66,6 +66,8 @@ export interface GameRules {
   starvingHealthLossPerHour: number;
   healthRegenPerHour: number;
   overweightThreshold: number;
+  /** Weight burnt per awake hour: a pet fed normally keeps a steady weight, treats make it fat. */
+  metabolismPerHour: number;
 
   /** Satiety the free ration gives (a meal from the bag gives its own, bigger, amount). */
   freeMealSatiety: number;
@@ -148,7 +150,7 @@ export const DEFAULT_RULES: GameRules = {
   stageHours: { egg: 0.1, baby: 12, child: 48, teen: 72, adult: 240, elder: null },
   stageNeediness: { egg: 0, baby: 1.5, child: 1.2, teen: 1, adult: 0.9, elder: 1.1 },
 
-  awakeDecayPerHour: { satiety: 6, happiness: 5, energy: 6, hygiene: 3 },
+  awakeDecayPerHour: { satiety: 6, happiness: 4, energy: 6, hygiene: 3 },
   asleepDecayPerHour: { satiety: 2, happiness: 1, hygiene: 1 },
   energyRecoveryPerHour: 12,
   drowsyEnergy: 15,
@@ -166,6 +168,7 @@ export const DEFAULT_RULES: GameRules = {
   starvingHealthLossPerHour: 1.5,
   healthRegenPerHour: 2,
   overweightThreshold: 40,
+  metabolismPerHour: 0.25,
 
   freeMealSatiety: 20,
   fullSatiety: 80,
