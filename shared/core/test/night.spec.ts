@@ -77,10 +77,13 @@ describe('bedtime by stage', () => {
     expect(baby.stage).toBe('baby');
     const off = applyAction(baby, { type: 'lights', on: false }, at(19.6), rules).state;
     expect(off.lightsOff).toBe(true);
-    // The same hour is still day for an adult.
-    const adult = { ...baby, stage: 'adult' as const };
-    expect(() => applyAction(adult, { type: 'lights', on: false }, at(19.6), rules)).toThrow(
+    // An adult (bedtime 22:00) may be tucked in from 19:00, not before.
+    const adult = { ...hatchedAt(18.5), stage: 'adult' as const };
+    expect(() => applyAction(adult, { type: 'lights', on: false }, at(18.6), rules)).toThrow(
       GameError,
+    );
+    expect(applyAction(adult, { type: 'lights', on: false }, at(19.6), rules).state.lightsOff).toBe(
+      true,
     );
   });
 

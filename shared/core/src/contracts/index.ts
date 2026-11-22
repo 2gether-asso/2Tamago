@@ -139,6 +139,7 @@ export const rulesOverridesBody = z
           })
           .partial()
           .strict(),
+        tuckInHours: z.number().min(0).max(12),
         clockOffsetHours: z.number().min(-12).max(14),
         awakeHappinessFactor: z.number().min(1).max(5),
       })

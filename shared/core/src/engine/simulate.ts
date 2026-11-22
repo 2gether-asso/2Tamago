@@ -1,6 +1,6 @@
 import { alignToGrid, gameHours, stepMs, type GameRules } from './rules.js';
 import { dietOf } from './diet.js';
-import { isNight } from './night.js';
+import { isBedtime, isNight } from './night.js';
 import { modOf, traitsOf } from './traits.js';
 import {
   STAGES,
@@ -109,7 +109,7 @@ function tick(state: PetState, t: number, rules: GameRules, events: PetEvent[]):
 
   const night = isNight(rules, t, state.stage);
   decay(state, dtH, rules, night);
-  sleepCycle(state, t, night, rules, events);
+  sleepCycle(state, t, isBedtime(rules, t, state.stage), rules, events);
   poop(state, t, rules, events);
   sickness(state, t, dtH, rules, events);
   health(state, t, dtH, rules, events);
@@ -167,13 +167,14 @@ function decay(state: PetState, dtH: number, rules: GameRules, night: boolean): 
 function sleepCycle(
   state: PetState,
   t: number,
-  night: boolean,
+  /** Night, or the hours just before it when the pet may be tucked in (see `isBedtime`). */
+  sleepHours: boolean,
   rules: GameRules,
   events: PetEvent[],
 ): void {
   // Sunrise: the lights come back on by themselves.
-  if (state.lightsOff && !night) state.lightsOff = false;
-  const bedtime = night && state.lightsOff === true;
+  if (state.lightsOff && !sleepHours) state.lightsOff = false;
+  const bedtime = sleepHours && state.lightsOff === true;
   if (state.asleep) {
     // With the lights off at night, it sleeps on until morning even with full energy.
     if (state.stats.energy >= 100 && !bedtime) {

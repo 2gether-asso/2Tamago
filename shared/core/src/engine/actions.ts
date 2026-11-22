@@ -3,7 +3,7 @@ import { recordMeal } from './diet.js';
 import { GameError } from './errors.js';
 import { alignToGrid, gameHours, type GameRules } from './rules.js';
 import { clamp, endVacation, MIN_WEIGHT, simulate } from './simulate.js';
-import { isNight } from './night.js';
+import { isBedtime } from './night.js';
 import { applyHeirloom, type Heirloom } from './heirloom.js';
 import { gainXp, resolveWalkEvent, walkSeed } from './rpg.js';
 import { gameDay, walkEnergyCost, weatherAt } from './weather.js';
@@ -258,7 +258,7 @@ export function applyAction(
       if (action.on) {
         state.lightsOff = false;
       } else {
-        if (!isNight(rules, at, state.stage)) throw new GameError('not_night');
+        if (!isBedtime(rules, at, state.stage)) throw new GameError('not_night');
         state.lightsOff = true;
       }
       break;

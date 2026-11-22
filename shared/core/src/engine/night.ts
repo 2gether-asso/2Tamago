@@ -22,3 +22,17 @@ export function isNight(rules: GameRules, t: number, stage?: Stage): boolean {
     ? hour >= startHour && hour < endHour
     : hour >= startHour || hour < endHour;
 }
+
+/**
+ * Whether the lights may go off for a pet of `stage`: at night, or in the `tuckInHours` before its
+ * bedtime (an owner who visits in the early evening can put it to bed before leaving). With the
+ * lights off in that window, it sleeps on until morning.
+ */
+export function isBedtime(rules: GameRules, t: number, stage?: Stage): boolean {
+  if (isNight(rules, t, stage)) return true;
+  const { startHour, endHour } = bedtimeOf(rules, stage);
+  const early = rules.night.tuckInHours ?? 0;
+  if (startHour === endHour || early <= 0) return false;
+  const before = (startHour - dayHour(rules, t) + 24) % 24;
+  return before > 0 && before <= early;
+}

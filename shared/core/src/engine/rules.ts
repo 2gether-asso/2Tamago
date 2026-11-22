@@ -134,6 +134,8 @@ export interface GameRules {
     endHour: number;
     /** Bedtime of each stage (the hours of the night as that stage lives it). */
     stages: Partial<Record<Stage, BedtimeWindow>>;
+    /** Hours before bedtime when the lights may already go off (see `isBedtime`). */
+    tuckInHours: number;
     /** Hours added to UTC to get the local hour (the API derives it from `GAME_TIMEZONE`). */
     clockOffsetHours: number;
     awakeHappinessFactor: number;
@@ -214,6 +216,7 @@ export const DEFAULT_RULES: GameRules = {
       adult: { startHour: 22, endHour: 7 },
       elder: { startHour: 21, endHour: 8 },
     },
+    tuckInHours: 3,
     clockOffsetHours: 0,
     awakeHappinessFactor: 1.5,
   },
