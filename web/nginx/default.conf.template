@@ -31,6 +31,15 @@ server {
         add_header Cache-Control "public, max-age=31536000, immutable";
     }
 
+    # The service worker and the manifest are checked for updates: never served from a cache.
+    location = /service-worker.js {
+        add_header Cache-Control "no-cache";
+    }
+    location = /manifest.webmanifest {
+        default_type application/manifest+json;
+        add_header Cache-Control "no-cache";
+    }
+
     # Single-page app: unknown routes get the fallback page, which the router handles.
     location / {
         try_files $uri $uri/ /404.html;
