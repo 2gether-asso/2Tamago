@@ -5,6 +5,8 @@ import {
   DEFAULT_ZONE,
   isUnique,
   rollFinds,
+  dayThemeAt,
+  DAY_THEME_EFFECTS,
   weatherAt,
   type GameRules,
   type ItemId,
@@ -111,7 +113,12 @@ export class WalksService {
           .where(and(eq(walks.petId, row.id), isNull(walks.returnedAt)))
           .returning();
 
-        const rolled = rollFinds(zone, Math.random, weather);
+        // A lucky day (the day it set off) brings back items more often.
+        const lucky =
+          dayThemeAt(this.rules, state.outing?.startedAt ?? now) === 'lucky'
+            ? DAY_THEME_EFFECTS.lucky.itemChanceFactor
+            : 1;
+        const rolled = rollFinds(zone, Math.random, weather, lucky);
         // An accessory (or decoration) is kept once: finding one already owned brings nothing.
         const items: ItemId[] = [];
         for (const item of rolled.items) {

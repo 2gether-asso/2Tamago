@@ -8,6 +8,8 @@ import {
   simulate,
   traitsOf,
   WISH,
+  BIRTHDAY,
+  rollPresent,
   type GameRules,
   type MissionSignal,
   type PetEvent,
@@ -139,6 +141,22 @@ export class PetsService {
         if (earned > 0) notices.push({ code: 'coins_earned', count: earned });
       }
       notices.push(...(await this.rewardWishes(tx, playerId, change.events)));
+      if (action.type === 'celebrate') {
+        await this.players.addItem(tx, playerId, BIRTHDAY.item);
+        await this.players.addCoins(tx, playerId, BIRTHDAY.coins);
+        notices.push({
+          code: 'birthday_party',
+          petName: state.name,
+          item: BIRTHDAY.item,
+          coins: BIRTHDAY.coins,
+        });
+      }
+      if (action.type === 'takePresent') {
+        const present = rollPresent(Math.random);
+        if (present.coins > 0) await this.players.addCoins(tx, playerId, present.coins);
+        if (present.item) await this.players.addItem(tx, playerId, present.item);
+        notices.push({ code: 'present_found', petName: state.name, ...present });
+      }
       const signal = missionSignal(action, state, change.state);
       if (signal) notices.push(...(await this.missions.record(tx, playerId, signal)));
       return change;

@@ -579,6 +579,8 @@ export const PUSH_KINDS = [
   'walk_done',
   'daycare_invite',
   'trade_offer',
+  'present',
+  'birthday',
   'test',
 ] as const;
 export type PushKind = (typeof PUSH_KINDS)[number];
@@ -725,7 +727,9 @@ export type Notice =
   | { code: 'walk_found_coins'; count: number }
   | { code: 'walk_found_item'; item: ItemId }
   | { code: 'walk_met'; petName: string; ownerName: string }
-  | { code: 'mission_done'; mission: MissionId };
+  | { code: 'mission_done'; mission: MissionId }
+  | { code: 'present_found'; petName: string; coins: number; item: ItemId | null }
+  | { code: 'birthday_party'; petName: string; item: ItemId; coins: number };
 
 export interface ActionResponse {
   pet: PetDto;

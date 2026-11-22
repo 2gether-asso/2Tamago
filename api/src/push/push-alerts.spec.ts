@@ -60,4 +60,13 @@ describe('pushKindsOf', () => {
     expect(pushKindsOf(pet({ status: 'gone' }, { satiety: 0 }), NOW)).toEqual([]);
     expect(pushKindsOf(pet({ status: 'retired' }, { satiety: 0 }), NOW)).toEqual([]);
   });
+
+  it('also brings good news: a present waiting, a birthday to celebrate', () => {
+    const later = T0 + gameHours(rules, 24 * 7 + 2);
+    const fond = pet({ stage: 'adult', bond: 80 });
+    expect(pushKindsOf(fond, later, rules)).toEqual(['present', 'birthday']);
+    expect(pushKindsOf({ ...fond, celebratedAge: 7 }, later, rules)).toEqual(['present']);
+    // Never while it sleeps.
+    expect(pushKindsOf({ ...fond, asleep: true }, later, rules)).toEqual([]);
+  });
 });
