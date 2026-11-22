@@ -4,6 +4,7 @@ import type { feed as fr } from '../fr/feed.ts';
 export const feed: Record<keyof typeof fr, string> = {
   'notice.coins_earned_one': '+{count} coin',
   'notice.coins_earned_other': '+{count} coins',
+  'notice.mission_done': 'Mission done: {mission} ✅',
   'notice.pet_happy': '{petName} is thrilled!',
   'notice.gift_given': '{item} given to {petName}!',
   'notice.pet_rescued': '{petName} took {item}: saved!',

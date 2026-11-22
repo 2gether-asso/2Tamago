@@ -1,6 +1,8 @@
 import {
   bundleEntries,
   ITEMS,
+  MISSIONS,
+  type MissionId,
   WEATHER_EFFECTS,
   type Alert,
   type Form,
@@ -63,6 +65,8 @@ export function tradeSideLabel(items: Partial<Record<ItemId, number>>, coins: nu
     .join(', ');
 }
 export const itemLabel = (id: ItemId) => t(`item.${id}`);
+/** "Play 2 games": a mission of the day, with its target. */
+export const missionLabel = (id: MissionId) => t(`mission.${id}`, { count: MISSIONS[id].target });
 
 /** A small picture for each wish, shown in a thought bubble. */
 export const WISH_ICON: Record<WishId, string> = {
@@ -220,5 +224,7 @@ export function noticeText(notice: Notice): string {
       return t('notice.walk_found_item', { item: itemLabel(notice.item) });
     case 'walk_met':
       return t('notice.walk_met', { petName: notice.petName, ownerName: notice.ownerName });
+    case 'mission_done':
+      return t('notice.mission_done', { mission: missionLabel(notice.mission) });
   }
 }

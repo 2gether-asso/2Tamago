@@ -49,6 +49,8 @@ import type {
   FavoriteResponse,
   WalkResponse,
   AccountOverview,
+  DailyMissionsDto,
+  MissionsClaimResponse,
 } from '@2tamago/core/contracts';
 
 import { hasMessage, t, type MessageKey } from './i18n/index.svelte.ts';
@@ -210,6 +212,8 @@ export const api = {
   contestVote: (playerId: string) => call<ContestBoard>('POST', '/contests/vote', { playerId }),
   contestClaim: (kind: ContestKind) =>
     call<ContestClaimResponse>('POST', `/contests/${kind}/claim`),
+  missions: () => call<DailyMissionsDto>('GET', '/missions'),
+  claimMissions: () => call<MissionsClaimResponse>('POST', '/missions/claim'),
   work: () => call<WorkStatus>('GET', '/work'),
   workPlayer: (score: number) => call<WorkResponse>('POST', '/work/player', { score }),
   workPet: () => call<PetWorkResponse>('POST', '/work/pet'),

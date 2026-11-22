@@ -27,6 +27,7 @@
   } from '@2tamago/core';
   import type { WalkResponse } from '@2tamago/core/contracts';
   import DaycareOwner from '#lib/components/DaycareOwner.svelte';
+  import MissionsCard from '#lib/components/MissionsCard.svelte';
   import CarePicker from '#lib/components/CarePicker.svelte';
   import AdoptForm from '#lib/components/AdoptForm.svelte';
   import PetSprite from '#lib/components/PetSprite.svelte';
@@ -391,6 +392,8 @@
         </div>
       {/if}
     </section>
+
+    <MissionsCard />
 
     <section class="card">
       <h3>{t('home.vacation.title')}</h3>

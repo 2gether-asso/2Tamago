@@ -2,6 +2,7 @@
 export const feed = {
   'notice.coins_earned_one': '+{count} pièce',
   'notice.coins_earned_other': '+{count} pièces',
+  'notice.mission_done': 'Mission accomplie : {mission} ✅',
   'notice.pet_happy': '{petName} est tout content !',
   'notice.gift_given': '{item} offert à {petName} !',
   'notice.pet_rescued': '{petName} a pris {item} : il est sauvé !',
