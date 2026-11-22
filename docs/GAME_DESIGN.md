@@ -26,12 +26,13 @@ Un compagnon bien soigné vit donc environ 16 jours avant de devenir ancien.
 | Besoin     | Éveillé (par heure)        | Endormi (par heure) |
 | ---------- | -------------------------- | ------------------- |
 | Satiété    | −6                         | −2                  |
-| Bonheur    | −5                         | −1                  |
+| Bonheur    | −4                         | −1                  |
 | Énergie    | −6                         | **+12**             |
 | Propreté   | −3, et −4 par caca présent | −1, et −4 par caca  |
-| Discipline | −0,5                       | −0,5                |
+| Discipline | −0,3                       | −0,3                |
 
 - Il fait un caca toutes les 4 h quand il est éveillé et à la maison (4 au maximum).
+- **Poids** : chaque ration ou repas en ajoute, jouer (−1) et se promener (−2) en retirent, et il brûle 0,25 par heure éveillée (`metabolismPerHour`) : nourri normalement, son poids reste stable ; ce sont les friandises et le gavage qui le font grossir. Il est affiché dans l'état, avec l'alerte « trop lourd » au-delà du seuil de surpoids.
 - Il s'endort seul quand son énergie tombe à 0 (−10 bonheur) et se réveille quand elle est remontée à 100.
 
 ## Santé, maladie, départ
@@ -41,6 +42,16 @@ Un compagnon bien soigné vit donc environ 16 jours avant de devenir ancien.
 - **Affamé** (satiété à 0) : −1,5 santé/h.
 - **Bien portant** (pas malade, satiété > 40, bonheur > 30) : +2 santé/h (×1,5 avec une alimentation équilibrée).
 - **Santé à 0** : le compagnon part (statut `gone`), ou reste à 1 PV si `GAME_DEPARTURE=false`. Un bébé totalement délaissé tient environ deux jours (vérifié par les tests).
+
+## Équilibrage : des visites courtes et régulières
+
+Le joueur visé passe 2 à 4 fois par jour quelques minutes. Les tests `shared/core/test/balance.spec.ts` simulent un tel joueur (les mêmes gestes à chaque visite) et vérifient que :
+
+- 4 visites par jour élèvent un compagnon **Rayonnant**, sans erreur de soin ;
+- 2 visites par jour, gamelle remplie et un peu de dressage, évitent la forme **Chenapan** ;
+- un compagnon jamais dressé ni grondé devient bien Chenapan.
+
+Les réglages de l'équilibrage (fenêtre des caprices, discipline du dressage, gamelle, bain complet, métabolisme, coucher en avance, caresses plafonnées) viennent de ces simulations : avant, aucun caprice n'était attrapé par un joueur en 4 visites, le lien était au maximum dès le 3ᵉ jour et un compagnon nourri normalement prenait 5 de poids par jour jusqu'à l'indigestion.
 
 ## Héritage
 
@@ -61,6 +72,7 @@ Quand un ancien prend sa retraite (volontairement : un compagnon qui part, lui, 
 Nourrir ouvre un choix (tickets #50 et #55) :
 
 - **Ration simple** (gratuite) : satiété +20 (`freeMealSatiety`), poids +1. Elle garde le jeu jouable sans objet, mais ne compte pas dans l'équilibre alimentaire.
+- **Gamelle** (comme dans Nintendogs) : « Remplir la gamelle » y met 2 rations simples (`bowlCapacity`, gratuit, refusé si elle est pleine : `bowl_full`). Quand il est éveillé, à la maison et que sa satiété passe sous 35 (`bowlHungerSatiety`), il se sert tout seul d'une ration. C'est ce qui permet de partir travailler sans revenir le nourrir à midi : on prévoit au lieu d'être présent. Un gardien peut aussi la remplir.
 - **Repas du sac** (achetés à la boutique, retirés de l'inventaire) : bol de riz (céréales, 10 pièces, +35), ragoût de légumes (légumes, 14, +30), poisson grillé (protéines, 20, +40), salade de fruits (fruits, 12, +25). Un repas refuse d'être donné à partir de 80 de satiété (`fullSatiety`, erreur `not_hungry`) : c'est la saturation. Seuls les repas se donnent avec « Nourrir » ; les friandises restent un geste à part.
 - **Friandises** : comptent aussi dans l'équilibre (par défaut des sucreries ; fraise, mûre et noix de coco sont des fruits, le champignon un légume). Donner une friandise à un compagnon déjà rassasié (satiété ≥ 80) ajoute +2 au poids (`overfeedWeight`).
 - **Équilibre** : le moteur garde les 6 derniers repas et friandises (`diet`, `dietWindow`). _Équilibrée_ : au moins 3 groupes sains différents et au plus un tiers de sucreries, la régénération de santé est ×1,5. _Déséquilibrée_ : plus de la moitié de sucreries (à partir de 4 repas), ce qui ajoute un facteur de pression de maladie. Sinon _moyenne_.
@@ -219,7 +231,7 @@ Le jeu a un cycle jour/nuit calé sur l'horloge du **fuseau configuré** (`GAME_
 L'œuf n'a pas de nuit. Les heures générales de la règle `night` (`startHour` 21, `endHour` 7) servent aux stades qui n'ont pas la leur. L'écran d'accueil affiche l'heure de coucher du compagnon. Quand il change de stade, il adopte la nuit du nouveau stade.
 
 - **Lumière allumée à l'heure du coucher** : un compagnon éveillé est agité, son bonheur baisse **×1,5** plus vite (`awakeHappinessFactor`). Un rappel s'affiche. Ça ne s'applique pas pendant une promenade.
-- **Lumière éteinte** (action réservée à l'heure du coucher du stade) : il s'endort tout seul, sans le malus de l'épuisement, et **dort jusqu'au lever** même avec l'énergie pleine.
+- **Lumière éteinte** (à l'heure du coucher du stade, ou jusqu'à 3 h avant : `tuckInHours`) : il s'endort tout seul, sans le malus de l'épuisement, et **dort jusqu'au lever** même avec l'énergie pleine. Le coucher en avance sert au joueur qui passe en début de soirée : sans lui, un compagnon couché trop tôt se réveillait la nuit, faisait ses besoins sans personne et tombait malade (vu en simulation).
 - **Au lever**, la lumière se rallume toute seule et il se réveille (s'il a récupéré toute son énergie).
 - **Réveiller** un compagnon rallume la lumière (sinon il se rendormirait aussitôt). Coucher, réveiller et l'épuisement fonctionnent comme avant.
 - Tout est réglable depuis l'écran Admin (`night`) : heures générales, heures de chaque stade (`stages`), décalage horaire, facteur. Si le début et la fin sont égaux, il n'y a pas de nuit. Les surcharges sont **fusionnées clé par clé, à tous les niveaux** : `{ "night": { "stages": { "baby": { "startHour": 18 } } } }` ne change que le coucher des bébés.
@@ -232,12 +244,12 @@ L'œuf n'a pas de nuit. Les heures générales de la règle `night` (`startHour`
 
 ## Caprices et discipline
 
-À partir du stade enfant, il réclame de l'attention sans raison environ toutes les 10 h. On a 30 minutes pour réagir :
+À partir du stade enfant, il réclame de l'attention sans raison environ toutes les 10 h. On a 3 heures pour réagir (`tantrumWindowHours`, 30 minutes avant l'équilibrage : aucun joueur ne passait assez souvent pour en attraper un, et tous les compagnons finissaient Chenapan).
 
-- **Gronder** pendant un caprice : discipline +25. C'est la seule façon de gagner de la discipline (qui décroît avec le temps) : elle accélère le dressage (+1 % de gain par point) et oriente l'évolution (`radiant` à partir de 50, `unruly` sous 25). Gronder n'a donc de sens que face à un caprice, et l'accueil l'indique alors par un message ; sans caprice, c'est puni (bonheur −10, lien −3). Décision (ticket #53) : on garde l'action avec ce compromis, sans nouvelle règle.
+- **Gronder** pendant un caprice : discipline +25. Avec le dressage (+4 par séance, `trainDiscipline`), c'est ce qui fait gagner de la discipline (qui décroît avec le temps) : elle accélère le dressage (+1 % de gain par point) et oriente l'évolution (`radiant` à partir de 50, `unruly` sous 25). Gronder n'a donc de sens que face à un caprice, et l'accueil l'indique alors par un message ; sans caprice, c'est puni (bonheur −10, lien −3). Décision (ticket #53) : on garde l'action avec ce compromis, sans nouvelle règle.
 - **Gronder** sans caprice : bonheur −10, lien −3.
 - **Féliciter** pendant un caprice : discipline −5.
-- **Ignorer** le caprice : discipline −10.
+- **Ignorer** le caprice : discipline −5 (`tantrumIgnoredDiscipline`).
 
 ## Espèces, apparence et tempérament
 
@@ -266,19 +278,19 @@ Les valeurs sont la règle `temperaments` de `GameRules` : un admin peut les mod
 
 ## Actions
 
-| Action                 | Effet                                                                                                                                                                                                                                            |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Nourrir                | Ration simple (satiété +20) ou repas du sac, voir « Repas ». Refusé à partir de 80 de satiété                                                                                                                                                    |
-| Friandise              | Selon l'objet (voir la boutique), lien +1                                                                                                                                                                                                        |
-| Jouer (score de 0 à 3) | Bonheur +10 + 5 × score, énergie −10, satiété −3, poids −1, lien +2. Il faut au moins 10 d'énergie                                                                                                                                               |
-| Nettoyer               | Retire les cacas, propreté +40                                                                                                                                                                                                                   |
-| Soigner                | Soins de base ou remède du sac, voir « Maladies et soins »                                                                                                                                                                                       |
-| Coucher / Réveiller    | Coucher seulement si énergie < 90. Réveiller coûte −10 bonheur                                                                                                                                                                                   |
-| Lumière                | Éteindre : seulement la nuit. Rallumer : à tout moment (voir « Jour et nuit »)                                                                                                                                                                   |
-| Caresser               | Bonheur +3, lien +1, au plus une fois toutes les 15 s                                                                                                                                                                                            |
-| Dresser                | Énergie −8, satiété −3, progrès de 8 × (1 + discipline/100), divisé par deux si bonheur < 50 Au geste (↓ assis, ○ tourne, ↑ saute, → tape-m'en cinq), c'est la même action : la reconnaissance du dessin est côté web et ne change aucune règle. |
-| Vacances / Retour      | Pause complète du compagnon, voir « Vacances ». Refusé pour un œuf ou pendant une promenade                                                                                                                                                      |
-| Promenade              | Selon la zone (voir « Promenades »). Au retour : bonheur +15, énergie, satiété et lien selon la zone, pièces et objets trouvés                                                                                                                   |
+| Action                 | Effet                                                                                                                                                                                                                                                           |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Nourrir                | Ration simple (satiété +20) ou repas du sac, voir « Repas ». Refusé à partir de 80 de satiété                                                                                                                                                                   |
+| Friandise              | Selon l'objet (voir la boutique), lien +1                                                                                                                                                                                                                       |
+| Jouer (score de 0 à 3) | Bonheur +10 + 5 × score, énergie −10, satiété −3, poids −1, lien +2. Il faut au moins 10 d'énergie                                                                                                                                                              |
+| Nettoyer               | Retire les cacas, propreté à 100 (un seul geste suffit)                                                                                                                                                                                                         |
+| Soigner                | Soins de base ou remède du sac, voir « Maladies et soins »                                                                                                                                                                                                      |
+| Coucher / Réveiller    | Coucher seulement si énergie < 90. Réveiller coûte −10 bonheur                                                                                                                                                                                                  |
+| Lumière                | Éteindre : seulement la nuit. Rallumer : à tout moment (voir « Jour et nuit »)                                                                                                                                                                                  |
+| Caresser               | Bonheur +3, au plus une fois toutes les 15 s ; lien +1 pour les 10 premières caresses du jour de jeu (`caressBondPerDay`)                                                                                                                                       |
+| Dresser                | Énergie −8, satiété −3, discipline +4, progrès de 8 × (1 + discipline/100), divisé par deux si bonheur < 50 Au geste (↓ assis, ○ tourne, ↑ saute, → tape-m'en cinq), c'est la même action : la reconnaissance du dessin est côté web et ne change aucune règle. |
+| Vacances / Retour      | Pause complète du compagnon, voir « Vacances ». Refusé pour un œuf ou pendant une promenade                                                                                                                                                                     |
+| Promenade              | Selon la zone (voir « Promenades »). Au retour : bonheur +15, énergie, satiété et lien selon la zone, pièces et objets trouvés                                                                                                                                  |
 
 ## Chambre
 
