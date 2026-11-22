@@ -19,6 +19,7 @@ missing a notification should never ruin a pet.
   and the bowl: illnesses went from ~7 to ~1 per 10 days.
 
 ## Done on `gameplay-loop`
+
 - Balance: tantrum window, training discipline, caress bond cap, full bath, metabolism,
   early tuck-in, softer boredom. Pinned by `shared/core/test/balance.spec.ts`.
 - Bowl, wishes, daily missions (+ present), themed days, birthdays, pet presents,
@@ -29,23 +30,27 @@ missing a notification should never ruin a pet.
 ## Plan
 
 ### Balance (engine)
+
 - [x] Tantrums wait longer for an answer (3 h instead of 30 min); ignoring costs less (-5).
 - [x] Training also builds discipline (+3): a trained pet is a disciplined pet (Nintendogs).
 - [x] Caresses give bond only for the first few of a game day (hearts and happiness always).
 - [x] Re-run the casual simulation: radiant reachable, rascal only when neglected.
 
 ### Wishes (Sims wants, engine)
+
 - [x] The pet sometimes wishes for something (play, a treat, a walk, a caress, a trick, a bath,
       a nap, a meal). Biased by temperament. Deterministic, from the pet and the time.
 - [x] Granting it in time: happiness and bond bonus, a few coins (API), a journal line.
 - [x] Missing it costs nothing: it just goes away. Never a chore.
 
 ### Daily missions (meta)
+
 - [x] 3 small missions a day per player (pure picker in the engine, progress kept by the API).
 - [x] Each one done gives coins; all three done gives a bonus present (random item).
 - [x] Doable in ~5 minutes spread over the day.
 
 ### Day events and surprises
+
 - [x] A themed day now and then (deterministic like the weather): picnic day (meals give
       happiness), festival (games give more), cozy rain (better sleep), lucky day (walk finds)...
 - [x] The pet's own birthday (every 7 game days of life?) with a small party.
@@ -53,16 +58,19 @@ missing a notification should never ruin a pet.
       bond is high enough, it has found something for you.
 
 ### PWA and notifications (branch `pwa-install`)
+
 - [ ] Web manifest + icons, installable on Android / iOS (home screen).
 - [ ] Install invitation (beforeinstallprompt, iOS hint).
 - [ ] App shell cache in the service worker, so the app opens instantly / offline page.
 - [ ] App badge with the number of alerts.
 
 ### Longer sessions (branch `longer-sessions`)
+
 - [ ] Phones change networks all day: the 6 h roaming limit signs them out. Remember the
       networks a session came back from (known networks), longer defaults.
 
 ## Ideas parked
+
 - Room decor with passive effects (cushion: better naps, fishbowl: slower boredom).
 - Fetch mini-game (throw a ball by swiping).
 - Name recognition / voice commands (Nintendogs).
