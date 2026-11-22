@@ -14,6 +14,7 @@ export const feed = {
   'event.hatched_temperament': '{name} est sorti de son œuf ! Tempérament : {temperament}.',
   'event.evolved': '{name} a grandi : {stage} !',
   'event.fell_ill': '{name} est tombé malade.',
+  'event.wish_granted': 'Le souhait de {name} est exaucé ! 💖',
   'event.cured': '{name} est guéri !',
   'event.care_mistake': '{name} s’est senti délaissé…',
   'event.fell_asleep_exhausted': '{name} s’est endormi d’épuisement.',

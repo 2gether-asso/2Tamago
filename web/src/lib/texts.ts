@@ -14,6 +14,8 @@ import {
   type WalkEventId,
   type Weather,
   type WalkZoneId,
+  type Wish,
+  type WishId,
 } from '@2tamago/core';
 import type { ActivityDto, Notice } from '@2tamago/core/contracts';
 import { intlTag, t, type MessageKey } from './i18n/index.svelte.ts';
@@ -62,6 +64,23 @@ export function tradeSideLabel(items: Partial<Record<ItemId, number>>, coins: nu
 }
 export const itemLabel = (id: ItemId) => t(`item.${id}`);
 
+/** A small picture for each wish, shown in a thought bubble. */
+export const WISH_ICON: Record<WishId, string> = {
+  play: '🎲',
+  treat: '🍬',
+  walk: '🌳',
+  caress: '💗',
+  train: '🎓',
+  meal: '🍱',
+  bath: '🫧',
+  praise: '👏',
+};
+/** "Pompon would love a strawberry!" */
+export const wishText = (wish: Pick<Wish, 'id' | 'item'>, name: string) =>
+  wish.item
+    ? t('wish.treat_item', { name, item: itemLabel(wish.item) })
+    : t(`wish.${wish.id}`, { name });
+
 /** The story of a walk event (`rpg.event.<id>`). */
 export const walkEventText = (id: WalkEventId, name: string) => t(`rpg.event.${id}`, { name });
 
@@ -98,6 +117,8 @@ export function eventText(event: PetEvent, name: string): string | null {
         stat: t(`rpg.stat.${event.data?.stat as RpgStat}`),
         value: Number(event.data?.value),
       });
+    case 'wish_granted':
+      return t('event.wish_granted', { name });
     case 'fell_ill':
     case 'cured':
     case 'care_mistake':

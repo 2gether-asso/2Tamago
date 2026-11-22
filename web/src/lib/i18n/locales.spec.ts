@@ -31,7 +31,7 @@ const NAMESPACES: Record<string, string[]> = {
     'weather',
   ],
   feed: ['event', 'activity', 'notice'],
-  home: ['home', 'action', 'walk', 'care'],
+  home: ['home', 'action', 'walk', 'care', 'wish'],
   minigame: ['minigame'],
   adopt: ['adopt'],
   profile: ['profile'],

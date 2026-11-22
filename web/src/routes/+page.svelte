@@ -47,6 +47,8 @@
     trickLabel,
     walkEventText,
     WEATHER_ICON,
+    WISH_ICON,
+    wishText,
     weatherHint,
     weatherLabel,
     zoneHint,
@@ -78,6 +80,8 @@
   /** The lights may already go off: night, or the hours just before bedtime. */
   let tuckIn = $derived(game.rules && pet ? isBedtime(game.rules, now, pet.stage) : false);
   let bowl = $derived(pet?.bowl ?? 0);
+  /** What it wishes for, while there is still time to grant it. */
+  let wish = $derived(pet?.wish && pet.wish.until > now && !pet.outing ? pet.wish : null);
   let bowlMax = $derived(game.rules?.bowlCapacity ?? 2);
   let snacks = $derived(
     (Object.entries(game.inventory) as [ItemId, number][]).filter(
@@ -217,6 +221,11 @@
             <div class="poops" aria-label={t('home.poops', { count: pet.poops })}>
               {#each Array(pet.poops) as _, i (i)}<span>💩</span>{/each}
             </div>
+            {#if wish && !pet.asleep}
+              <div class="wish-bubble" title={wishText(wish, pet.name)} aria-hidden="true">
+                {WISH_ICON[wish.id]}
+              </div>
+            {/if}
             {#if pet.stage !== 'egg'}
               <div
                 class="bowl"
@@ -354,6 +363,12 @@
       {/if}
       {#if awake && pet.tantrumSince !== null}
         <p class="muted">{t('home.scold_tip', { name: pet.name })}</p>
+      {/if}
+      {#if wish && !pet.asleep}
+        <p class="wish">
+          💭 {wishText(wish, pet.name)}
+          <span class="muted">· {t('wish.until', { time: timeFormat.format(wish.until) })}</span>
+        </p>
       {/if}
       {#if awake && tuckIn && !night && !pet.lightsOff}
         <p class="muted">{t('home.tuck_in_hint', { name: pet.name })}</p>
@@ -658,6 +673,30 @@
     bottom: 0.5rem;
     right: 0.8rem;
     font-size: 1.6rem;
+  }
+  .wish-bubble {
+    position: absolute;
+    top: 0.6rem;
+    right: 18%;
+    font-size: 1.6rem;
+    background: var(--surface);
+    border-radius: 999px;
+    padding: 0.15rem 0.5rem;
+    box-shadow: 0 2px 6px rgb(0 0 0 / 0.15);
+    animation: bob 2.4s ease-in-out infinite;
+  }
+  @keyframes bob {
+    50% {
+      transform: translateY(-4px);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .wish-bubble {
+      animation: none;
+    }
+  }
+  .wish {
+    font-weight: 600;
   }
   .bowl {
     position: absolute;

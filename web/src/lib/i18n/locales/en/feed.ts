@@ -16,6 +16,7 @@ export const feed: Record<keyof typeof fr, string> = {
   'event.hatched_temperament': '{name} hatched! Temperament: {temperament}.',
   'event.evolved': '{name} grew up: {stage}!',
   'event.fell_ill': '{name} fell ill.',
+  'event.wish_granted': '{name}’s wish came true! 💖',
   'event.cured': '{name} is better!',
   'event.care_mistake': '{name} felt neglected…',
   'event.fell_asleep_exhausted': '{name} fell asleep from exhaustion.',
