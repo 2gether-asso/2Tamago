@@ -19,3 +19,4 @@ export * from './engine/room.js';
 export * from './engine/heirloom.js';
 export * from './engine/weather.js';
 export * from './engine/wishes.js';
+export * from './engine/missions.js';
