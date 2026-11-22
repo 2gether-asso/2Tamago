@@ -3,6 +3,7 @@ import { Test } from '@nestjs/testing';
 import { gameHours, WALK_ZONES, weatherAt, withRules } from '@2tamago/core';
 import type {
   ActionResponse,
+  AdminBalance,
   AdminStats,
   ActivityDto,
   ClaimResponse,
@@ -314,6 +315,14 @@ describe('2Tamago API (e2e)', () => {
     expect(stats.activity.days).toHaveLength(14);
     expect(stats.balance.bySpecies.find((g) => g.key === 'mochi')?.pets).toBe(2);
     expect(stats.balance.byTemperament.reduce((sum, g) => sum + g.pets, 0)).toBe(2);
+
+    await alice.get('/api/admin/balance').expect(403);
+    const balance: AdminBalance = (await root.get('/api/admin/balance').expect(200)).body;
+    expect(balance.living).toBe(2);
+    expect(balance.days).toHaveLength(14);
+    // Alice opened the game today (her daily bonus).
+    expect(balance.days.at(-1)!.activePlayers).toBe(1);
+    expect(balance.insights.map((i) => i.id)).toContain('rascal_cared');
   });
 
   it('keeps traits secret while the pet is an egg, then reveals them', async () => {

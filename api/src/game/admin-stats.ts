@@ -144,7 +144,7 @@ export function buildAdminStats(input: StatsInput): AdminStats {
 }
 
 /** The last days in the game time zone, oldest first, today included. */
-function lastDays(now: number, timezone: string): string[] {
+export function lastDays(now: number, timezone: string): string[] {
   const days: string[] = [];
   for (let i = ACTIVITY_DAYS - 1; i >= 0; i--) {
     const day = dayOf(now - i * DAY_MS, timezone);

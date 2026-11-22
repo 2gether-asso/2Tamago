@@ -115,7 +115,8 @@ export class PlayersService {
         )
         .returning({ id: players.id });
       if (updated.length === 0) return 0;
-      await this.activity.record(tx, playerId, 'daily_bonus', { coins: bonus });
+      // The day is kept for the admin balance overview (daily players).
+      await this.activity.record(tx, playerId, 'daily_bonus', { coins: bonus, day: today });
       return bonus;
     });
   }
