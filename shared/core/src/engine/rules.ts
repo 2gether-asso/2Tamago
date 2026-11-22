@@ -88,6 +88,8 @@ export interface GameRules {
   tantrumIgnoredDiscipline: number;
   /** Discipline gained by a training session: a trained pet is a disciplined pet. */
   trainDiscipline: number;
+  /** Caresses of a game day that strengthen the bond; the ones after only cheer the pet up. */
+  caressBondPerDay: number;
 
   outingHours: number;
 
@@ -177,6 +179,7 @@ export const DEFAULT_RULES: GameRules = {
   tantrumWindowHours: 3,
   tantrumIgnoredDiscipline: 5,
   trainDiscipline: 4,
+  caressBondPerDay: 10,
 
   outingHours: 0.5,
 

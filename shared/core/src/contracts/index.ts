@@ -115,6 +115,7 @@ export const rulesOverridesBody = z
     tantrumWindowHours: nonNegative,
     tantrumIgnoredDiscipline: z.number().min(0).max(100),
     trainDiscipline: z.number().min(0).max(100),
+    caressBondPerDay: z.number().int().min(0).max(1000),
     outingHours: nonNegative,
     vacationMaxHours: positive,
     vacationCooldownHours: nonNegative,

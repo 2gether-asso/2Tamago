@@ -6,7 +6,7 @@ import { clamp, endVacation, simulate } from './simulate.js';
 import { isNight } from './night.js';
 import { applyHeirloom, type Heirloom } from './heirloom.js';
 import { gainXp, resolveWalkEvent, walkSeed } from './rpg.js';
-import { walkEnergyCost, weatherAt } from './weather.js';
+import { gameDay, walkEnergyCost, weatherAt } from './weather.js';
 import { WORK } from './work.js';
 import { hashSeed, modOf, rollTraits } from './traits.js';
 import { DEFAULT_ZONE, WALK_ZONES, zoneOpenTo, type WalkZoneId } from './zones.js';
@@ -291,9 +291,15 @@ export function applyAction(
       requireHome();
       if (caressReady(state, at, rules)) {
         add('happiness', 3);
-        state.bond = clamp(state.bond + modOf(state, rules, 'caressBond'));
         state.lastCaressAt = at;
-        gainXp(state, 'charm', 1, at, events);
+        // Hearts every time, but the bond grows from the first caresses of the day only.
+        const day = gameDay(rules, at);
+        const count = state.affection?.day === day ? state.affection.count : 0;
+        if (count < rules.caressBondPerDay) {
+          state.affection = { day, count: count + 1 };
+          state.bond = clamp(state.bond + modOf(state, rules, 'caressBond'));
+          gainXp(state, 'charm', 1, at, events);
+        }
       }
       break;
     }

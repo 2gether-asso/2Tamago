@@ -132,6 +132,8 @@ export interface PetState {
   /** Training progress per trick, 0-100 (100 = mastered). */
   tricks: Record<TrickId, number>;
   lastCaressAt: number | null;
+  /** Caresses that strengthened the bond on game day `day` (see `caressBondPerDay`). Absent = none. */
+  affection?: { day: number; count: number };
   /** Games left before the pet is tired of playing, as of `playChargesAt`. Absent = full. */
   playCharges?: number;
   /** When `playCharges` was last settled (real ms); the quota refills from there. */
