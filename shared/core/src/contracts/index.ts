@@ -13,6 +13,7 @@ import { TRADE_LIMITS, tradeProblem } from '../engine/trade.js';
 import { CONTEST_KINDS, type ContestKind, type ContestProblem } from '../engine/contests.js';
 import { EVENT_KINDS, EVENT_LIMITS, maxPercent, type EventKind } from '../engine/events.js';
 import { WORK } from '../engine/work.js';
+import type { MissionId } from '../engine/missions.js';
 import type { GameErrorCode } from '../engine/errors.js';
 import type { Alert, Mood } from '../engine/view.js';
 import type { GameRules, RulesOverrides } from '../engine/rules.js';
@@ -721,13 +722,38 @@ export type Notice =
   | { code: 'pet_rescued'; item: ItemId; petName: string }
   | { code: 'walk_found_coins'; count: number }
   | { code: 'walk_found_item'; item: ItemId }
-  | { code: 'walk_met'; petName: string; ownerName: string };
+  | { code: 'walk_met'; petName: string; ownerName: string }
+  | { code: 'mission_done'; mission: MissionId };
 
 export interface ActionResponse {
   pet: PetDto;
   events: PetEvent[];
   coins: number;
   notices: Notice[];
+}
+
+/** One of the day's missions, as the player sees it. */
+export interface MissionDto {
+  id: MissionId;
+  progress: number;
+  target: number;
+}
+
+export interface DailyMissionsDto {
+  /** `YYYY-MM-DD` in the game time zone. */
+  day: string;
+  missions: MissionDto[];
+  /** All done: the present can be opened. */
+  allDone: boolean;
+  /** The present of the day was opened. */
+  claimed: boolean;
+}
+
+export interface MissionsClaimResponse {
+  missions: DailyMissionsDto;
+  item: ItemId;
+  bonusCoins: number;
+  coins: number;
 }
 
 export interface WalkEncounter {
@@ -974,6 +1000,7 @@ export interface AlbumEntry {
 export const API_ERROR_CODES = [
   'already_caressed',
   'already_claimed',
+  'already_opened',
   'already_flowered',
   'already_has_pet',
   'already_owned',
@@ -985,6 +1012,7 @@ export const API_ERROR_CODES = [
   'daycare_full',
   'feedback_disabled',
   'goal_not_reached',
+  'missions_not_done',
   'missing_item',
   'no_discord_name',
   'room_invalid',

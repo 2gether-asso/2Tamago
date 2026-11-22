@@ -39,6 +39,7 @@ import type { Transaction } from '../database/database.js';
 import { encounters, pets, players, walks } from '../database/schema.js';
 import { toPetDto } from '../pets/pet-mapper.js';
 import { PetsService } from '../pets/pets.service.js';
+import { MissionsService } from '../missions/missions.service.js';
 import { PlayersService } from '../players/players.service.js';
 import { CommunityService } from './community.service.js';
 
@@ -59,6 +60,7 @@ export class WalksService {
     private readonly announcements: AnnouncementService,
     private readonly community: CommunityService,
     private readonly events: EventsService,
+    private readonly missions: MissionsService,
   ) {}
 
   private get rules(): GameRules {
@@ -80,6 +82,7 @@ export class WalksService {
         });
         // It wished for a walk: the wish comes true as it sets off.
         notices.push(...(await this.pets.rewardWishes(tx, playerId, change.events)));
+        notices.push(...(await this.missions.record(tx, playerId, 'walk')));
         return change;
       },
     );

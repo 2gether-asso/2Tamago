@@ -5,6 +5,7 @@ export default defineConfig({
   test: {
     globals: true,
     include: ['test/**/*.e2e-spec.ts'],
+    setupFiles: ['test/setup-e2e.ts'],
     // Each test boots a fresh database and runs every migration; with the files in parallel on a
     // busy machine a few seconds become tens of seconds.
     testTimeout: 60_000,

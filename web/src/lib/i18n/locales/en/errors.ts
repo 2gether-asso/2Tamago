@@ -57,6 +57,8 @@ export const errors: Record<keyof typeof fr, string> = {
   'error.no_prize': 'No prize for you in this contest.',
   'error.already_flowered': 'You already laid a flower for this companion today.',
   'error.already_caressed': 'You already petted this companion today.',
+  'error.already_opened': 'You already opened today’s present.',
+  'error.missions_not_done': 'Finish the three missions of the day first.',
   'error.already_claimed': 'You already collected this week’s reward.',
   'error.goal_not_reached': 'The village has not reached its goal yet.',
   'error.no_contribution': 'Take your companion for a walk at least once this week to qualify.',

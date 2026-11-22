@@ -9,6 +9,7 @@ import {
   traitsOf,
   WISH,
   type GameRules,
+  type MissionSignal,
   type PetEvent,
   type PetState,
 } from '@2tamago/core';
@@ -27,6 +28,7 @@ import { Clock } from '../common/clock.js';
 import { GameRulesService } from '../game/game-rules.service.js';
 import type { Database, Transaction } from '../database/database.js';
 import { petFlowers, pets, players, type PetRow } from '../database/schema.js';
+import { MissionsService } from '../missions/missions.service.js';
 import { NameFilterService } from '../moderation/name-filter.service.js';
 import { PlayersService } from '../players/players.service.js';
 import { notableEvents, toPetDto } from './pet-mapper.js';
@@ -60,6 +62,7 @@ export class PetsService {
     private readonly activity: ActivityService,
     private readonly announcements: AnnouncementService,
     private readonly nameFilter: NameFilterService,
+    private readonly missions: MissionsService,
   ) {}
 
   private get rules(): GameRules {
@@ -136,6 +139,8 @@ export class PetsService {
         if (earned > 0) notices.push({ code: 'coins_earned', count: earned });
       }
       notices.push(...(await this.rewardWishes(tx, playerId, change.events)));
+      const signal = missionSignal(action, state, change.state);
+      if (signal) notices.push(...(await this.missions.record(tx, playerId, signal)));
       return change;
     });
     return {
@@ -151,7 +156,10 @@ export class PetsService {
     const granted = events.filter((event) => event.type === 'wish_granted').length;
     if (granted === 0) return [];
     await this.players.addCoins(tx, playerId, granted * WISH.coins);
-    return [{ code: 'coins_earned', count: granted * WISH.coins }];
+    return [
+      { code: 'coins_earned', count: granted * WISH.coins },
+      ...(await this.missions.record(tx, playerId, 'wish', granted)),
+    ];
   }
 
   async album(playerId: string): Promise<AlbumEntry[]> {
@@ -284,6 +292,28 @@ export class PetsService {
       .limit(1);
     const [found] = lock ? await query.for('update', { of: pets }) : await query;
     return found ?? null;
+  }
+}
+
+/** What an owner action counts for in the daily missions (a caress on cooldown counts for nothing). */
+function missionSignal(
+  action: OwnerActionBody,
+  before: PetState,
+  after: PetState,
+): MissionSignal | null {
+  switch (action.type) {
+    case 'play':
+      return 'play';
+    case 'train':
+      return 'train';
+    case 'treat':
+      return 'treat';
+    case 'feed':
+      return action.item ? 'meal' : null;
+    case 'caress':
+      return after.lastCaressAt !== before.lastCaressAt ? 'caress' : null;
+    default:
+      return null;
   }
 }
 
