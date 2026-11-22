@@ -16,6 +16,16 @@ export const push = {
   'push.denied':
     'Les notifications sont bloquées pour ce site : autorise-les dans les réglages du navigateur.',
 
+  'push.install_title': 'Garde {name} dans ta poche',
+  'push.install_hint':
+    'Installe 2Tamago sur ton téléphone : il s’ouvre comme une application, en un geste, et peut te prévenir quand {name} a besoin de toi.',
+  'push.install_ios_hint':
+    'Sur iPhone : touche le bouton Partager de Safari, puis « Sur l’écran d’accueil ». Les notifications ne marchent que depuis l’application installée.',
+  'push.install_button': 'Installer',
+  'push.install_later': 'Plus tard',
+  'push.install_notify_title': 'Sois prévenu quand {name} a besoin de toi',
+  'push.install_notify_hint':
+    'Faim, maladie, caprice, retour de promenade… et aussi les bonnes nouvelles. Jamais pendant qu’il dort.',
   'push.msg.hungry': '{petName} a faim !',
   'push.msg.sick': '{petName} est malade.',
   'push.msg.calling': '{petName} fait un caprice !',

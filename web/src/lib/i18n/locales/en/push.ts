@@ -17,6 +17,16 @@ export const push: Record<keyof typeof fr, string> = {
   'push.unavailable': 'Notifications are not enabled on this server.',
   'push.denied': 'Notifications are blocked for this site: allow them in your browser’s settings.',
 
+  'push.install_title': 'Keep {name} in your pocket',
+  'push.install_hint':
+    'Install 2Tamago on your phone: it opens like an app, in one tap, and can tell you when {name} needs you.',
+  'push.install_ios_hint':
+    'On iPhone: tap Safari’s Share button, then “Add to Home Screen”. Notifications only work from the installed app.',
+  'push.install_button': 'Install',
+  'push.install_later': 'Later',
+  'push.install_notify_title': 'Know when {name} needs you',
+  'push.install_notify_hint':
+    'Hunger, sickness, tantrums, back from a walk… and the good news too. Never while it sleeps.',
   'push.msg.hungry': '{petName} is hungry!',
   'push.msg.sick': '{petName} is sick.',
   'push.msg.calling': '{petName} is throwing a tantrum!',
