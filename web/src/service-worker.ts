@@ -88,6 +88,9 @@ sw.addEventListener('push', (event) => {
     petName: payload.petName,
     playerName: payload.playerName ?? '',
   });
+  // A dot on the app icon until the app is opened (it then shows the real count).
+  const badge = sw.navigator as WorkerNavigator & { setAppBadge?: () => Promise<void> };
+  if (payload.kind !== 'test') void badge.setAppBadge?.().catch(() => {});
   event.waitUntil(
     sw.registration.showNotification('2Tamago', {
       body,

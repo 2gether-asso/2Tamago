@@ -5,6 +5,7 @@
   import favicon from '#lib/assets/favicon.svg';
   import FeedbackModal from '#lib/components/FeedbackModal.svelte';
   import EventsBanner from '#lib/components/EventsBanner.svelte';
+  import InstallPrompt from '#lib/components/InstallPrompt.svelte';
   import { events } from '#lib/events.svelte.ts';
   import Toasts from '#lib/components/Toasts.svelte';
   import { clientConfig } from '#lib/client-config.svelte.ts';
@@ -48,6 +49,17 @@
   $effect(() => theme.init());
   $effect(() => {
     document.documentElement.lang = i18n.locale;
+  });
+
+  // The number of things the companion needs, on the icon of the installed app.
+  $effect(() => {
+    const count = game.alerts.length;
+    const badge = navigator as Navigator & {
+      setAppBadge?: (count?: number) => Promise<void>;
+      clearAppBadge?: () => Promise<void>;
+    };
+    if (count > 0) void badge.setAppBadge?.(count).catch(() => {});
+    else void badge.clearAppBadge?.().catch(() => {});
   });
 
   // Only for someone signed in: the bonuses are not shown on the login page.
@@ -140,6 +152,7 @@
       </div>
     {:else if game.loaded}
       <EventsBanner />
+      {#if page.url.pathname === '/'}<InstallPrompt />{/if}
       {@render children()}
     {:else}
       <p class="muted">{t('common.loading')}</p>
