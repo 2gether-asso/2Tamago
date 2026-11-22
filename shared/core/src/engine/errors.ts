@@ -23,6 +23,9 @@ export const GAME_ERROR_CODES = [
   'zone_locked',
   'tired_of_playing',
   'praise_cooldown',
+  'bowl_full',
+  'not_birthday',
+  'no_present',
 ] as const;
 
 export type GameErrorCode = (typeof GAME_ERROR_CODES)[number];
@@ -51,6 +54,9 @@ export const GAME_ERROR_MESSAGES: Record<GameErrorCode, string> = {
   zone_locked: 'Il est encore trop jeune pour aller là-bas.',
   tired_of_playing: 'Il en a assez de jouer pour le moment.',
   praise_cooldown: 'Tu l’as déjà félicité il y a peu.',
+  bowl_full: 'Sa gamelle est déjà pleine.',
+  not_birthday: 'Ce n’est pas son anniversaire.',
+  no_present: 'Il n’a pas de cadeau pour toi.',
 };
 
 export class GameError extends Error {

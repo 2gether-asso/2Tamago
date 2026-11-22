@@ -111,13 +111,15 @@ export function rollFinds(
   zoneId: WalkZoneId,
   random: () => number,
   weather: Weather = 'cloudy',
+  /** Extra luck, e.g. a lucky day (see `DAY_THEME_EFFECTS`). */
+  itemChanceFactor = 1,
 ): Finds {
   const zone = WALK_ZONES[zoneId];
   const effect = WEATHER_EFFECTS[weather];
   const { min, max } = zone.coins;
   const base = min + Math.floor(random() * (max - min + 1));
   const finds: Finds = { coins: Math.round((base * (100 + effect.coinsPercent)) / 100), items: [] };
-  if (random() < zone.itemChance * effect.itemChanceFactor) {
+  if (random() < zone.itemChance * effect.itemChanceFactor * itemChanceFactor) {
     const total = zone.items.reduce((sum, item) => sum + item.weight, 0);
     let roll = random() * total;
     for (const item of zone.items) {

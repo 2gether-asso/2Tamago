@@ -2,6 +2,15 @@
 export const feed = {
   'notice.coins_earned_one': '+{count} pièce',
   'notice.coins_earned_other': '+{count} pièces',
+  'notice.mission_done': 'Mission accomplie : {mission} ✅',
+  'event.birthday': '{name} a fêté ses {age} jours 🎂',
+  'notice.present_item': '{petName} t’offre : {item} !',
+  'notice.present_coins_one': '{petName} t’a trouvé {count} pièce !',
+  'notice.present_coins_other': '{petName} t’a trouvé {count} pièces !',
+  'notice.birthday_party_one':
+    'Joyeux anniversaire {petName} ! Un {item} et {count} pièce pour la fête.',
+  'notice.birthday_party_other':
+    'Joyeux anniversaire {petName} ! Un {item} et {count} pièces pour la fête.',
   'notice.pet_happy': '{petName} est tout content !',
   'notice.gift_given': '{item} offert à {petName} !',
   'notice.pet_rescued': '{petName} a pris {item} : il est sauvé !',
@@ -14,6 +23,7 @@ export const feed = {
   'event.hatched_temperament': '{name} est sorti de son œuf ! Tempérament : {temperament}.',
   'event.evolved': '{name} a grandi : {stage} !',
   'event.fell_ill': '{name} est tombé malade.',
+  'event.wish_granted': 'Le souhait de {name} est exaucé ! 💖',
   'event.cured': '{name} est guéri !',
   'event.care_mistake': '{name} s’est senti délaissé…',
   'event.fell_asleep_exhausted': '{name} s’est endormi d’épuisement.',
@@ -45,6 +55,7 @@ export const feed = {
   'activity.daycare_declined': '{caretakerName} ne peut pas garder {petName}.',
   'activity.daycare_ended': 'La garderie de {petName} est terminée.',
   'activity.daycare_care.feed': '{caretakerName} a nourri {petName}.',
+  'activity.daycare_care.fill_bowl': '{caretakerName} a rempli la gamelle de {petName}.',
   'activity.daycare_care.clean': '{caretakerName} a nettoyé {petName}.',
   'activity.daycare_care.medicine': '{caretakerName} a soigné {petName}.',
   'activity.daycare_care.sleep': '{caretakerName} a couché {petName}.',

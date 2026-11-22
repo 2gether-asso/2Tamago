@@ -5,6 +5,7 @@
  */
 
 import type { RpgSheet } from './rpg.js';
+import type { Wish, WishId } from './wishes.js';
 import type { WalkZoneId } from './zones.js';
 
 export const SPECIES = ['mochi', 'pyon', 'kumo', 'koro', 'nyao', 'toge', 'kame'] as const;
@@ -113,6 +114,8 @@ export interface PetState {
   illness?: Illness | null;
   /** Doses received so far (a fraction for the free care, see `GameRules.medicineDoses`). */
   medicineDoses: number;
+  /** Free rations left in the bowl (see `bowlCapacity`). Absent = empty. */
+  bowl?: number;
   /** The food groups of the latest meals and treats, oldest first (see `dietOf`). */
   diet?: FoodGroup[];
   /** Hours of exposure to sickness factors, see `sicknessThresholdHours`. */
@@ -132,6 +135,8 @@ export interface PetState {
   /** Training progress per trick, 0-100 (100 = mastered). */
   tricks: Record<TrickId, number>;
   lastCaressAt: number | null;
+  /** Caresses that strengthened the bond on game day `day` (see `caressBondPerDay`). Absent = none. */
+  affection?: { day: number; count: number };
   /** Games left before the pet is tired of playing, as of `playChargesAt`. Absent = full. */
   playCharges?: number;
   /** When `playCharges` was last settled (real ms); the quota refills from there. */
@@ -151,6 +156,18 @@ export interface PetState {
   vacationSince?: number | null;
   /** When the last vacation ended, for the cooldown before the next one. */
   vacationEndedAt?: number | null;
+
+  /** What the pet wishes for right now (see `wishes.ts`). Absent (or null) = nothing. */
+  wish?: Wish | null;
+  /** When the next wish may come. Absent = as soon as the pet is free. */
+  nextWishAt?: number;
+  /** The last wish, so that the next one is something else. */
+  lastWish?: WishId | null;
+
+  /** Age (in game days) of the last birthday party. Absent = never celebrated. */
+  celebratedAge?: number;
+  /** Game day of the last present it brought its owner (see `presentReady`). */
+  presentDay?: number;
 
   /** Character sheet: experience, quests and walk log (see `rpg.ts`). Absent until the first gain. */
   rpg?: RpgSheet;
@@ -173,7 +190,13 @@ export type PetEventType =
   | 'vacation_started'
   | 'vacation_ended'
   | 'walk_event'
-  | 'stat_up';
+  | 'stat_up'
+  | 'ate_from_bowl'
+  | 'wish_made'
+  | 'wish_granted'
+  | 'wish_faded'
+  | 'birthday'
+  | 'present';
 
 export interface PetEvent {
   type: PetEventType;

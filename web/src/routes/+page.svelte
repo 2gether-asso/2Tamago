@@ -5,7 +5,11 @@
     gameHours,
     bedtimeOf,
     isAccessory,
+    isBedtime,
     isNight,
+    birthdayToCelebrate,
+    dayThemeAt,
+    presentReady,
     nextPlayChargeAt,
     PLAY_MIN_ENERGY,
     playChargesLeft,
@@ -26,6 +30,7 @@
   } from '@2tamago/core';
   import type { WalkResponse } from '@2tamago/core/contracts';
   import DaycareOwner from '#lib/components/DaycareOwner.svelte';
+  import MissionsCard from '#lib/components/MissionsCard.svelte';
   import CarePicker from '#lib/components/CarePicker.svelte';
   import AdoptForm from '#lib/components/AdoptForm.svelte';
   import PetSprite from '#lib/components/PetSprite.svelte';
@@ -46,6 +51,9 @@
     trickLabel,
     walkEventText,
     WEATHER_ICON,
+    WISH_ICON,
+    wishText,
+    THEME_ICON,
     weatherHint,
     weatherLabel,
     zoneHint,
@@ -74,6 +82,17 @@
   let night = $derived(game.rules && pet ? isNight(game.rules, now, pet.stage) : false);
   let bedtime = $derived(game.rules && pet ? bedtimeOf(game.rules, pet.stage) : null);
   let needsLightsOff = $derived(awake && night && !pet?.lightsOff);
+  /** The lights may already go off: night, or the hours just before bedtime. */
+  let tuckIn = $derived(game.rules && pet ? isBedtime(game.rules, now, pet.stage) : false);
+  let bowl = $derived(pet?.bowl ?? 0);
+  let theme = $derived(game.rules ? dayThemeAt(game.rules, now) : null);
+  let birthday = $derived(
+    game.rules && pet && hatched ? birthdayToCelebrate(pet, now, game.rules) : false,
+  );
+  let present = $derived(game.rules && pet && free ? presentReady(pet, now, game.rules) : false);
+  /** What it wishes for, while there is still time to grant it. */
+  let wish = $derived(pet?.wish && pet.wish.until > now && !pet.outing ? pet.wish : null);
+  let bowlMax = $derived(game.rules?.bowlCapacity ?? 2);
   let snacks = $derived(
     (Object.entries(game.inventory) as [ItemId, number][]).filter(
       ([id, n]) => n > 0 && isSnack(id),
@@ -162,6 +181,41 @@
   </div>
   <AdoptForm />
 {:else}
+  {#if hatched && theme}
+    <p class="card theme" title={t(`theme.${theme}.hint`)}>
+      {THEME_ICON[theme]} <strong>{t(`theme.${theme}`)}</strong>
+      <span class="muted">· {t(`theme.${theme}.hint`)}</span>
+    </p>
+  {/if}
+  {#if birthday || present}
+    <section class="card surprise">
+      {#if birthday}
+        <p>
+          🎂 {t('home.birthday', {
+            name: pet.name,
+            age: game.rules ? ageInDays(pet, now, game.rules) : 0,
+          })}
+        </p>
+        <button
+          class="primary"
+          disabled={!awake || game.busy}
+          onclick={() => game.act({ type: 'celebrate' })}
+        >
+          {t('action.celebrate')}
+        </button>
+      {/if}
+      {#if present}
+        <p>🎁 {t('home.present', { name: pet.name })}</p>
+        <button
+          class="primary"
+          disabled={game.busy}
+          onclick={() => game.act({ type: 'takePresent' })}
+        >
+          {t('action.take_present')}
+        </button>
+      {/if}
+    </section>
+  {/if}
   <div class="top" class:with-status={hatched}>
     <section class="card pet">
       <div class="heading">
@@ -212,6 +266,20 @@
             <div class="poops" aria-label={t('home.poops', { count: pet.poops })}>
               {#each Array(pet.poops) as _, i (i)}<span>💩</span>{/each}
             </div>
+            {#if wish && !pet.asleep}
+              <div class="wish-bubble" title={wishText(wish, pet.name)} aria-hidden="true">
+                {WISH_ICON[wish.id]}
+              </div>
+            {/if}
+            {#if pet.stage !== 'egg'}
+              <div
+                class="bowl"
+                class:empty={bowl === 0}
+                title={t('home.bowl', { count: bowl, max: bowlMax })}
+              >
+                🥣<small>{bowl}/{bowlMax}</small>
+              </div>
+            {/if}
           {/if}
         </RoomScene>
       </div>
@@ -248,6 +316,13 @@
             <span class="muted">· {t(`diet.${diet}.hint`)}</span>
           </p>
         {/if}
+        {#if game.rules}
+          {@const heavy = pet.weight > game.rules.overweightThreshold}
+          <p class="diet">
+            {t('home.weight', { weight: Math.round(pet.weight) })}
+            <span class="muted">· {t(heavy ? 'home.weight.heavy' : 'home.weight.ok')}</span>
+          </p>
+        {/if}
         {#if pet.sickSince !== null && pet.illness}
           <p class="diet" title={t(`illness.${pet.illness as Illness}.hint`)}>
             {t('home.illness', { illness: t(`illness.${pet.illness as Illness}`) })}
@@ -264,6 +339,13 @@
       <div class="actions">
         <button disabled={!awake || game.busy} onclick={() => (picking = 'feed')}>
           {t('action.feed')}
+        </button>
+        <button
+          disabled={!free || game.busy || bowl >= bowlMax}
+          title={t('home.bowl_hint', { name: pet.name })}
+          onclick={() => game.act({ type: 'fillBowl' })}
+        >
+          {t('action.fill_bowl', { count: bowl, max: bowlMax })}
         </button>
         <button
           disabled={!awake || game.busy || playsLeft < 1 || pet.stats.energy < PLAY_MIN_ENERGY}
@@ -295,7 +377,7 @@
           >
             {t('action.lights_on')}
           </button>
-        {:else if night}
+        {:else if tuckIn}
           <button
             disabled={!free || game.busy}
             onclick={() => game.act({ type: 'lights', on: false })}
@@ -327,6 +409,18 @@
       {#if awake && pet.tantrumSince !== null}
         <p class="muted">{t('home.scold_tip', { name: pet.name })}</p>
       {/if}
+      {#if wish && !pet.asleep}
+        <p class="wish">
+          💭 {wishText(wish, pet.name)}
+          <span class="muted">· {t('wish.until', { time: timeFormat.format(wish.until) })}</span>
+        </p>
+      {/if}
+      {#if awake && tuckIn && !night && !pet.lightsOff}
+        <p class="muted">{t('home.tuck_in_hint', { name: pet.name })}</p>
+      {/if}
+      {#if bowl === 0 && free}
+        <p class="muted">{t('home.bowl_hint', { name: pet.name })}</p>
+      {/if}
 
       {#if snacks.length > 0}
         <h4>{t('home.treats')}</h4>
@@ -342,6 +436,8 @@
         </div>
       {/if}
     </section>
+
+    <MissionsCard />
 
     <section class="card">
       <h3>{t('home.vacation.title')}</h3>
@@ -624,6 +720,62 @@
     bottom: 0.5rem;
     right: 0.8rem;
     font-size: 1.6rem;
+  }
+  .theme {
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+  .surprise {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem 1rem;
+    text-align: center;
+  }
+  .surprise p {
+    margin: 0;
+    font-weight: 600;
+  }
+  .wish-bubble {
+    position: absolute;
+    top: 0.6rem;
+    right: 18%;
+    font-size: 1.6rem;
+    background: var(--surface);
+    border-radius: 999px;
+    padding: 0.15rem 0.5rem;
+    box-shadow: 0 2px 6px rgb(0 0 0 / 0.15);
+    animation: bob 2.4s ease-in-out infinite;
+  }
+  @keyframes bob {
+    50% {
+      transform: translateY(-4px);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .wish-bubble {
+      animation: none;
+    }
+  }
+  .wish {
+    font-weight: 600;
+  }
+  .bowl {
+    position: absolute;
+    bottom: 0.5rem;
+    left: 0.8rem;
+    font-size: 1.4rem;
+    display: flex;
+    align-items: flex-end;
+    gap: 0.15rem;
+  }
+  .bowl small {
+    font-size: 0.7rem;
+    color: var(--text);
+  }
+  .bowl.empty {
+    opacity: 0.45;
   }
   .away {
     font-size: 1.1rem;

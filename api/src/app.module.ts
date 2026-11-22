@@ -11,6 +11,7 @@ import { ConfigModule } from './config/config.module.js';
 import { DatabaseModule } from './database/database.module.js';
 import { ContestsModule } from './contests/contests.module.js';
 import { WorkModule } from './work/work.module.js';
+import { MissionsModule } from './missions/missions.module.js';
 import { EventsModule } from './events/events.module.js';
 import { FeedbackModule } from './feedback/feedback.module.js';
 import { GameModule } from './game/game.module.js';
@@ -35,6 +36,7 @@ import { SocialModule } from './social/social.module.js';
     CodesModule,
     ContestsModule,
     WorkModule,
+    MissionsModule,
     EventsModule,
     ActivityModule,
     FeedbackModule,

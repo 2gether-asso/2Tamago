@@ -5,6 +5,8 @@ import {
   DEFAULT_ZONE,
   isUnique,
   rollFinds,
+  dayThemeAt,
+  DAY_THEME_EFFECTS,
   weatherAt,
   type GameRules,
   type ItemId,
@@ -39,6 +41,7 @@ import type { Transaction } from '../database/database.js';
 import { encounters, pets, players, walks } from '../database/schema.js';
 import { toPetDto } from '../pets/pet-mapper.js';
 import { PetsService } from '../pets/pets.service.js';
+import { MissionsService } from '../missions/missions.service.js';
 import { PlayersService } from '../players/players.service.js';
 import { CommunityService } from './community.service.js';
 
@@ -59,6 +62,7 @@ export class WalksService {
     private readonly announcements: AnnouncementService,
     private readonly community: CommunityService,
     private readonly events: EventsService,
+    private readonly missions: MissionsService,
   ) {}
 
   private get rules(): GameRules {
@@ -66,6 +70,7 @@ export class WalksService {
   }
 
   async start(playerId: string, zone: WalkZoneId = DEFAULT_ZONE): Promise<ActionResponse> {
+    const notices: Notice[] = [];
     const result = await this.pets.mutate(
       eq(pets.ownerId, playerId),
       async (state, now, tx, row) => {
@@ -77,6 +82,9 @@ export class WalksService {
           startedAt: new Date(outing.startedAt),
           endsAt: new Date(outing.endsAt),
         });
+        // It wished for a walk: the wish comes true as it sets off.
+        notices.push(...(await this.pets.rewardWishes(tx, playerId, change.events)));
+        notices.push(...(await this.missions.record(tx, playerId, 'walk')));
         return change;
       },
     );
@@ -84,7 +92,7 @@ export class WalksService {
       pet: toPetDto(result.row, result.ownerName),
       events: result.events,
       coins: await this.players.coinsOf(playerId),
-      notices: [],
+      notices,
     };
   }
 
@@ -105,7 +113,12 @@ export class WalksService {
           .where(and(eq(walks.petId, row.id), isNull(walks.returnedAt)))
           .returning();
 
-        const rolled = rollFinds(zone, Math.random, weather);
+        // A lucky day (the day it set off) brings back items more often.
+        const lucky =
+          dayThemeAt(this.rules, state.outing?.startedAt ?? now) === 'lucky'
+            ? DAY_THEME_EFFECTS.lucky.itemChanceFactor
+            : 1;
+        const rolled = rollFinds(zone, Math.random, weather, lucky);
         // An accessory (or decoration) is kept once: finding one already owned brings nothing.
         const items: ItemId[] = [];
         for (const item of rolled.items) {

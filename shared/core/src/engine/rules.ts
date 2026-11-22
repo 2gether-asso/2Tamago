@@ -66,9 +66,15 @@ export interface GameRules {
   starvingHealthLossPerHour: number;
   healthRegenPerHour: number;
   overweightThreshold: number;
+  /** Weight burnt per awake hour: a pet fed normally keeps a steady weight, treats make it fat. */
+  metabolismPerHour: number;
 
   /** Satiety the free ration gives (a meal from the bag gives its own, bigger, amount). */
   freeMealSatiety: number;
+  /** Free rations the bowl holds: the pet eats from it by itself while nobody is around. */
+  bowlCapacity: number;
+  /** Below this satiety, an awake pet at home eats a ration from its bowl. */
+  bowlHungerSatiety: number;
   /** Satiety above which the pet refuses a meal: it is full. */
   fullSatiety: number;
   /** Eating a treat while at or above `fullSatiety` makes it put on this much weight more. */
@@ -82,7 +88,14 @@ export interface GameRules {
   mistakeGraceHours: number;
 
   tantrumIntervalHours: number;
+  /** How long a tantrum waits for an answer before it counts as ignored. */
   tantrumWindowHours: number;
+  /** Discipline lost when a tantrum is ignored. */
+  tantrumIgnoredDiscipline: number;
+  /** Discipline gained by a training session: a trained pet is a disciplined pet. */
+  trainDiscipline: number;
+  /** Caresses of a game day that strengthen the bond; the ones after only cheer the pet up. */
+  caressBondPerDay: number;
 
   outingHours: number;
 
@@ -125,6 +138,8 @@ export interface GameRules {
     endHour: number;
     /** Bedtime of each stage (the hours of the night as that stage lives it). */
     stages: Partial<Record<Stage, BedtimeWindow>>;
+    /** Hours before bedtime when the lights may already go off (see `isBedtime`). */
+    tuckInHours: number;
     /** Hours added to UTC to get the local hour (the API derives it from `GAME_TIMEZONE`). */
     clockOffsetHours: number;
     awakeHappinessFactor: number;
@@ -141,11 +156,11 @@ export const DEFAULT_RULES: GameRules = {
   stageHours: { egg: 0.1, baby: 12, child: 48, teen: 72, adult: 240, elder: null },
   stageNeediness: { egg: 0, baby: 1.5, child: 1.2, teen: 1, adult: 0.9, elder: 1.1 },
 
-  awakeDecayPerHour: { satiety: 6, happiness: 5, energy: 6, hygiene: 3 },
+  awakeDecayPerHour: { satiety: 6, happiness: 4, energy: 6, hygiene: 3 },
   asleepDecayPerHour: { satiety: 2, happiness: 1, hygiene: 1 },
   energyRecoveryPerHour: 12,
   drowsyEnergy: 15,
-  disciplineDecayPerHour: 0.5,
+  disciplineDecayPerHour: 0.3,
   hygieneLossPerPoopPerHour: 4,
 
   poopIntervalHours: 4,
@@ -159,8 +174,11 @@ export const DEFAULT_RULES: GameRules = {
   starvingHealthLossPerHour: 1.5,
   healthRegenPerHour: 2,
   overweightThreshold: 40,
+  metabolismPerHour: 0.25,
 
   freeMealSatiety: 20,
+  bowlCapacity: 2,
+  bowlHungerSatiety: 35,
   fullSatiety: 80,
   overfeedWeight: 2,
   dietWindow: 6,
@@ -169,7 +187,10 @@ export const DEFAULT_RULES: GameRules = {
   mistakeGraceHours: 1,
 
   tantrumIntervalHours: 10,
-  tantrumWindowHours: 0.5,
+  tantrumWindowHours: 3,
+  tantrumIgnoredDiscipline: 5,
+  trainDiscipline: 4,
+  caressBondPerDay: 10,
 
   outingHours: 0.5,
 
@@ -201,6 +222,7 @@ export const DEFAULT_RULES: GameRules = {
       adult: { startHour: 22, endHour: 7 },
       elder: { startHour: 21, endHour: 8 },
     },
+    tuckInHours: 3,
     clockOffsetHours: 0,
     awakeHappinessFactor: 1.5,
   },

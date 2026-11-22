@@ -1,4 +1,4 @@
-import type { ContestKind, EventKind, ItemId, WalkZoneId } from '@2tamago/core';
+import type { ContestKind, EventKind, ItemId, MissionProgress, WalkZoneId } from '@2tamago/core';
 import type {
   ActivityKind,
   ModerationAction,
@@ -191,6 +191,22 @@ export const communityClaims = pgTable(
     createdAt: createdAt(),
   },
   (t) => [primaryKey({ columns: [t.week, t.playerId] })],
+);
+
+/** A player's missions of one game day (picked at the first look of the day) and their progress. */
+export const dailyMissions = pgTable(
+  'daily_missions',
+  {
+    playerId: uuid('player_id')
+      .notNull()
+      .references(() => players.id, { onDelete: 'cascade' }),
+    day: text().notNull(),
+    missions: jsonb().$type<MissionProgress[]>().notNull(),
+    /** When the present of the day was opened (all missions done). */
+    claimedAt: timestamp('claimed_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [primaryKey({ columns: [t.playerId, t.day] })],
 );
 
 /** A browser that wants notifications for a player (one row per browser, found by its endpoint). */

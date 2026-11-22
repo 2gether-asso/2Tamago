@@ -1,7 +1,8 @@
 import { alignToGrid, gameHours, stepMs, type GameRules } from './rules.js';
 import { dietOf } from './diet.js';
-import { isNight } from './night.js';
+import { isBedtime, isNight } from './night.js';
 import { modOf, traitsOf } from './traits.js';
+import { WISH, wishTick } from './wishes.js';
 import {
   STAGES,
   type Form,
@@ -85,6 +86,9 @@ function shiftClocks(state: PetState, away: number): void {
   state.nextTantrumAt = later(state.nextTantrumAt);
   if (state.sickSince !== null) state.sickSince += away;
   if (state.tantrumSince !== null) state.tantrumSince += away;
+  if (state.nextWishAt != null) state.nextWishAt += away;
+  if (state.wish)
+    state.wish = { ...state.wish, since: state.wish.since + away, until: state.wish.until + away };
   for (const tracker of Object.values(state.needs)) {
     if (tracker) tracker.since += away;
   }
@@ -109,13 +113,15 @@ function tick(state: PetState, t: number, rules: GameRules, events: PetEvent[]):
 
   const night = isNight(rules, t, state.stage);
   decay(state, dtH, rules, night);
-  sleepCycle(state, t, night, rules, events);
+  eatFromBowl(state, t, rules, events);
+  sleepCycle(state, t, isBedtime(rules, t, state.stage), rules, events);
   poop(state, t, rules, events);
   sickness(state, t, dtH, rules, events);
   health(state, t, dtH, rules, events);
   if (state.status !== 'alive') return;
   careMistakes(state, t, rules, events);
   tantrum(state, t, rules, events);
+  wishTick(state, t, rules, events);
   aging(state, t, rules, events);
 }
 
@@ -133,6 +139,7 @@ function hatch(state: PetState, t: number, rules: GameRules): void {
   state.nextPoopAt = t + gameHours(rules, rules.poopIntervalHours);
   state.nextTantrumAt =
     t + gameHours(rules, rules.tantrumIntervalHours * modOf(state, rules, 'tantrumInterval'));
+  state.nextWishAt = t + gameHours(rules, WISH.firstAfterHatchHours);
 }
 
 function decay(state: PetState, dtH: number, rules: GameRules, night: boolean): void {
@@ -157,21 +164,34 @@ function decay(state: PetState, dtH: number, rules: GameRules, night: boolean): 
     s.happiness -= d.happiness * happinessK;
     s.hygiene -= d.hygiene * hygieneK + messLoss;
     s.energy -= d.energy * k * modOf(state, rules, 'energyDecay');
+    // Being up and about burns a little: normal meals keep the weight steady.
+    state.weight = Math.max(MIN_WEIGHT, state.weight - rules.metabolismPerHour * dtH);
   }
   s.discipline -= rules.disciplineDecayPerHour * dtH;
   clampStats(s);
 }
 
+/** Hungry and alone: it helps itself to a ration from its bowl, if there is one left. */
+function eatFromBowl(state: PetState, t: number, rules: GameRules, events: PetEvent[]): void {
+  if (!state.bowl || state.asleep || state.outing) return;
+  if (state.stats.satiety >= rules.bowlHungerSatiety) return;
+  state.bowl -= 1;
+  state.stats.satiety = clamp(state.stats.satiety + rules.freeMealSatiety);
+  state.weight += 1;
+  events.push({ type: 'ate_from_bowl', at: t, data: { left: state.bowl } });
+}
+
 function sleepCycle(
   state: PetState,
   t: number,
-  night: boolean,
+  /** Night, or the hours just before it when the pet may be tucked in (see `isBedtime`). */
+  sleepHours: boolean,
   rules: GameRules,
   events: PetEvent[],
 ): void {
   // Sunrise: the lights come back on by themselves.
-  if (state.lightsOff && !night) state.lightsOff = false;
-  const bedtime = night && state.lightsOff === true;
+  if (state.lightsOff && !sleepHours) state.lightsOff = false;
+  const bedtime = sleepHours && state.lightsOff === true;
   if (state.asleep) {
     // With the lights off at night, it sleeps on until morning even with full energy.
     if (state.stats.energy >= 100 && !bedtime) {
@@ -301,7 +321,7 @@ function tantrum(state: PetState, t: number, rules: GameRules, events: PetEvent[
     if (t - state.tantrumSince >= gameHours(rules, rules.tantrumWindowHours)) {
       // Nobody reacted: the pet learns it can get away with it.
       state.tantrumSince = null;
-      state.stats.discipline = clamp(state.stats.discipline - 10);
+      state.stats.discipline = clamp(state.stats.discipline - rules.tantrumIgnoredDiscipline);
       state.nextTantrumAt =
         t + gameHours(rules, rules.tantrumIntervalHours * modOf(state, rules, 'tantrumInterval'));
       events.push({ type: 'attention_ignored', at: t });
@@ -339,6 +359,9 @@ export function pickForm(state: PetState, from: Stage): Form {
   if (mistakes >= 4 || unruly) return 'rascal';
   return 'gentle';
 }
+
+/** The lightest a pet gets, whatever it does. */
+export const MIN_WEIGHT = 5;
 
 export function clamp(value: number, min = 0, max = 100): number {
   return Math.min(max, Math.max(min, value));

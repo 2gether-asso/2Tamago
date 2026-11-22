@@ -689,4 +689,35 @@ describe('2Tamago API (e2e)', () => {
     const reset = (await alice.get('/api/game/rules').expect(200)).body;
     expect(reset.stageHours.baby).toBe(rules.stageHours.baby);
   });
+  it('pays a few coins when the owner grants a wish of its companion', async () => {
+    const alice = await signIn('Alice');
+    await adopt(alice, 'Pompon');
+    const actions: Record<string, object> = {
+      play: { type: 'play', score: 1 },
+      caress: { type: 'caress' },
+      praise: { type: 'praise' },
+      bath: { type: 'clean' },
+      train: { type: 'train', trick: 'sit' },
+    };
+    // Wait for a wish that a plain action grants (the wishes are deterministic: no flakiness).
+    let granted: ActionResponse | null = null;
+    for (let i = 0; i < 60 && !granted; i++) {
+      clock.advance(hours(0.5));
+      // A sick or neglected companion wishes for nothing: keep it well.
+      await alice.post('/api/pet/actions').send({ type: 'feed' });
+      await alice.post('/api/pet/actions').send({ type: 'medicine' });
+      const me: MeResponse = (await alice.get('/api/me').expect(200)).body;
+      const wish = me.pet?.state.wish;
+      if (!wish || !(wish.id in actions) || me.pet!.state.asleep) continue;
+      const before = me.player.coins;
+      const response = await alice.post('/api/pet/actions').send(actions[wish.id]);
+      if (response.status !== 201) continue;
+      granted = response.body as ActionResponse;
+      expect(granted.events.map((e) => e.type)).toContain('wish_granted');
+      expect(granted.coins).toBeGreaterThanOrEqual(before + 5);
+    }
+    expect(granted).not.toBeNull();
+    const feed: ActivityDto[] = (await alice.get('/api/activity').expect(200)).body;
+    expect(feed.some((entry) => entry.data.event === 'wish_granted')).toBe(true);
+  });
 });

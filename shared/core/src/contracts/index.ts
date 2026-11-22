@@ -13,6 +13,7 @@ import { TRADE_LIMITS, tradeProblem } from '../engine/trade.js';
 import { CONTEST_KINDS, type ContestKind, type ContestProblem } from '../engine/contests.js';
 import { EVENT_KINDS, EVENT_LIMITS, maxPercent, type EventKind } from '../engine/events.js';
 import { WORK } from '../engine/work.js';
+import type { MissionId } from '../engine/missions.js';
 import type { GameErrorCode } from '../engine/errors.js';
 import type { Alert, Mood } from '../engine/view.js';
 import type { GameRules, RulesOverrides } from '../engine/rules.js';
@@ -103,7 +104,10 @@ export const rulesOverridesBody = z
     starvingHealthLossPerHour: nonNegative,
     healthRegenPerHour: nonNegative,
     overweightThreshold: nonNegative,
+    metabolismPerHour: nonNegative,
     freeMealSatiety: z.number().min(0).max(100),
+    bowlCapacity: z.number().int().min(0).max(10),
+    bowlHungerSatiety: z.number().min(0).max(100),
     fullSatiety: z.number().min(0).max(100),
     overfeedWeight: nonNegative,
     dietWindow: z.number().int().min(1).max(20),
@@ -113,6 +117,9 @@ export const rulesOverridesBody = z
     mistakeGraceHours: nonNegative,
     tantrumIntervalHours: positive,
     tantrumWindowHours: nonNegative,
+    tantrumIgnoredDiscipline: z.number().min(0).max(100),
+    trainDiscipline: z.number().min(0).max(100),
+    caressBondPerDay: z.number().int().min(0).max(1000),
     outingHours: nonNegative,
     vacationMaxHours: positive,
     vacationCooldownHours: nonNegative,
@@ -135,6 +142,7 @@ export const rulesOverridesBody = z
           })
           .partial()
           .strict(),
+        tuckInHours: z.number().min(0).max(12),
         clockOffsetHours: z.number().min(-12).max(14),
         awakeHappinessFactor: z.number().min(1).max(5),
       })
@@ -249,6 +257,7 @@ export const ownerActionBody = z.discriminatedUnion('type', [
   /** Without an item: the free (small) ration. With one: a meal from the bag. */
   z.object({ type: z.literal('feed'), item: itemId.optional() }),
   z.object({ type: z.literal('treat'), item: itemId }),
+  z.object({ type: z.literal('fillBowl') }),
   z.object({ type: z.literal('play'), score: z.number().int().min(0).max(3) }),
   z.object({ type: z.literal('clean') }),
   /** Without an item: the free (weak) care. With one: a medicine from the bag. */
@@ -264,12 +273,15 @@ export const ownerActionBody = z.discriminatedUnion('type', [
   z.object({ type: z.literal('retire') }),
   z.object({ type: z.literal('startVacation') }),
   z.object({ type: z.literal('endVacation') }),
+  z.object({ type: z.literal('celebrate') }),
+  z.object({ type: z.literal('takePresent') }),
 ]);
 export type OwnerActionBody = z.infer<typeof ownerActionBody>;
 
 /** What a caretaker may do (see `CARETAKER_ACTION_TYPES`): the same shapes as the owner's. */
 export const careActionBody = z.discriminatedUnion('type', [
   z.object({ type: z.literal('feed') }),
+  z.object({ type: z.literal('fillBowl') }),
   z.object({ type: z.literal('clean') }),
   z.object({ type: z.literal('medicine') }),
   z.object({ type: z.literal('sleep') }),
@@ -567,6 +579,8 @@ export const PUSH_KINDS = [
   'walk_done',
   'daycare_invite',
   'trade_offer',
+  'present',
+  'birthday',
   'test',
 ] as const;
 export type PushKind = (typeof PUSH_KINDS)[number];
@@ -712,13 +726,40 @@ export type Notice =
   | { code: 'pet_rescued'; item: ItemId; petName: string }
   | { code: 'walk_found_coins'; count: number }
   | { code: 'walk_found_item'; item: ItemId }
-  | { code: 'walk_met'; petName: string; ownerName: string };
+  | { code: 'walk_met'; petName: string; ownerName: string }
+  | { code: 'mission_done'; mission: MissionId }
+  | { code: 'present_found'; petName: string; coins: number; item: ItemId | null }
+  | { code: 'birthday_party'; petName: string; item: ItemId; coins: number };
 
 export interface ActionResponse {
   pet: PetDto;
   events: PetEvent[];
   coins: number;
   notices: Notice[];
+}
+
+/** One of the day's missions, as the player sees it. */
+export interface MissionDto {
+  id: MissionId;
+  progress: number;
+  target: number;
+}
+
+export interface DailyMissionsDto {
+  /** `YYYY-MM-DD` in the game time zone. */
+  day: string;
+  missions: MissionDto[];
+  /** All done: the present can be opened. */
+  allDone: boolean;
+  /** The present of the day was opened. */
+  claimed: boolean;
+}
+
+export interface MissionsClaimResponse {
+  missions: DailyMissionsDto;
+  item: ItemId;
+  bonusCoins: number;
+  coins: number;
 }
 
 export interface WalkEncounter {
@@ -965,6 +1006,7 @@ export interface AlbumEntry {
 export const API_ERROR_CODES = [
   'already_caressed',
   'already_claimed',
+  'already_opened',
   'already_flowered',
   'already_has_pet',
   'already_owned',
@@ -976,6 +1018,7 @@ export const API_ERROR_CODES = [
   'daycare_full',
   'feedback_disabled',
   'goal_not_reached',
+  'missions_not_done',
   'missing_item',
   'no_discord_name',
   'room_invalid',

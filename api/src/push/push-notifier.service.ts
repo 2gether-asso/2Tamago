@@ -74,7 +74,7 @@ export class PushNotifier implements OnModuleInit, OnModuleDestroy {
     for (const { ownerId, state } of rows) {
       try {
         const current = simulate(state, now, rules).state;
-        await this.notifyPlayer(ownerId, current.name, pushKindsOf(current, now));
+        await this.notifyPlayer(ownerId, current.name, pushKindsOf(current, now, rules));
       } catch (error) {
         this.logger.warn(`Push for a player failed: ${(error as Error).message}`);
       }

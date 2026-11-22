@@ -22,5 +22,7 @@ export const push = {
   'push.msg.walk_done': '{petName} a fini sa promenade.',
   'push.msg.daycare_invite': '{playerName} aimerait te confier {petName}.',
   'push.msg.trade_offer': '{playerName} te propose un échange.',
+  'push.msg.present': '{petName} a trouvé quelque chose pour toi 🎁',
+  'push.msg.birthday': 'C’est l’anniversaire de {petName} ! 🎂',
   'push.msg.test': 'Ça marche : tu recevras les alertes de ton compagnon ici.',
 } as const;

@@ -2,12 +2,21 @@ import { getItem, isAccessory, isMedicine, isSnack, type ItemId } from './catalo
 import { recordMeal } from './diet.js';
 import { GameError } from './errors.js';
 import { alignToGrid, gameHours, type GameRules } from './rules.js';
-import { clamp, endVacation, simulate } from './simulate.js';
-import { isNight } from './night.js';
+import { clamp, endVacation, MIN_WEIGHT, simulate } from './simulate.js';
+import { isBedtime } from './night.js';
 import { applyHeirloom, type Heirloom } from './heirloom.js';
 import { gainXp, resolveWalkEvent, walkSeed } from './rpg.js';
-import { walkEnergyCost, weatherAt } from './weather.js';
+import { gameDay, walkEnergyCost, weatherAt } from './weather.js';
 import { WORK } from './work.js';
+import { grantWish } from './wishes.js';
+import {
+  BIRTHDAY,
+  birthdayToCelebrate,
+  DAY_THEME_EFFECTS,
+  dayThemeAt,
+  presentReady,
+} from './surprises.js';
+import { ageInDays } from './view.js';
 import { hashSeed, modOf, rollTraits } from './traits.js';
 import { DEFAULT_ZONE, WALK_ZONES, zoneOpenTo, type WalkZoneId } from './zones.js';
 import { type PetEvent, type PetState, type Species, type TrickId, TRICKS } from './types.js';
@@ -71,6 +80,8 @@ export type OwnerAction =
   /** Without an item: the free ration. With a meal: its satiety, its food group. */
   | { type: 'feed'; item?: ItemId }
   | { type: 'treat'; item: ItemId }
+  /** Fills the bowl with free rations, which the pet eats by itself when it gets hungry. */
+  | { type: 'fillBowl' }
   | { type: 'play'; score: number }
   | { type: 'clean' }
   /** Without an item: the free, weak care. With a medicine: its effect. */
@@ -87,7 +98,11 @@ export type OwnerAction =
   | { type: 'equip'; item: ItemId | null }
   | { type: 'retire' }
   | { type: 'startVacation' }
-  | { type: 'endVacation' };
+  | { type: 'endVacation' }
+  /** Throws its birthday party (the server adds the cake). */
+  | { type: 'celebrate' }
+  /** Takes the present it found (the server draws what it is). */
+  | { type: 'takePresent' };
 
 /**
  * What a caretaker may do while a pet is in daycare: the day-to-day care, not what only its owner
@@ -95,6 +110,7 @@ export type OwnerAction =
  */
 export const CARETAKER_ACTION_TYPES = [
   'feed',
+  'fillBowl',
   'clean',
   'medicine',
   'sleep',
@@ -154,10 +170,15 @@ export function applyAction(
     if (state.asleep) throw new GameError('asleep');
   };
 
+  /** Set by an action that had no effect (a caress on cooldown): it grants no wish. */
+  let idle = false;
+  const theme = dayThemeAt(rules, at);
+
   switch (action.type) {
     case 'feed': {
       requireAwake();
       if (s.satiety >= rules.fullSatiety) throw new GameError('not_hungry');
+      if (theme === 'picnic') add('happiness', DAY_THEME_EFFECTS.picnic.feedHappiness);
       if (action.item === undefined) {
         add('satiety', rules.freeMealSatiety);
         state.weight += 1;
@@ -168,6 +189,12 @@ export function applyAction(
       add('satiety', meal.satiety);
       state.weight += meal.weight;
       recordMeal(state, meal.group, rules);
+      break;
+    }
+    case 'fillBowl': {
+      requireHome();
+      if ((state.bowl ?? 0) >= rules.bowlCapacity) throw new GameError('bowl_full');
+      state.bowl = rules.bowlCapacity;
       break;
     }
     case 'treat':
@@ -193,18 +220,21 @@ export function applyAction(
       state.playCharges = left - 1;
       state.playChargesAt = at;
       const score = clamp(Math.round(action.score), 0, 3);
-      add('happiness', 10 + score * 5);
+      const festive = theme === 'festival' ? DAY_THEME_EFFECTS.festival.playHappinessFactor : 1;
+      add('happiness', Math.round((10 + score * 5) * festive));
       add('energy', -10);
       add('satiety', -3);
-      state.weight = Math.max(5, state.weight - 1);
+      state.weight = Math.max(MIN_WEIGHT, state.weight - 1);
       state.bond = clamp(state.bond + 2);
       gainXp(state, 'agility', 2, at, events);
       break;
     }
     case 'clean': {
       requireHome();
+      // One tap is a full bath: cleaning is a chore, so it should not take several.
       state.poops = 0;
-      add('hygiene', 40);
+      s.hygiene = 100;
+      if (theme === 'bubbles') add('happiness', DAY_THEME_EFFECTS.bubbles.cleanHappiness);
       break;
     }
     case 'medicine':
@@ -257,7 +287,7 @@ export function applyAction(
       if (action.on) {
         state.lightsOff = false;
       } else {
-        if (!isNight(rules, at, state.stage)) throw new GameError('not_night');
+        if (!isBedtime(rules, at, state.stage)) throw new GameError('not_night');
         state.lightsOff = true;
       }
       break;
@@ -291,9 +321,17 @@ export function applyAction(
       requireHome();
       if (caressReady(state, at, rules)) {
         add('happiness', 3);
-        state.bond = clamp(state.bond + modOf(state, rules, 'caressBond'));
         state.lastCaressAt = at;
-        gainXp(state, 'charm', 1, at, events);
+        // Hearts every time, but the bond grows from the first caresses of the day only.
+        const day = gameDay(rules, at);
+        const count = state.affection?.day === day ? state.affection.count : 0;
+        if (count < rules.caressBondPerDay) {
+          state.affection = { day, count: count + 1 };
+          state.bond = clamp(state.bond + modOf(state, rules, 'caressBond'));
+          gainXp(state, 'charm', 1, at, events);
+        }
+      } else {
+        idle = true;
       }
       break;
     }
@@ -311,9 +349,11 @@ export function applyAction(
       add('satiety', -3);
       const before = trickLevel(state.tricks[action.trick]);
       const focus = s.happiness >= 50 ? 1 : 0.5;
-      const gain = 8 * (1 + s.discipline / 100) * focus;
+      const boost = theme === 'training' ? DAY_THEME_EFFECTS.training.trainFactor : 1;
+      const gain = 8 * (1 + s.discipline / 100) * focus * boost;
       state.tricks[action.trick] = clamp(state.tricks[action.trick] + gain);
       state.bond = clamp(state.bond + 1);
+      add('discipline', rules.trainDiscipline);
       gainXp(state, 'wit', 3, at, events);
       const after = trickLevel(state.tricks[action.trick]);
       if (after > before) {
@@ -359,6 +399,23 @@ export function applyAction(
       endVacation(state, at, rules, events, false);
       break;
     }
+    case 'celebrate': {
+      requireAwake();
+      if (!birthdayToCelebrate(state, at, rules)) throw new GameError('not_birthday');
+      const age = ageInDays(state, at, rules);
+      state.celebratedAge = age;
+      add('happiness', BIRTHDAY.happiness);
+      state.bond = clamp(state.bond + BIRTHDAY.bond);
+      events.push({ type: 'birthday', at, data: { age } });
+      break;
+    }
+    case 'takePresent': {
+      requireHome();
+      if (!presentReady(state, at, rules)) throw new GameError('no_present');
+      state.presentDay = gameDay(rules, at);
+      events.push({ type: 'present', at });
+      break;
+    }
     case 'startOuting': {
       requireAwake();
       if (state.stage === 'baby') throw new GameError('too_young');
@@ -385,7 +442,7 @@ export function applyAction(
       add('happiness', 15);
       add('energy', -walkEnergyCost(zone, weather));
       add('satiety', -zone.satietyCost);
-      state.weight = Math.max(5, state.weight - 2);
+      state.weight = Math.max(MIN_WEIGHT, state.weight - 2);
       state.bond = clamp(state.bond + zone.bondGain);
       gainXp(state, 'vigor', zone.vigorXp, at, events);
       resolveWalkEvent(state, zone.id, seed, at, events);
@@ -395,6 +452,12 @@ export function applyAction(
       const exhaustive: never = action;
       throw new Error(`Unknown action ${JSON.stringify(exhaustive)}`);
     }
+  }
+
+  // The owner's own actions may make a wish come true (not a visitor's: it is the owner's bond).
+  if (!idle && !action.type.startsWith('visitor')) {
+    const item = 'item' in action && action.item !== null ? action.item : undefined;
+    grantWish(state, { type: action.type, item }, at, rules, events);
   }
 
   return { state, events };

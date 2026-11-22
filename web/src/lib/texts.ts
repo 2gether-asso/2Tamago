@@ -1,6 +1,9 @@
 import {
   bundleEntries,
   ITEMS,
+  MISSIONS,
+  type MissionId,
+  type DayTheme,
   WEATHER_EFFECTS,
   type Alert,
   type Form,
@@ -14,6 +17,8 @@ import {
   type WalkEventId,
   type Weather,
   type WalkZoneId,
+  type Wish,
+  type WishId,
 } from '@2tamago/core';
 import type { ActivityDto, Notice } from '@2tamago/core/contracts';
 import { intlTag, t, type MessageKey } from './i18n/index.svelte.ts';
@@ -61,6 +66,34 @@ export function tradeSideLabel(items: Partial<Record<ItemId, number>>, coins: nu
     .join(', ');
 }
 export const itemLabel = (id: ItemId) => t(`item.${id}`);
+/** "Play 2 games": a mission of the day, with its target. */
+export const missionLabel = (id: MissionId) => t(`mission.${id}`, { count: MISSIONS[id].target });
+
+/** A small picture for each themed day. */
+export const THEME_ICON: Record<DayTheme, string> = {
+  picnic: '🧺',
+  festival: '🎉',
+  bubbles: '🫧',
+  training: '🏅',
+  lucky: '🍀',
+};
+
+/** A small picture for each wish, shown in a thought bubble. */
+export const WISH_ICON: Record<WishId, string> = {
+  play: '🎲',
+  treat: '🍬',
+  walk: '🌳',
+  caress: '💗',
+  train: '🎓',
+  meal: '🍱',
+  bath: '🫧',
+  praise: '👏',
+};
+/** "Pompon would love a strawberry!" */
+export const wishText = (wish: Pick<Wish, 'id' | 'item'>, name: string) =>
+  wish.item
+    ? t('wish.treat_item', { name, item: itemLabel(wish.item) })
+    : t(`wish.${wish.id}`, { name });
 
 /** The story of a walk event (`rpg.event.<id>`). */
 export const walkEventText = (id: WalkEventId, name: string) => t(`rpg.event.${id}`, { name });
@@ -98,6 +131,10 @@ export function eventText(event: PetEvent, name: string): string | null {
         stat: t(`rpg.stat.${event.data?.stat as RpgStat}`),
         value: Number(event.data?.value),
       });
+    case 'wish_granted':
+      return t('event.wish_granted', { name });
+    case 'birthday':
+      return t('event.birthday', { name, age: Number(event.data?.age) });
     case 'fell_ill':
     case 'cured':
     case 'care_mistake':
@@ -111,6 +148,8 @@ export function eventText(event: PetEvent, name: string): string | null {
       return null;
   }
 }
+
+const snakeCase = (name: string) => name.replace(/[A-Z]/g, (c) => `_${c.toLowerCase()}`);
 
 export function activityText(entry: ActivityDto): string {
   const d = entry.data as Record<string, string | number>;
@@ -164,7 +203,8 @@ export function activityText(entry: ActivityDto): string {
     case 'daycare_ended':
       return t('activity.daycare_ended', { petName: String(d.petName) });
     case 'daycare_care':
-      return t(`activity.daycare_care.${String(d.action)}` as MessageKey, {
+      // Keys are snake_case, actions camelCase (`fillBowl` → `fill_bowl`).
+      return t(`activity.daycare_care.${snakeCase(String(d.action))}` as MessageKey, {
         caretakerName: String(d.caretakerName),
         petName: String(d.petName),
       });
@@ -196,5 +236,17 @@ export function noticeText(notice: Notice): string {
       return t('notice.walk_found_item', { item: itemLabel(notice.item) });
     case 'walk_met':
       return t('notice.walk_met', { petName: notice.petName, ownerName: notice.ownerName });
+    case 'present_found':
+      return notice.item
+        ? t('notice.present_item', { petName: notice.petName, item: itemLabel(notice.item) })
+        : t('notice.present_coins', { petName: notice.petName, count: notice.coins });
+    case 'birthday_party':
+      return t('notice.birthday_party', {
+        petName: notice.petName,
+        item: itemLabel(notice.item),
+        count: notice.coins,
+      });
+    case 'mission_done':
+      return t('notice.mission_done', { mission: missionLabel(notice.mission) });
   }
 }

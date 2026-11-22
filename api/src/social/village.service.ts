@@ -14,7 +14,7 @@ import {
   type GameRules,
   type ItemId,
 } from '@2tamago/core';
-import type { ActionResponse, VillagePet, VisitResponse } from '@2tamago/core/contracts';
+import type { ActionResponse, Notice, VillagePet, VisitResponse } from '@2tamago/core/contracts';
 import { and, desc, eq, ne } from 'drizzle-orm';
 import { ActivityService } from '../activity/activity.service.js';
 import { Clock } from '../common/clock.js';
@@ -24,6 +24,7 @@ import type { Database, Executor } from '../database/database.js';
 import { interactions, pets, players } from '../database/schema.js';
 import { toPetDto } from '../pets/pet-mapper.js';
 import { PetsService } from '../pets/pets.service.js';
+import { MissionsService } from '../missions/missions.service.js';
 import { PlayersService } from '../players/players.service.js';
 import { affinityScore, compareVillage } from './affinity.js';
 import { DaycareService } from './daycare.service.js';
@@ -50,6 +51,7 @@ export class VillageService {
     private readonly favorites: FavoritesService,
     private readonly daycare: DaycareService,
     private readonly events: EventsService,
+    private readonly missions: MissionsService,
   ) {}
 
   private get rules(): GameRules {
@@ -112,6 +114,7 @@ export class VillageService {
     const visitor = await this.players.get(this.db, viewerId);
     // Asked before the transaction: it uses the pool, which the transaction must not.
     const reward = await this.events.boost('caress_reward', CARESS_REWARD);
+    const missionNotices: Notice[] = [];
     const result = await this.pets.mutate(eq(pets.id, petId), async (state, now, tx, row) => {
       this.assertVisitable(row.ownerId, viewerId, row.status);
       const change = applyAction(state, { type: 'visitorCaress' }, now, this.rules);
@@ -128,6 +131,7 @@ export class VillageService {
         });
       }
       await this.players.addCoins(tx, viewerId, reward);
+      missionNotices.push(...(await this.missions.record(tx, viewerId, 'visit')));
       await this.activity.record(tx, row.ownerId, 'visit_caress', {
         visitorName: visitor.displayName,
         petName: state.name,
@@ -141,6 +145,7 @@ export class VillageService {
       notices: [
         { code: 'pet_happy', petName: result.row.state.name },
         { code: 'coins_earned', count: reward },
+        ...missionNotices,
       ],
     };
   }
@@ -153,6 +158,7 @@ export class VillageService {
       });
     }
     const visitor = await this.players.get(this.db, viewerId);
+    const missionNotices: Notice[] = [];
     const result = await this.pets.mutate(eq(pets.id, petId), async (state, now, tx, row) => {
       this.assertVisitable(row.ownerId, viewerId, row.status);
       const change = applyAction(state, { type: 'visitorTreat', item }, now, this.rules);
@@ -169,6 +175,7 @@ export class VillageService {
         day: this.players.today(),
         itemId: item,
       });
+      missionNotices.push(...(await this.missions.record(tx, viewerId, 'gift')));
       await this.activity.record(tx, row.ownerId, 'visit_gift', {
         visitorName: visitor.displayName,
         petName: state.name,
@@ -180,7 +187,7 @@ export class VillageService {
       pet: toPetDto(result.row, result.ownerName),
       events: [],
       coins: await this.players.coinsOf(viewerId),
-      notices: [{ code: 'gift_given', item, petName: result.row.state.name }],
+      notices: [{ code: 'gift_given', item, petName: result.row.state.name }, ...missionNotices],
     };
   }
 

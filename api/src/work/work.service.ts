@@ -18,6 +18,7 @@ import { pets, players } from '../database/schema.js';
 import { GameRulesService } from '../game/game-rules.service.js';
 import { toPetDto } from '../pets/pet-mapper.js';
 import { PetsService } from '../pets/pets.service.js';
+import { MissionsService } from '../missions/missions.service.js';
 import { PlayersService } from '../players/players.service.js';
 
 const HOUR = 3_600_000;
@@ -34,6 +35,7 @@ export class WorkService {
     private readonly players: PlayersService,
     private readonly pets: PetsService,
     private readonly gameRules: GameRulesService,
+    private readonly missions: MissionsService,
   ) {}
 
   private get rules(): GameRules {
@@ -80,6 +82,7 @@ export class WorkService {
         // Paid for what it was before the job tired it.
         const earned = petWage(simulate(state, now, this.rules).state, seed);
         await this.players.addCoins(tx, playerId, earned);
+        await this.missions.record(tx, playerId, 'pet_work');
         return { ...change, extra: earned };
       },
     );

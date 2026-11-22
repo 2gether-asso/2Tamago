@@ -98,6 +98,9 @@
         <p class="muted">{t('daycare.care_intro')}</p>
         <div class="actions">
           <button disabled={busy} onclick={() => care({ type: 'feed' })}>{t('action.feed')}</button>
+          <button disabled={busy} onclick={() => care({ type: 'fillBowl' })}>
+            {t('action.fill_bowl', { count: pet.bowl ?? 0, max: game.rules?.bowlCapacity ?? 2 })}
+          </button>
           <button disabled={busy} onclick={() => care({ type: 'clean' })}>
             {t('action.clean')}
           </button>

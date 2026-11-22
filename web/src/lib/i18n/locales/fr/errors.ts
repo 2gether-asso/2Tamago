@@ -19,6 +19,9 @@ export const errors = {
     'Il en a assez de jouer pour le moment : un jeu revient toutes les 30 minutes.',
   'error.praise_cooldown':
     'Tu l’as déjà félicité il y a peu : une félicitation toutes les 30 minutes.',
+  'error.bowl_full': 'Sa gamelle est déjà pleine.',
+  'error.not_birthday': 'Ce n’est pas son anniversaire aujourd’hui (ou c’est déjà fêté).',
+  'error.no_present': 'Il n’a pas de cadeau pour toi pour le moment.',
   'error.too_tired': 'Il est trop fatigué.',
   'error.too_hungry': 'Il a trop faim pour ça.',
   'error.unknown_item': 'Objet inconnu.',
@@ -56,6 +59,8 @@ export const errors = {
   'error.no_prize': 'Pas de récompense pour toi dans ce concours.',
   'error.already_flowered': 'Tu as déjà déposé une fleur pour ce compagnon aujourd’hui.',
   'error.already_caressed': 'Tu as déjà caressé ce compagnon aujourd’hui.',
+  'error.already_opened': 'Tu as déjà ouvert le cadeau du jour.',
+  'error.missions_not_done': 'Termine d’abord les trois missions du jour.',
   'error.already_claimed': 'Tu as déjà récupéré la récompense de cette semaine.',
   'error.goal_not_reached': 'Le village n’a pas encore atteint son objectif.',
   'error.no_contribution':

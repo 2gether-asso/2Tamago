@@ -33,6 +33,8 @@ const NOTABLE: ReadonlySet<PetEventType> = new Set([
   'retired',
   'vacation_ended',
   'stat_up',
+  'wish_granted',
+  'birthday',
 ]);
 
 export function notableEvents(events: PetEvent[]): PetEvent[] {
