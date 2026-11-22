@@ -370,36 +370,36 @@ describe('sessions (e2e)', () => {
     it('keeps refreshing for days from the same network, sliding the inactivity delay', async () => {
       const { client, tokens } = await signIn({ ip: '203.0.113.7' });
       let refreshToken = tokens.refresh_token!;
-      // Six days apart each time: past the first week in total, never idle for a week.
-      for (let i = 0; i < 4; i++) {
-        clock.time += 6 * DAY;
+      // 25 days apart each time: past the first month in total, never idle for a month.
+      for (let i = 0; i < 3; i++) {
+        clock.time += 25 * DAY;
         const next: TokenResponse = (
           await refresh(client, refreshToken, { ip: `203.0.113.${20 + i}` }).expect(200)
         ).body;
         refreshToken = next.refresh_token!;
       }
-      // 24 days in. The hard limit is 30.
-      clock.time += 7 * DAY;
+      // 75 days in. The hard limit is 90.
+      clock.time += 20 * DAY;
       const past = await refresh(client, refreshToken);
       expect(past.body.code).toBe('session_expired');
     });
 
-    it('ends after a week without a refresh', async () => {
+    it('ends after a month without a refresh', async () => {
       const { client, tokens } = await signIn();
-      clock.time += 7 * DAY + 1_000;
+      clock.time += 30 * DAY + 1_000;
       const idle = await refresh(client, tokens.refresh_token!);
       expect(idle.status).toBe(401);
       expect(idle.body.code).toBe('session_expired');
     });
 
-    it('tolerates another network for a few hours, then asks for a new sign-in', async () => {
+    it('tolerates unknown networks for a day, then asks for a new sign-in', async () => {
       const { client, tokens } = await signIn();
       let refreshToken = tokens.refresh_token!;
-      // Phone data: another network, refreshed every hour for five hours.
-      for (let hour = 1; hour <= 5; hour++) {
+      // A new network every hour (never twice the same: none of them is learnt), for 23 hours.
+      for (let hour = 1; hour <= 23; hour++) {
         clock.time += HOUR;
         const next: TokenResponse = (
-          await refresh(client, refreshToken, { ip: MOBILE }).expect(200)
+          await refresh(client, refreshToken, { ip: `198.51.${hour}.9` }).expect(200)
         ).body;
         refreshToken = next.refresh_token!;
       }
@@ -410,6 +410,22 @@ describe('sessions (e2e)', () => {
       // The session is over, on any network.
       const home = await refresh(client, refreshToken, { ip: HOME });
       expect(home.body.code).toBe('invalid_grant');
+    });
+
+    it('learns the mobile network a phone keeps using, and stays signed in on it', async () => {
+      const { client, tokens } = await signIn();
+      clock.time += HOUR;
+      let next: TokenResponse = (
+        await refresh(client, tokens.refresh_token!, { ip: MOBILE }).expect(200)
+      ).body;
+      // The same network an hour later: it is the phone's own.
+      clock.time += HOUR;
+      next = (await refresh(client, next.refresh_token!, { ip: MOBILE }).expect(200)).body;
+      // Days on mobile data only, long past the roaming allowance.
+      for (let day = 0; day < 5; day++) {
+        clock.time += 2 * DAY;
+        next = (await refresh(client, next.refresh_token!, { ip: MOBILE }).expect(200)).body;
+      }
     });
 
     it('stops the roaming countdown when the player is back on the sign-in network', async () => {
