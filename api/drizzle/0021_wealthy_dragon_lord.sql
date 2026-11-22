@@ -1,0 +1,1 @@
+ALTER TABLE "auth_sessions" ADD COLUMN "known_networks" jsonb DEFAULT '[]'::jsonb NOT NULL;

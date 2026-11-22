@@ -13,7 +13,7 @@ import {
   type AuthSessionRow,
 } from '../database/schema.js';
 import { AuthError } from './auth-error.js';
-import type { ClientInfo } from './client-info.js';
+import { networkOf, type ClientInfo } from './client-info.js';
 import { hashSecret, pkceChallenge, randomToken } from './crypto.js';
 import type { DpopProof } from './dpop.js';
 import { assessRefresh } from './session-policy.js';
@@ -149,6 +149,9 @@ export class AuthSessionService {
           firstNetwork: row.firstNetwork,
           clientFamily: row.clientFamily,
           roamingSince: row.roamingSince?.getTime() ?? null,
+          knownNetworks: row.knownNetworks,
+          lastNetwork: networkOf(row.lastIp),
+          lastUsedAt: row.lastUsedAt.getTime(),
         },
         client,
         now,
@@ -181,6 +184,7 @@ export class AuthSessionService {
           idleExpiresAt: new Date(verdict.idleExpiresAt),
           lastIp: client.ip,
           roamingSince: verdict.roamingSince === null ? null : new Date(verdict.roamingSince),
+          knownNetworks: verdict.knownNetworks,
         })
         .where(eq(authSessions.id, row.id));
       return { ok: true, playerId: row.playerId, sessionId: row.id, refreshToken: next };
