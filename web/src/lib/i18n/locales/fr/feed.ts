@@ -45,6 +45,7 @@ export const feed = {
   'activity.daycare_declined': '{caretakerName} ne peut pas garder {petName}.',
   'activity.daycare_ended': 'La garderie de {petName} est terminée.',
   'activity.daycare_care.feed': '{caretakerName} a nourri {petName}.',
+  'activity.daycare_care.fill_bowl': '{caretakerName} a rempli la gamelle de {petName}.',
   'activity.daycare_care.clean': '{caretakerName} a nettoyé {petName}.',
   'activity.daycare_care.medicine': '{caretakerName} a soigné {petName}.',
   'activity.daycare_care.sleep': '{caretakerName} a couché {petName}.',

@@ -44,6 +44,7 @@ export const feed: Record<keyof typeof fr, string> = {
   'activity.daycare_declined': '{caretakerName} cannot look after {petName}.',
   'activity.daycare_ended': '{petName}’s daycare is over.',
   'activity.daycare_care.feed': '{caretakerName} fed {petName}.',
+  'activity.daycare_care.fill_bowl': '{caretakerName} filled {petName}’s bowl.',
   'activity.daycare_care.clean': '{caretakerName} cleaned {petName}.',
   'activity.daycare_care.medicine': '{caretakerName} gave {petName} medicine.',
   'activity.daycare_care.sleep': '{caretakerName} put {petName} to bed.',

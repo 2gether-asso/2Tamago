@@ -5,6 +5,7 @@
     gameHours,
     bedtimeOf,
     isAccessory,
+    isBedtime,
     isNight,
     nextPlayChargeAt,
     PLAY_MIN_ENERGY,
@@ -74,6 +75,10 @@
   let night = $derived(game.rules && pet ? isNight(game.rules, now, pet.stage) : false);
   let bedtime = $derived(game.rules && pet ? bedtimeOf(game.rules, pet.stage) : null);
   let needsLightsOff = $derived(awake && night && !pet?.lightsOff);
+  /** The lights may already go off: night, or the hours just before bedtime. */
+  let tuckIn = $derived(game.rules && pet ? isBedtime(game.rules, now, pet.stage) : false);
+  let bowl = $derived(pet?.bowl ?? 0);
+  let bowlMax = $derived(game.rules?.bowlCapacity ?? 2);
   let snacks = $derived(
     (Object.entries(game.inventory) as [ItemId, number][]).filter(
       ([id, n]) => n > 0 && isSnack(id),
@@ -212,6 +217,15 @@
             <div class="poops" aria-label={t('home.poops', { count: pet.poops })}>
               {#each Array(pet.poops) as _, i (i)}<span>💩</span>{/each}
             </div>
+            {#if pet.stage !== 'egg'}
+              <div
+                class="bowl"
+                class:empty={bowl === 0}
+                title={t('home.bowl', { count: bowl, max: bowlMax })}
+              >
+                🥣<small>{bowl}/{bowlMax}</small>
+              </div>
+            {/if}
           {/if}
         </RoomScene>
       </div>
@@ -248,6 +262,13 @@
             <span class="muted">· {t(`diet.${diet}.hint`)}</span>
           </p>
         {/if}
+        {#if game.rules}
+          {@const heavy = pet.weight > game.rules.overweightThreshold}
+          <p class="diet">
+            {t('home.weight', { weight: Math.round(pet.weight) })}
+            <span class="muted">· {t(heavy ? 'home.weight.heavy' : 'home.weight.ok')}</span>
+          </p>
+        {/if}
         {#if pet.sickSince !== null && pet.illness}
           <p class="diet" title={t(`illness.${pet.illness as Illness}.hint`)}>
             {t('home.illness', { illness: t(`illness.${pet.illness as Illness}`) })}
@@ -264,6 +285,13 @@
       <div class="actions">
         <button disabled={!awake || game.busy} onclick={() => (picking = 'feed')}>
           {t('action.feed')}
+        </button>
+        <button
+          disabled={!free || game.busy || bowl >= bowlMax}
+          title={t('home.bowl_hint', { name: pet.name })}
+          onclick={() => game.act({ type: 'fillBowl' })}
+        >
+          {t('action.fill_bowl', { count: bowl, max: bowlMax })}
         </button>
         <button
           disabled={!awake || game.busy || playsLeft < 1 || pet.stats.energy < PLAY_MIN_ENERGY}
@@ -295,7 +323,7 @@
           >
             {t('action.lights_on')}
           </button>
-        {:else if night}
+        {:else if tuckIn}
           <button
             disabled={!free || game.busy}
             onclick={() => game.act({ type: 'lights', on: false })}
@@ -326,6 +354,12 @@
       {/if}
       {#if awake && pet.tantrumSince !== null}
         <p class="muted">{t('home.scold_tip', { name: pet.name })}</p>
+      {/if}
+      {#if awake && tuckIn && !night && !pet.lightsOff}
+        <p class="muted">{t('home.tuck_in_hint', { name: pet.name })}</p>
+      {/if}
+      {#if bowl === 0 && free}
+        <p class="muted">{t('home.bowl_hint', { name: pet.name })}</p>
       {/if}
 
       {#if snacks.length > 0}
@@ -624,6 +658,22 @@
     bottom: 0.5rem;
     right: 0.8rem;
     font-size: 1.6rem;
+  }
+  .bowl {
+    position: absolute;
+    bottom: 0.5rem;
+    left: 0.8rem;
+    font-size: 1.4rem;
+    display: flex;
+    align-items: flex-end;
+    gap: 0.15rem;
+  }
+  .bowl small {
+    font-size: 0.7rem;
+    color: var(--text);
+  }
+  .bowl.empty {
+    opacity: 0.45;
   }
   .away {
     font-size: 1.1rem;

@@ -36,6 +36,7 @@ export const home: Record<keyof typeof fr, string> = {
   'action.play': '🎲 Play',
   'action.clean': '🧽 Clean',
   'action.medicine': '💊 Heal',
+  'action.fill_bowl': '🥣 Fill the bowl ({count}/{max})',
   'action.wake': '☀️ Wake up',
   'action.sleep': '🌙 Put to bed',
   'action.lights_on': '💡 Turn the light on',
@@ -72,6 +73,13 @@ export const home: Record<keyof typeof fr, string> = {
   'walk.nobody': 'Nobody else was out walking at that time.',
   'walk.ok': 'Great!',
 
+  'home.bowl': 'Bowl: {count}/{max}',
+  'home.bowl_hint': 'A filled bowl feeds {name} by itself when it gets hungry while you are away.',
+  'home.tuck_in_hint':
+    '🌙 You can already tuck {name} in: turn the light off and it will sleep until morning.',
+  'home.weight': 'Weight: {weight}',
+  'home.weight.ok': 'healthy',
+  'home.weight.heavy': 'too heavy: risk of indigestion, play and go for walks',
   'home.diet': 'Diet: {status}',
   'home.illness': 'Illness: {illness}',
   'care.cancel': 'Cancel',

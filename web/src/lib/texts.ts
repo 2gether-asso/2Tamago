@@ -112,6 +112,8 @@ export function eventText(event: PetEvent, name: string): string | null {
   }
 }
 
+const snakeCase = (name: string) => name.replace(/[A-Z]/g, (c) => `_${c.toLowerCase()}`);
+
 export function activityText(entry: ActivityDto): string {
   const d = entry.data as Record<string, string | number>;
   switch (entry.kind) {
@@ -164,7 +166,8 @@ export function activityText(entry: ActivityDto): string {
     case 'daycare_ended':
       return t('activity.daycare_ended', { petName: String(d.petName) });
     case 'daycare_care':
-      return t(`activity.daycare_care.${String(d.action)}` as MessageKey, {
+      // Keys are snake_case, actions camelCase (`fillBowl` → `fill_bowl`).
+      return t(`activity.daycare_care.${snakeCase(String(d.action))}` as MessageKey, {
         caretakerName: String(d.caretakerName),
         petName: String(d.petName),
       });

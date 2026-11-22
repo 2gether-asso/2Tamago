@@ -34,6 +34,7 @@ export const home = {
   'action.play': '🎲 Jouer',
   'action.clean': '🧽 Nettoyer',
   'action.medicine': '💊 Soigner',
+  'action.fill_bowl': '🥣 Remplir la gamelle ({count}/{max})',
   'action.wake': '☀️ Réveiller',
   'action.sleep': '🌙 Coucher',
   'action.lights_on': '💡 Rallumer la lumière',
@@ -70,6 +71,14 @@ export const home = {
   'walk.nobody': 'Personne d’autre ne se promenait à ce moment-là.',
   'walk.ok': 'Super !',
 
+  'home.bowl': 'Gamelle : {count}/{max}',
+  'home.bowl_hint':
+    'Une gamelle remplie nourrit {name} tout seul quand il a faim pendant ton absence.',
+  'home.tuck_in_hint':
+    '🌙 Tu peux déjà coucher {name} : éteins la lumière, il dormira jusqu’au matin.',
+  'home.weight': 'Poids : {weight}',
+  'home.weight.ok': 'en forme',
+  'home.weight.heavy': 'trop lourd : risque d’indigestion, fais-le jouer et promener',
   'home.diet': 'Alimentation : {status}',
   'home.illness': 'Maladie : {illness}',
   'care.cancel': 'Annuler',
