@@ -7,6 +7,7 @@ import {
   heirloomOf,
   simulate,
   traitsOf,
+  WISH,
   type GameRules,
   type PetEvent,
   type PetState,
@@ -134,6 +135,7 @@ export class PetsService {
         const earned = await this.players.earnCappedReward(tx, playerId, reward);
         if (earned > 0) notices.push({ code: 'coins_earned', count: earned });
       }
+      notices.push(...(await this.rewardWishes(tx, playerId, change.events)));
       return change;
     });
     return {
@@ -142,6 +144,14 @@ export class PetsService {
       coins: await this.players.coinsOf(playerId),
       notices,
     };
+  }
+
+  /** Coins for the wishes the owner just granted (outside the daily cap: wishes are few a day). */
+  async rewardWishes(tx: Transaction, playerId: string, events: PetEvent[]): Promise<Notice[]> {
+    const granted = events.filter((event) => event.type === 'wish_granted').length;
+    if (granted === 0) return [];
+    await this.players.addCoins(tx, playerId, granted * WISH.coins);
+    return [{ code: 'coins_earned', count: granted * WISH.coins }];
   }
 
   async album(playerId: string): Promise<AlbumEntry[]> {

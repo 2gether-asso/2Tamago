@@ -66,6 +66,7 @@ export class WalksService {
   }
 
   async start(playerId: string, zone: WalkZoneId = DEFAULT_ZONE): Promise<ActionResponse> {
+    const notices: Notice[] = [];
     const result = await this.pets.mutate(
       eq(pets.ownerId, playerId),
       async (state, now, tx, row) => {
@@ -77,6 +78,8 @@ export class WalksService {
           startedAt: new Date(outing.startedAt),
           endsAt: new Date(outing.endsAt),
         });
+        // It wished for a walk: the wish comes true as it sets off.
+        notices.push(...(await this.pets.rewardWishes(tx, playerId, change.events)));
         return change;
       },
     );
@@ -84,7 +87,7 @@ export class WalksService {
       pet: toPetDto(result.row, result.ownerName),
       events: result.events,
       coins: await this.players.coinsOf(playerId),
-      notices: [],
+      notices,
     };
   }
 
