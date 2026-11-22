@@ -493,6 +493,11 @@ export const authSessions = pgTable(
     lastIp: text('last_ip').notNull(),
     /** Since when the refreshes come from another network than the sign-in's (null: same network). */
     roamingSince: timestamp('roaming_since', { withTimezone: true }),
+    /** Other networks the session proved to be its own (home, work, mobile data). */
+    knownNetworks: jsonb('known_networks')
+      .$type<string[]>()
+      .notNull()
+      .default(sql`'[]'::jsonb`),
   },
   (t) => [index('auth_sessions_player_idx').on(t.playerId)],
 );

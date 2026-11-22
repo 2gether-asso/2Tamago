@@ -50,12 +50,15 @@ const envSchema = z
     AUTH_DEV_LOGIN: bool,
     /** Access tokens are short: the web app renews them quietly. */
     AUTH_ACCESS_TTL_MINUTES: z.coerce.number().positive().default(30),
-    /** A session ends after this long without a refresh (each refresh starts the delay again). */
-    AUTH_REFRESH_IDLE_DAYS: z.coerce.number().positive().default(7),
+    /**
+     * A session ends after this long without a refresh (each refresh starts the delay again).
+     * Long: a companion is a daily habit, and a player back from a trip should find it at once.
+     */
+    AUTH_REFRESH_IDLE_DAYS: z.coerce.number().positive().default(30),
     /** Hard limit of a session, however active. */
-    AUTH_SESSION_MAX_DAYS: z.coerce.number().positive().default(30),
-    /** How long a session keeps refreshing after it moved to another network than its sign-in's. */
-    AUTH_ROAMING_HOURS: z.coerce.number().positive().default(6),
+    AUTH_SESSION_MAX_DAYS: z.coerce.number().positive().default(90),
+    /** How long a session keeps refreshing from a network it does not know yet. */
+    AUTH_ROAMING_HOURS: z.coerce.number().positive().default(24),
     /**
      * Reverse proxies between the internet and the API (each one adds an `X-Forwarded-For` entry):
      * a hop count, or a list of addresses/subnets Express understands (`loopback, 10.99.0.0/16`).

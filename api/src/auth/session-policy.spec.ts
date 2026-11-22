@@ -1,5 +1,5 @@
 import type { ClientInfo } from './client-info.js';
-import { assessRefresh, type SessionTrail } from './session-policy.js';
+import { assessRefresh, MAX_KNOWN_NETWORKS, type SessionTrail } from './session-policy.js';
 
 const HOUR = 3_600_000;
 const DAY = 24 * HOUR;
@@ -30,6 +30,7 @@ describe('assessRefresh', () => {
       allowed: true,
       roamingSince: null,
       idleExpiresAt: START + 9 * DAY,
+      knownNetworks: [],
     });
   });
 
@@ -61,6 +62,7 @@ describe('assessRefresh', () => {
       allowed: true,
       roamingSince: START + 2 * DAY,
       idleExpiresAt: START + 9 * DAY,
+      knownNetworks: [],
     });
 
     const later = session({ roamingSince: START + 2 * DAY });
@@ -98,5 +100,74 @@ describe('assessRefresh', () => {
       LIMITS,
     );
     expect(verdict).toMatchObject({ allowed: true, roamingSince: null });
+  });
+
+  it('learns a network it keeps refreshing from, an hour apart or more', () => {
+    const now = START + 2 * DAY;
+    const soon = session({
+      roamingSince: now - HOUR,
+      lastNetwork: mobile.network,
+      lastUsedAt: now - 10 * 60_000,
+    });
+    expect(assessRefresh(soon, mobile, now, LIMITS)).toMatchObject({
+      allowed: true,
+      roamingSince: now - HOUR,
+      knownNetworks: [],
+    });
+
+    const stable = session({
+      roamingSince: now - HOUR,
+      lastNetwork: mobile.network,
+      lastUsedAt: now - HOUR,
+    });
+    const learnt = assessRefresh(stable, mobile, now, LIMITS);
+    expect(learnt).toMatchObject({
+      allowed: true,
+      roamingSince: null,
+      knownNetworks: [mobile.network],
+    });
+
+    // From then on, that network is like the sign-in one: no countdown, days later too.
+    const known = session({
+      knownNetworks: [mobile.network],
+      lastNetwork: home.network,
+      lastUsedAt: now,
+    });
+    expect(assessRefresh(known, mobile, now + 3 * DAY, LIMITS)).toMatchObject({
+      allowed: true,
+      roamingSince: null,
+    });
+  });
+
+  it('learns the network it roamed on once it is back on a known one', () => {
+    const back = session({
+      roamingSince: START,
+      lastNetwork: mobile.network,
+      lastUsedAt: START + HOUR,
+    });
+    expect(assessRefresh(back, home, START + 2 * HOUR, LIMITS)).toMatchObject({
+      allowed: true,
+      roamingSince: null,
+      knownNetworks: [mobile.network],
+    });
+  });
+
+  it('remembers a few networks only, forgetting the oldest', () => {
+    const many = Array.from({ length: MAX_KNOWN_NETWORKS }, (_, i) => `10.0.${i}.0/24`);
+    const full = session({
+      roamingSince: START,
+      knownNetworks: many,
+      lastNetwork: mobile.network,
+      lastUsedAt: START,
+    });
+    const verdict = assessRefresh(full, mobile, START + 2 * HOUR, LIMITS);
+    expect(verdict.allowed && verdict.knownNetworks).toEqual([...many.slice(1), mobile.network]);
+  });
+
+  it('still revokes a session that moved to another browser, even on a known network', () => {
+    const known = session({ knownNetworks: [mobile.network] });
+    expect(
+      assessRefresh(known, { ...mobile, family: 'firefox/linux' }, START + HOUR, LIMITS),
+    ).toEqual({ allowed: false, reason: 'session_suspicious' });
   });
 });
