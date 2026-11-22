@@ -53,6 +53,16 @@ Le joueur visé passe 2 à 4 fois par jour quelques minutes. Les tests `shared/c
 
 Les réglages de l'équilibrage (fenêtre des caprices, discipline du dressage, gamelle, bain complet, métabolisme, coucher en avance, caresses plafonnées) viennent de ces simulations : avant, aucun caprice n'était attrapé par un joueur en 4 visites, le lien était au maximum dès le 3ᵉ jour et un compagnon nourri normalement prenait 5 de poids par jour jusqu'à l'indigestion.
 
+## Souhaits
+
+Comme les envies des Sims, le compagnon a de temps en temps un **souhait** (`shared/core/src/engine/wishes.ts`) : jouer, une friandise précise (biscuit, fraise ou lait chaud, vendus à la boutique), une promenade, un câlin, apprendre un tour, un vrai repas du sac, un bain ou une félicitation. Il s'affiche dans une bulle au-dessus de lui.
+
+- **Quand** : une demi-heure après l'éclosion (pour faire découvrir le principe), puis 3 h après que le précédent a été exaucé ou s'est évanoui. Jamais pendant qu'il dort, se promène, est malade ou fait un caprice. Un bébé ne souhaite ni promenade ni dressage.
+- **Combien de temps** : 4 h de jeu (`WISH.hours`). Passé ce délai, le souhait s'évanouit **sans aucune pénalité** : c'est un bonus, pas une corvée de plus.
+- **Exaucé** (par le geste du propriétaire, pas d'un visiteur ni d'un gardien) : bonheur +15, lien +3, et 5 pièces versées par l'API, hors du plafond quotidien du jeu (`WISH.coins`). Le journal le note. Une caresse en temps de recharge n'exauce rien.
+- **Personnalité** : le tempérament multiplie les chances de ses souhaits favoris (gourmand : friandises et repas ; câlin : câlins et félicitations ; farceur : jeu et promenade ; propre : bain ; costaud : promenade et dressage ; dormeur : câlins). Jamais deux fois le même souhait de suite.
+- **Déterministe** : le souhait est tiré d'une graine dérivée du compagnon et de l'heure (`pickWish`), comme les événements de promenade ; le navigateur le prédit donc comme le serveur. Les dates du souhait sont repoussées pendant les vacances, comme les autres.
+
 ## Héritage
 
 Quand un ancien prend sa retraite (volontairement : un compagnon qui part, lui, ne laisse rien), il laisse un **œuf en héritage** à son propriétaire : le prochain compagnon adopté en reçoit un bonus, une seule fois. Le bonus dépend de la forme du compagnon retraité (`heirloomOf()`, `shared/core/src/engine/heirloom.ts`) :
