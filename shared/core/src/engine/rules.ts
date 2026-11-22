@@ -82,7 +82,12 @@ export interface GameRules {
   mistakeGraceHours: number;
 
   tantrumIntervalHours: number;
+  /** How long a tantrum waits for an answer before it counts as ignored. */
   tantrumWindowHours: number;
+  /** Discipline lost when a tantrum is ignored. */
+  tantrumIgnoredDiscipline: number;
+  /** Discipline gained by a training session: a trained pet is a disciplined pet. */
+  trainDiscipline: number;
 
   outingHours: number;
 
@@ -145,7 +150,7 @@ export const DEFAULT_RULES: GameRules = {
   asleepDecayPerHour: { satiety: 2, happiness: 1, hygiene: 1 },
   energyRecoveryPerHour: 12,
   drowsyEnergy: 15,
-  disciplineDecayPerHour: 0.5,
+  disciplineDecayPerHour: 0.3,
   hygieneLossPerPoopPerHour: 4,
 
   poopIntervalHours: 4,
@@ -169,7 +174,9 @@ export const DEFAULT_RULES: GameRules = {
   mistakeGraceHours: 1,
 
   tantrumIntervalHours: 10,
-  tantrumWindowHours: 0.5,
+  tantrumWindowHours: 3,
+  tantrumIgnoredDiscipline: 5,
+  trainDiscipline: 4,
 
   outingHours: 0.5,
 

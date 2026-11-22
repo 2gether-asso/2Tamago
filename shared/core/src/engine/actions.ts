@@ -314,6 +314,7 @@ export function applyAction(
       const gain = 8 * (1 + s.discipline / 100) * focus;
       state.tricks[action.trick] = clamp(state.tricks[action.trick] + gain);
       state.bond = clamp(state.bond + 1);
+      add('discipline', rules.trainDiscipline);
       gainXp(state, 'wit', 3, at, events);
       const after = trickLevel(state.tricks[action.trick]);
       if (after > before) {

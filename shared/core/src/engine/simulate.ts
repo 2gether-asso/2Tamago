@@ -301,7 +301,7 @@ function tantrum(state: PetState, t: number, rules: GameRules, events: PetEvent[
     if (t - state.tantrumSince >= gameHours(rules, rules.tantrumWindowHours)) {
       // Nobody reacted: the pet learns it can get away with it.
       state.tantrumSince = null;
-      state.stats.discipline = clamp(state.stats.discipline - 10);
+      state.stats.discipline = clamp(state.stats.discipline - rules.tantrumIgnoredDiscipline);
       state.nextTantrumAt =
         t + gameHours(rules, rules.tantrumIntervalHours * modOf(state, rules, 'tantrumInterval'));
       events.push({ type: 'attention_ignored', at: t });
