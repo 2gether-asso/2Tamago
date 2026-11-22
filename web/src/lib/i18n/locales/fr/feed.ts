@@ -3,6 +3,14 @@ export const feed = {
   'notice.coins_earned_one': '+{count} pièce',
   'notice.coins_earned_other': '+{count} pièces',
   'notice.mission_done': 'Mission accomplie : {mission} ✅',
+  'event.birthday': '{name} a fêté ses {age} jours 🎂',
+  'notice.present_item': '{petName} t’offre : {item} !',
+  'notice.present_coins_one': '{petName} t’a trouvé {count} pièce !',
+  'notice.present_coins_other': '{petName} t’a trouvé {count} pièces !',
+  'notice.birthday_party_one':
+    'Joyeux anniversaire {petName} ! Un {item} et {count} pièce pour la fête.',
+  'notice.birthday_party_other':
+    'Joyeux anniversaire {petName} ! Un {item} et {count} pièces pour la fête.',
   'notice.pet_happy': '{petName} est tout content !',
   'notice.gift_given': '{item} offert à {petName} !',
   'notice.pet_rescued': '{petName} a pris {item} : il est sauvé !',

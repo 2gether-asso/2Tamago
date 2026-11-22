@@ -7,6 +7,9 @@
     isAccessory,
     isBedtime,
     isNight,
+    birthdayToCelebrate,
+    dayThemeAt,
+    presentReady,
     nextPlayChargeAt,
     PLAY_MIN_ENERGY,
     playChargesLeft,
@@ -50,6 +53,7 @@
     WEATHER_ICON,
     WISH_ICON,
     wishText,
+    THEME_ICON,
     weatherHint,
     weatherLabel,
     zoneHint,
@@ -81,6 +85,11 @@
   /** The lights may already go off: night, or the hours just before bedtime. */
   let tuckIn = $derived(game.rules && pet ? isBedtime(game.rules, now, pet.stage) : false);
   let bowl = $derived(pet?.bowl ?? 0);
+  let theme = $derived(game.rules ? dayThemeAt(game.rules, now) : null);
+  let birthday = $derived(
+    game.rules && pet && hatched ? birthdayToCelebrate(pet, now, game.rules) : false,
+  );
+  let present = $derived(game.rules && pet && free ? presentReady(pet, now, game.rules) : false);
   /** What it wishes for, while there is still time to grant it. */
   let wish = $derived(pet?.wish && pet.wish.until > now && !pet.outing ? pet.wish : null);
   let bowlMax = $derived(game.rules?.bowlCapacity ?? 2);
@@ -172,6 +181,41 @@
   </div>
   <AdoptForm />
 {:else}
+  {#if hatched && theme}
+    <p class="card theme" title={t(`theme.${theme}.hint`)}>
+      {THEME_ICON[theme]} <strong>{t(`theme.${theme}`)}</strong>
+      <span class="muted">· {t(`theme.${theme}.hint`)}</span>
+    </p>
+  {/if}
+  {#if birthday || present}
+    <section class="card surprise">
+      {#if birthday}
+        <p>
+          🎂 {t('home.birthday', {
+            name: pet.name,
+            age: game.rules ? ageInDays(pet, now, game.rules) : 0,
+          })}
+        </p>
+        <button
+          class="primary"
+          disabled={!awake || game.busy}
+          onclick={() => game.act({ type: 'celebrate' })}
+        >
+          {t('action.celebrate')}
+        </button>
+      {/if}
+      {#if present}
+        <p>🎁 {t('home.present', { name: pet.name })}</p>
+        <button
+          class="primary"
+          disabled={game.busy}
+          onclick={() => game.act({ type: 'takePresent' })}
+        >
+          {t('action.take_present')}
+        </button>
+      {/if}
+    </section>
+  {/if}
   <div class="top" class:with-status={hatched}>
     <section class="card pet">
       <div class="heading">
@@ -676,6 +720,22 @@
     bottom: 0.5rem;
     right: 0.8rem;
     font-size: 1.6rem;
+  }
+  .theme {
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+  .surprise {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem 1rem;
+    text-align: center;
+  }
+  .surprise p {
+    margin: 0;
+    font-weight: 600;
   }
   .wish-bubble {
     position: absolute;

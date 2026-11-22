@@ -5,6 +5,13 @@ export const feed: Record<keyof typeof fr, string> = {
   'notice.coins_earned_one': '+{count} coin',
   'notice.coins_earned_other': '+{count} coins',
   'notice.mission_done': 'Mission done: {mission} ✅',
+  'event.birthday': '{name} celebrated turning {age} days old 🎂',
+  'notice.present_item': '{petName} gives you: {item}!',
+  'notice.present_coins_one': '{petName} found {count} coin for you!',
+  'notice.present_coins_other': '{petName} found {count} coins for you!',
+  'notice.birthday_party_one': 'Happy birthday {petName}! A {item} and {count} coin for the party.',
+  'notice.birthday_party_other':
+    'Happy birthday {petName}! A {item} and {count} coins for the party.',
   'notice.pet_happy': '{petName} is thrilled!',
   'notice.gift_given': '{item} given to {petName}!',
   'notice.pet_rescued': '{petName} took {item}: saved!',

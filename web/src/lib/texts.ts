@@ -3,6 +3,7 @@ import {
   ITEMS,
   MISSIONS,
   type MissionId,
+  type DayTheme,
   WEATHER_EFFECTS,
   type Alert,
   type Form,
@@ -68,6 +69,15 @@ export const itemLabel = (id: ItemId) => t(`item.${id}`);
 /** "Play 2 games": a mission of the day, with its target. */
 export const missionLabel = (id: MissionId) => t(`mission.${id}`, { count: MISSIONS[id].target });
 
+/** A small picture for each themed day. */
+export const THEME_ICON: Record<DayTheme, string> = {
+  picnic: '🧺',
+  festival: '🎉',
+  bubbles: '🫧',
+  training: '🏅',
+  lucky: '🍀',
+};
+
 /** A small picture for each wish, shown in a thought bubble. */
 export const WISH_ICON: Record<WishId, string> = {
   play: '🎲',
@@ -123,6 +133,8 @@ export function eventText(event: PetEvent, name: string): string | null {
       });
     case 'wish_granted':
       return t('event.wish_granted', { name });
+    case 'birthday':
+      return t('event.birthday', { name, age: Number(event.data?.age) });
     case 'fell_ill':
     case 'cured':
     case 'care_mistake':
@@ -224,6 +236,16 @@ export function noticeText(notice: Notice): string {
       return t('notice.walk_found_item', { item: itemLabel(notice.item) });
     case 'walk_met':
       return t('notice.walk_met', { petName: notice.petName, ownerName: notice.ownerName });
+    case 'present_found':
+      return notice.item
+        ? t('notice.present_item', { petName: notice.petName, item: itemLabel(notice.item) })
+        : t('notice.present_coins', { petName: notice.petName, count: notice.coins });
+    case 'birthday_party':
+      return t('notice.birthday_party', {
+        petName: notice.petName,
+        item: itemLabel(notice.item),
+        count: notice.coins,
+      });
     case 'mission_done':
       return t('notice.mission_done', { mission: missionLabel(notice.mission) });
   }
