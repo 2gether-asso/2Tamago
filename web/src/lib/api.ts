@@ -3,6 +3,7 @@ import type {
   ActionResponse,
   AdminRulesResponse,
   AdminStats,
+  AdminBalance,
   ActivityDto,
   AdoptBody,
   AlbumEntry,
@@ -218,6 +219,7 @@ export const api = {
   workPlayer: (score: number) => call<WorkResponse>('POST', '/work/player', { score }),
   workPet: () => call<PetWorkResponse>('POST', '/work/pet'),
   adminStats: () => call<AdminStats>('GET', '/admin/stats'),
+  adminBalance: () => call<AdminBalance>('GET', '/admin/balance'),
   adminRules: () => call<AdminRulesResponse>('GET', '/admin/rules'),
   saveAdminRules: (overrides: unknown) =>
     call<AdminRulesResponse>('PUT', '/admin/rules', overrides),

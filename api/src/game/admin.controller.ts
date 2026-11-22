@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Put, UseGuards } from '@nestjs/common';
 import {
   rulesOverridesBody,
+  type AdminBalance,
   type AdminRulesResponse,
   type AdminStats,
   type RulesOverridesBody,
@@ -21,6 +22,12 @@ export class AdminController {
   @Get('stats')
   getStats(): Promise<AdminStats> {
     return this.stats.get();
+  }
+
+  /** Verdicts on the balance of the game, and the figures behind them. */
+  @Get('balance')
+  getBalance(): Promise<AdminBalance> {
+    return this.stats.balance();
   }
 
   @Get('rules')

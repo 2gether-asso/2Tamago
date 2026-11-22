@@ -165,6 +165,8 @@ export interface PetState {
   lastWish?: WishId | null;
 
   /** Age (in game days) of the last birthday party. Absent = never celebrated. */
+  /** Wishes granted and faded over its life: the admin's measure of whether wishes are noise. */
+  wishTally?: { granted: number; faded: number };
   celebratedAge?: number;
   /** Game day of the last present it brought its owner (see `presentReady`). */
   presentDay?: number;

@@ -14,6 +14,7 @@ import { CONTEST_KINDS, type ContestKind, type ContestProblem } from '../engine/
 import { EVENT_KINDS, EVENT_LIMITS, maxPercent, type EventKind } from '../engine/events.js';
 import { WORK } from '../engine/work.js';
 import type { MissionId } from '../engine/missions.js';
+import type { WishId } from '../engine/wishes.js';
 import type { GameErrorCode } from '../engine/errors.js';
 import type { Alert, Mood } from '../engine/view.js';
 import type { GameRules, RulesOverrides } from '../engine/rules.js';
@@ -22,6 +23,8 @@ import {
   TEMPERAMENTS,
   TRICKS,
   type Form,
+  type Illness,
+  type Need,
   type PetEvent,
   type PetState,
   type PetTraits,
@@ -672,6 +675,91 @@ export interface AdminStats {
     byTemperament: GroupStats[];
     bySpecies: GroupStats[];
   };
+}
+
+/** The questions the admin balance overview answers, each with a verdict (texts in the web app). */
+export const BALANCE_INSIGHTS = [
+  'rascal_cared',
+  'illness_rate',
+  'mistake_rate',
+  'wish_grant_rate',
+  'missions_done',
+  'departures',
+  'stickiness',
+] as const;
+export type BalanceInsightId = (typeof BALANCE_INSIGHTS)[number];
+
+/** `unknown`: not enough data yet to judge. */
+export type BalanceLevel = 'good' | 'watch' | 'bad' | 'unknown';
+
+export interface BalanceInsight {
+  id: BalanceInsightId;
+  level: BalanceLevel;
+  /** The measured value (a rate or a share), `null` while unknown. */
+  value: number | null;
+  /** What `value` is compared with: good up to (or from) `good`, bad past `bad`. */
+  good: number;
+  bad: number;
+  /** Whether a higher value is better (wishes granted) or worse (illnesses). */
+  higherIsBetter: boolean;
+  /** How many observations the value rests on (pets, wishes, mission days…). */
+  sample: number;
+}
+
+/** One calendar day of the balance window. */
+export interface BalanceDay {
+  /** `YYYY-MM-DD` in the game time zone. */
+  day: string;
+  /** Players who opened the game (daily bonus claimed). */
+  activePlayers: number;
+  illnesses: number;
+  careMistakes: number;
+  wishesGranted: number;
+  /** Players who saw their missions, and who finished all three. */
+  missionPlayers: number;
+  missionsAllDone: number;
+}
+
+/** Hatched pets grouped by how well they were cared for, and the forms they evolved into. */
+export interface CareBucket {
+  key: 'good' | 'fair' | 'poor';
+  /** Care mistakes per game day lived, up to (excluded) this value; `null` for the last bucket. */
+  below: number | null;
+  /** Pets of the bucket that have an adult form. */
+  pets: number;
+  byForm: Record<Form, number>;
+}
+
+export interface MissionBalance {
+  id: MissionId;
+  offered: number;
+  done: number;
+  /** `done / offered`, `null` when never offered. */
+  rate: number | null;
+}
+
+/** What the admin looks at to tell whether the game is well balanced, over the last days. */
+export interface AdminBalance {
+  generatedAt: number;
+  windowDays: number;
+  insights: BalanceInsight[];
+  days: BalanceDay[];
+  /** Care mistakes of the window, per need behind them. */
+  mistakesByNeed: Record<Need, number>;
+  /** Illnesses of the window, per kind. */
+  illnessesByKind: Record<Illness, number>;
+  careBuckets: CareBucket[];
+  wishes: {
+    /** Over the whole life of the pets (counted since wishes are tallied). */
+    granted: number;
+    faded: number;
+    /** Wishes granted in the window, per wish. */
+    grantedByWish: Record<WishId, number>;
+  };
+  missions: MissionBalance[];
+  /** Pets alive right now, and how many of them are sick. */
+  living: number;
+  sickNow: number;
 }
 
 export interface PlayerDto {

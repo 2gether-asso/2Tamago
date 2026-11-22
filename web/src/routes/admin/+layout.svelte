@@ -11,9 +11,12 @@
 
 {#if game.player?.isAdmin}
   <div class="tabs">
-    <a href="/admin" class:active={page.url.pathname === '/admin'}>{t('admin.tab_rules')}</a>
+    <a href="/admin" class:active={page.url.pathname === '/admin'}>{t('admin.tab_overview')}</a>
     <a href="/admin/stats" class:active={page.url.pathname === '/admin/stats'}>
       {t('admin.tab_stats')}
+    </a>
+    <a href="/admin/rules" class:active={page.url.pathname === '/admin/rules'}>
+      {t('admin.tab_rules')}
     </a>
     <a href="/admin/codes" class:active={page.url.pathname === '/admin/codes'}>
       {t('admin.tab_codes')}
