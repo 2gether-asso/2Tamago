@@ -73,6 +73,24 @@ Trois petites missions par jour et par joueur (`shared/core/src/engine/missions.
 - **Comptage** : les services qui agissent (actions, promenades, village, travail) appellent `MissionsService.record()` dans leur propre transaction ; `countMission()` est pure et ne paie une mission qu'une fois.
 - **Tests** : les missions dépendent de l'identifiant (aléatoire) du joueur ; les tests e2e n'en tirent aucune (`test/setup-e2e.ts`), sauf `missions.e2e-spec.ts` qui fixe les siennes.
 
+## Surprises : jours à thème, anniversaires, cadeaux
+
+Pour casser la routine (`shared/core/src/engine/surprises.ts`) :
+
+- **Jours à thème** : environ 4 jours sur 10 ont un thème, le même pour tous les joueurs toute la journée de jeu, calculé comme la météo (`dayThemeAt`, rien en base). Un bandeau l'annonce sur l'accueil.
+
+| Thème        | Effet                                                                   |
+| ------------ | ----------------------------------------------------------------------- |
+| Pique-nique  | Chaque repas (ration simple comprise) : bonheur +5                      |
+| Fête         | Les jeux rendent ×1,5 plus heureux                                      |
+| Bulles       | Nettoyer : bonheur +10                                                  |
+| Entraînement | Les tours progressent ×1,5 plus vite                                    |
+| Chance       | Les promenades parties ce jour-là rapportent ×1,4 plus souvent un objet |
+
+- **Anniversaire** : toutes les semaines de vie (7, 14, 21… jours), toute la journée. Le bouton « Fêter son anniversaire » (action `celebrate`, une fois par anniversaire, `not_birthday` sinon) donne bonheur +20 et lien +5 ; l'API ajoute un gâteau et 10 pièces. Le journal le note.
+- **Cadeau du compagnon** (comme dans Nintendogs) : une fois par jour de jeu, un compagnon d'au moins le stade enfant, avec un lien d'au moins 50, rapporte quelque chose à son propriétaire (`presentReady`, action `takePresent`, `no_present` sinon). L'API tire le contenu (`rollPresent`) : quelques pièces ou une friandise, parfois une trouvaille de promenade. C'est ce qui donne un sens au lien une fois l'évolution passée.
+- **Bonnes nouvelles en notification** : le cadeau prêt et l'anniversaire à fêter sont aussi envoyés en push (`present`, `birthday`), jamais pendant qu'il dort, une fois par épisode comme les autres alertes : le téléphone ne sert pas qu'à rappeler des corvées.
+
 ## Héritage
 
 Quand un ancien prend sa retraite (volontairement : un compagnon qui part, lui, ne laisse rien), il laisse un **œuf en héritage** à son propriétaire : le prochain compagnon adopté en reçoit un bonus, une seule fois. Le bonus dépend de la forme du compagnon retraité (`heirloomOf()`, `shared/core/src/engine/heirloom.ts`) :
