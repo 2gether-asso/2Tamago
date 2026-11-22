@@ -63,6 +63,16 @@ Comme les envies des Sims, le compagnon a de temps en temps un **souhait** (`sha
 - **Personnalité** : le tempérament multiplie les chances de ses souhaits favoris (gourmand : friandises et repas ; câlin : câlins et félicitations ; farceur : jeu et promenade ; propre : bain ; costaud : promenade et dressage ; dormeur : câlins). Jamais deux fois le même souhait de suite.
 - **Déterministe** : le souhait est tiré d'une graine dérivée du compagnon et de l'heure (`pickWish`), comme les événements de promenade ; le navigateur le prédit donc comme le serveur. Les dates du souhait sont repoussées pendant les vacances, comme les autres.
 
+## Missions du jour
+
+Trois petites missions par jour et par joueur (`shared/core/src/engine/missions.ts`), à faire en quelques minutes réparties dans la journée, affichées sur l'écran d'accueil.
+
+- **Tirage** : à la première consultation du jour (jour de jeu, fuseau `GAME_TIMEZONE`), le moteur en choisit trois (`pickMissions`) à partir du joueur et du jour, sur trois sujets différents, et seulement ce que le compagnon peut faire à son stade (un bébé ne se promène pas). L'API les garde dans `daily_missions` avec leur progression ; elles ne changent plus de la journée.
+- **Missions** : jouer 2 fois, 3 séances de dressage, 5 câlins (une caresse en temps de recharge ne compte pas), un vrai repas du sac, une friandise, une ou deux promenades, exaucer un souhait, caresser ou gâter le compagnon d'un ami au village, envoyer son compagnon au travail.
+- **Récompenses** : 10 pièces par mission terminée, versées tout de suite ; les trois terminées ouvrent un **cadeau** (`POST /missions/claim`) : 15 pièces et un objet tiré parmi des friandises et des repas (`MISSION_REWARD`). Un seul cadeau par jour (`already_opened`), pas avant d'avoir tout fini (`missions_not_done`).
+- **Comptage** : les services qui agissent (actions, promenades, village, travail) appellent `MissionsService.record()` dans leur propre transaction ; `countMission()` est pure et ne paie une mission qu'une fois.
+- **Tests** : les missions dépendent de l'identifiant (aléatoire) du joueur ; les tests e2e n'en tirent aucune (`test/setup-e2e.ts`), sauf `missions.e2e-spec.ts` qui fixe les siennes.
+
 ## Héritage
 
 Quand un ancien prend sa retraite (volontairement : un compagnon qui part, lui, ne laisse rien), il laisse un **œuf en héritage** à son propriétaire : le prochain compagnon adopté en reçoit un bonus, une seule fois. Le bonus dépend de la forme du compagnon retraité (`heirloomOf()`, `shared/core/src/engine/heirloom.ts`) :
