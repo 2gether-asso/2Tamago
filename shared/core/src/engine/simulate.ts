@@ -109,6 +109,7 @@ function tick(state: PetState, t: number, rules: GameRules, events: PetEvent[]):
 
   const night = isNight(rules, t, state.stage);
   decay(state, dtH, rules, night);
+  eatFromBowl(state, t, rules, events);
   sleepCycle(state, t, isBedtime(rules, t, state.stage), rules, events);
   poop(state, t, rules, events);
   sickness(state, t, dtH, rules, events);
@@ -162,6 +163,16 @@ function decay(state: PetState, dtH: number, rules: GameRules, night: boolean): 
   }
   s.discipline -= rules.disciplineDecayPerHour * dtH;
   clampStats(s);
+}
+
+/** Hungry and alone: it helps itself to a ration from its bowl, if there is one left. */
+function eatFromBowl(state: PetState, t: number, rules: GameRules, events: PetEvent[]): void {
+  if (!state.bowl || state.asleep || state.outing) return;
+  if (state.stats.satiety >= rules.bowlHungerSatiety) return;
+  state.bowl -= 1;
+  state.stats.satiety = clamp(state.stats.satiety + rules.freeMealSatiety);
+  state.weight += 1;
+  events.push({ type: 'ate_from_bowl', at: t, data: { left: state.bowl } });
 }
 
 function sleepCycle(

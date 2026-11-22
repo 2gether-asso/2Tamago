@@ -71,6 +71,8 @@ export type OwnerAction =
   /** Without an item: the free ration. With a meal: its satiety, its food group. */
   | { type: 'feed'; item?: ItemId }
   | { type: 'treat'; item: ItemId }
+  /** Fills the bowl with free rations, which the pet eats by itself when it gets hungry. */
+  | { type: 'fillBowl' }
   | { type: 'play'; score: number }
   | { type: 'clean' }
   /** Without an item: the free, weak care. With a medicine: its effect. */
@@ -95,6 +97,7 @@ export type OwnerAction =
  */
 export const CARETAKER_ACTION_TYPES = [
   'feed',
+  'fillBowl',
   'clean',
   'medicine',
   'sleep',
@@ -168,6 +171,12 @@ export function applyAction(
       add('satiety', meal.satiety);
       state.weight += meal.weight;
       recordMeal(state, meal.group, rules);
+      break;
+    }
+    case 'fillBowl': {
+      requireHome();
+      if ((state.bowl ?? 0) >= rules.bowlCapacity) throw new GameError('bowl_full');
+      state.bowl = rules.bowlCapacity;
       break;
     }
     case 'treat':

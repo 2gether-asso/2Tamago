@@ -19,6 +19,7 @@ export const errors: Record<keyof typeof fr, string> = {
   'error.not_critical': 'It is not in danger.',
   'error.tired_of_playing': 'It is tired of playing for now: one game comes back every 30 minutes.',
   'error.praise_cooldown': 'You already praised it a moment ago: one praise every 30 minutes.',
+  'error.bowl_full': 'Its bowl is already full.',
   'error.too_tired': 'It is too tired.',
   'error.too_hungry': 'It is too hungry for that.',
   'error.unknown_item': 'Unknown item.',

@@ -105,6 +105,8 @@ export const rulesOverridesBody = z
     overweightThreshold: nonNegative,
     metabolismPerHour: nonNegative,
     freeMealSatiety: z.number().min(0).max(100),
+    bowlCapacity: z.number().int().min(0).max(10),
+    bowlHungerSatiety: z.number().min(0).max(100),
     fullSatiety: z.number().min(0).max(100),
     overfeedWeight: nonNegative,
     dietWindow: z.number().int().min(1).max(20),
@@ -254,6 +256,7 @@ export const ownerActionBody = z.discriminatedUnion('type', [
   /** Without an item: the free (small) ration. With one: a meal from the bag. */
   z.object({ type: z.literal('feed'), item: itemId.optional() }),
   z.object({ type: z.literal('treat'), item: itemId }),
+  z.object({ type: z.literal('fillBowl') }),
   z.object({ type: z.literal('play'), score: z.number().int().min(0).max(3) }),
   z.object({ type: z.literal('clean') }),
   /** Without an item: the free (weak) care. With one: a medicine from the bag. */
@@ -275,6 +278,7 @@ export type OwnerActionBody = z.infer<typeof ownerActionBody>;
 /** What a caretaker may do (see `CARETAKER_ACTION_TYPES`): the same shapes as the owner's. */
 export const careActionBody = z.discriminatedUnion('type', [
   z.object({ type: z.literal('feed') }),
+  z.object({ type: z.literal('fillBowl') }),
   z.object({ type: z.literal('clean') }),
   z.object({ type: z.literal('medicine') }),
   z.object({ type: z.literal('sleep') }),

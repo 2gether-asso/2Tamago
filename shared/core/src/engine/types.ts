@@ -113,6 +113,8 @@ export interface PetState {
   illness?: Illness | null;
   /** Doses received so far (a fraction for the free care, see `GameRules.medicineDoses`). */
   medicineDoses: number;
+  /** Free rations left in the bowl (see `bowlCapacity`). Absent = empty. */
+  bowl?: number;
   /** The food groups of the latest meals and treats, oldest first (see `dietOf`). */
   diet?: FoodGroup[];
   /** Hours of exposure to sickness factors, see `sicknessThresholdHours`. */
@@ -175,7 +177,8 @@ export type PetEventType =
   | 'vacation_started'
   | 'vacation_ended'
   | 'walk_event'
-  | 'stat_up';
+  | 'stat_up'
+  | 'ate_from_bowl';
 
 export interface PetEvent {
   type: PetEventType;

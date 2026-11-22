@@ -71,6 +71,10 @@ export interface GameRules {
 
   /** Satiety the free ration gives (a meal from the bag gives its own, bigger, amount). */
   freeMealSatiety: number;
+  /** Free rations the bowl holds: the pet eats from it by itself while nobody is around. */
+  bowlCapacity: number;
+  /** Below this satiety, an awake pet at home eats a ration from its bowl. */
+  bowlHungerSatiety: number;
   /** Satiety above which the pet refuses a meal: it is full. */
   fullSatiety: number;
   /** Eating a treat while at or above `fullSatiety` makes it put on this much weight more. */
@@ -173,6 +177,8 @@ export const DEFAULT_RULES: GameRules = {
   metabolismPerHour: 0.25,
 
   freeMealSatiety: 20,
+  bowlCapacity: 2,
+  bowlHungerSatiety: 35,
   fullSatiety: 80,
   overfeedWeight: 2,
   dietWindow: 6,
