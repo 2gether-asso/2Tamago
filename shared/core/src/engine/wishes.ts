@@ -77,6 +77,8 @@ function weightsFor(state: PetState): [WishId, number][] {
   );
 }
 
+const tally = (state: PetState) => state.wishTally ?? { granted: 0, faded: 0 };
+
 /** The wish a pet makes at `t` (pure). Never the same twice in a row. */
 export function pickWish(state: PetState, t: number, previous?: WishId): Pick<Wish, 'id' | 'item'> {
   const next = prng(hashSeed(`wish:${state.name}:${state.bornAt}:${t}`));
@@ -103,6 +105,7 @@ export function wishTick(state: PetState, t: number, rules: GameRules, events: P
     state.wish = null;
     state.lastWish = wish.id;
     state.nextWishAt = t + gameHours(rules, WISH.intervalHours);
+    state.wishTally = { ...tally(state), faded: tally(state).faded + 1 };
     events.push({ type: 'wish_faded', at: t, data: { wish: wish.id } });
     return;
   }
@@ -162,6 +165,7 @@ export function grantWish(
   state.nextWishAt = at + gameHours(rules, WISH.intervalHours);
   state.stats.happiness = Math.min(100, state.stats.happiness + WISH.happiness);
   state.bond = Math.min(100, state.bond + WISH.bond);
+  state.wishTally = { ...tally(state), granted: tally(state).granted + 1 };
   events.push({ type: 'wish_granted', at, data: { wish: wish.id, item: wish.item ?? null } });
   return true;
 }

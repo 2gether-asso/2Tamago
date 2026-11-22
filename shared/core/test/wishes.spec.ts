@@ -44,6 +44,7 @@ describe('wishes', () => {
     expect(faded.state.wish ?? null).toBeNull();
     expect(faded.events.map((e) => e.type)).toContain('wish_faded');
     expect(faded.state.careMistakes).toBe(pet.careMistakes);
+    expect(faded.state.wishTally).toEqual({ granted: 0, faded: 1 });
   });
 
   it('are granted by the matching action: happiness, bond, and the next one later', () => {
@@ -57,6 +58,7 @@ describe('wishes', () => {
     expect(result.state.stats.happiness).toBe(plain.stats.happiness + WISH.happiness);
     expect(result.state.bond).toBe(plain.bond + WISH.bond);
     expect(result.state.nextWishAt).toBe(at + h(WISH.intervalHours));
+    expect(result.state.wishTally).toEqual({ granted: 1, faded: 0 });
   });
 
   it('want the very treat they asked for, and a real meal rather than the free ration', () => {
