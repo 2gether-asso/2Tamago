@@ -52,9 +52,10 @@ describe('wishes', () => {
     const result = applyAction(pet, { type: 'play', score: 0 }, at, rules);
     expect(result.events.map((e) => e.type)).toContain('wish_granted');
     expect(result.state.wish).toBeNull();
-    // Play alone gives +10 happiness and +2 bond.
-    expect(result.state.stats.happiness).toBe(50 + 10 + WISH.happiness);
-    expect(result.state.bond).toBe(pet.bond + 2 + WISH.bond);
+    // The same game without the wish.
+    const plain = applyAction({ ...pet, wish: null }, { type: 'play', score: 0 }, at, rules).state;
+    expect(result.state.stats.happiness).toBe(plain.stats.happiness + WISH.happiness);
+    expect(result.state.bond).toBe(plain.bond + WISH.bond);
     expect(result.state.nextWishAt).toBe(at + h(WISH.intervalHours));
   });
 

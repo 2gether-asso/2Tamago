@@ -9,6 +9,14 @@ import { gainXp, resolveWalkEvent, walkSeed } from './rpg.js';
 import { gameDay, walkEnergyCost, weatherAt } from './weather.js';
 import { WORK } from './work.js';
 import { grantWish } from './wishes.js';
+import {
+  BIRTHDAY,
+  birthdayToCelebrate,
+  DAY_THEME_EFFECTS,
+  dayThemeAt,
+  presentReady,
+} from './surprises.js';
+import { ageInDays } from './view.js';
 import { hashSeed, modOf, rollTraits } from './traits.js';
 import { DEFAULT_ZONE, WALK_ZONES, zoneOpenTo, type WalkZoneId } from './zones.js';
 import { type PetEvent, type PetState, type Species, type TrickId, TRICKS } from './types.js';
@@ -90,7 +98,11 @@ export type OwnerAction =
   | { type: 'equip'; item: ItemId | null }
   | { type: 'retire' }
   | { type: 'startVacation' }
-  | { type: 'endVacation' };
+  | { type: 'endVacation' }
+  /** Throws its birthday party (the server adds the cake). */
+  | { type: 'celebrate' }
+  /** Takes the present it found (the server draws what it is). */
+  | { type: 'takePresent' };
 
 /**
  * What a caretaker may do while a pet is in daycare: the day-to-day care, not what only its owner
@@ -160,11 +172,13 @@ export function applyAction(
 
   /** Set by an action that had no effect (a caress on cooldown): it grants no wish. */
   let idle = false;
+  const theme = dayThemeAt(rules, at);
 
   switch (action.type) {
     case 'feed': {
       requireAwake();
       if (s.satiety >= rules.fullSatiety) throw new GameError('not_hungry');
+      if (theme === 'picnic') add('happiness', DAY_THEME_EFFECTS.picnic.feedHappiness);
       if (action.item === undefined) {
         add('satiety', rules.freeMealSatiety);
         state.weight += 1;
@@ -206,7 +220,8 @@ export function applyAction(
       state.playCharges = left - 1;
       state.playChargesAt = at;
       const score = clamp(Math.round(action.score), 0, 3);
-      add('happiness', 10 + score * 5);
+      const festive = theme === 'festival' ? DAY_THEME_EFFECTS.festival.playHappinessFactor : 1;
+      add('happiness', Math.round((10 + score * 5) * festive));
       add('energy', -10);
       add('satiety', -3);
       state.weight = Math.max(MIN_WEIGHT, state.weight - 1);
@@ -219,6 +234,7 @@ export function applyAction(
       // One tap is a full bath: cleaning is a chore, so it should not take several.
       state.poops = 0;
       s.hygiene = 100;
+      if (theme === 'bubbles') add('happiness', DAY_THEME_EFFECTS.bubbles.cleanHappiness);
       break;
     }
     case 'medicine':
@@ -333,7 +349,8 @@ export function applyAction(
       add('satiety', -3);
       const before = trickLevel(state.tricks[action.trick]);
       const focus = s.happiness >= 50 ? 1 : 0.5;
-      const gain = 8 * (1 + s.discipline / 100) * focus;
+      const boost = theme === 'training' ? DAY_THEME_EFFECTS.training.trainFactor : 1;
+      const gain = 8 * (1 + s.discipline / 100) * focus * boost;
       state.tricks[action.trick] = clamp(state.tricks[action.trick] + gain);
       state.bond = clamp(state.bond + 1);
       add('discipline', rules.trainDiscipline);
@@ -380,6 +397,23 @@ export function applyAction(
     case 'endVacation': {
       if (state.vacationSince == null) throw new GameError('not_on_vacation');
       endVacation(state, at, rules, events, false);
+      break;
+    }
+    case 'celebrate': {
+      requireAwake();
+      if (!birthdayToCelebrate(state, at, rules)) throw new GameError('not_birthday');
+      const age = ageInDays(state, at, rules);
+      state.celebratedAge = age;
+      add('happiness', BIRTHDAY.happiness);
+      state.bond = clamp(state.bond + BIRTHDAY.bond);
+      events.push({ type: 'birthday', at, data: { age } });
+      break;
+    }
+    case 'takePresent': {
+      requireHome();
+      if (!presentReady(state, at, rules)) throw new GameError('no_present');
+      state.presentDay = gameDay(rules, at);
+      events.push({ type: 'present', at });
       break;
     }
     case 'startOuting': {

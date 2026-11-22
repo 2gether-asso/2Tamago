@@ -273,6 +273,8 @@ export const ownerActionBody = z.discriminatedUnion('type', [
   z.object({ type: z.literal('retire') }),
   z.object({ type: z.literal('startVacation') }),
   z.object({ type: z.literal('endVacation') }),
+  z.object({ type: z.literal('celebrate') }),
+  z.object({ type: z.literal('takePresent') }),
 ]);
 export type OwnerActionBody = z.infer<typeof ownerActionBody>;
 

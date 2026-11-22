@@ -20,6 +20,8 @@ export const errors = {
   'error.praise_cooldown':
     'Tu l’as déjà félicité il y a peu : une félicitation toutes les 30 minutes.',
   'error.bowl_full': 'Sa gamelle est déjà pleine.',
+  'error.not_birthday': 'Ce n’est pas son anniversaire aujourd’hui (ou c’est déjà fêté).',
+  'error.no_present': 'Il n’a pas de cadeau pour toi pour le moment.',
   'error.too_tired': 'Il est trop fatigué.',
   'error.too_hungry': 'Il a trop faim pour ça.',
   'error.unknown_item': 'Objet inconnu.',

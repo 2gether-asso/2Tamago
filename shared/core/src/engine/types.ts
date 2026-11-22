@@ -164,6 +164,11 @@ export interface PetState {
   /** The last wish, so that the next one is something else. */
   lastWish?: WishId | null;
 
+  /** Age (in game days) of the last birthday party. Absent = never celebrated. */
+  celebratedAge?: number;
+  /** Game day of the last present it brought its owner (see `presentReady`). */
+  presentDay?: number;
+
   /** Character sheet: experience, quests and walk log (see `rpg.ts`). Absent until the first gain. */
   rpg?: RpgSheet;
 }
@@ -189,7 +194,9 @@ export type PetEventType =
   | 'ate_from_bowl'
   | 'wish_made'
   | 'wish_granted'
-  | 'wish_faded';
+  | 'wish_faded'
+  | 'birthday'
+  | 'present';
 
 export interface PetEvent {
   type: PetEventType;
