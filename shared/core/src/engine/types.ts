@@ -5,6 +5,7 @@
  */
 
 import type { RpgSheet } from './rpg.js';
+import type { Wish, WishId } from './wishes.js';
 import type { WalkZoneId } from './zones.js';
 
 export const SPECIES = ['mochi', 'pyon', 'kumo', 'koro', 'nyao', 'toge', 'kame'] as const;
@@ -156,6 +157,13 @@ export interface PetState {
   /** When the last vacation ended, for the cooldown before the next one. */
   vacationEndedAt?: number | null;
 
+  /** What the pet wishes for right now (see `wishes.ts`). Absent (or null) = nothing. */
+  wish?: Wish | null;
+  /** When the next wish may come. Absent = as soon as the pet is free. */
+  nextWishAt?: number;
+  /** The last wish, so that the next one is something else. */
+  lastWish?: WishId | null;
+
   /** Character sheet: experience, quests and walk log (see `rpg.ts`). Absent until the first gain. */
   rpg?: RpgSheet;
 }
@@ -178,7 +186,10 @@ export type PetEventType =
   | 'vacation_ended'
   | 'walk_event'
   | 'stat_up'
-  | 'ate_from_bowl';
+  | 'ate_from_bowl'
+  | 'wish_made'
+  | 'wish_granted'
+  | 'wish_faded';
 
 export interface PetEvent {
   type: PetEventType;

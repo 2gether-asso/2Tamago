@@ -2,6 +2,7 @@ import { alignToGrid, gameHours, stepMs, type GameRules } from './rules.js';
 import { dietOf } from './diet.js';
 import { isBedtime, isNight } from './night.js';
 import { modOf, traitsOf } from './traits.js';
+import { WISH, wishTick } from './wishes.js';
 import {
   STAGES,
   type Form,
@@ -85,6 +86,9 @@ function shiftClocks(state: PetState, away: number): void {
   state.nextTantrumAt = later(state.nextTantrumAt);
   if (state.sickSince !== null) state.sickSince += away;
   if (state.tantrumSince !== null) state.tantrumSince += away;
+  if (state.nextWishAt != null) state.nextWishAt += away;
+  if (state.wish)
+    state.wish = { ...state.wish, since: state.wish.since + away, until: state.wish.until + away };
   for (const tracker of Object.values(state.needs)) {
     if (tracker) tracker.since += away;
   }
@@ -117,6 +121,7 @@ function tick(state: PetState, t: number, rules: GameRules, events: PetEvent[]):
   if (state.status !== 'alive') return;
   careMistakes(state, t, rules, events);
   tantrum(state, t, rules, events);
+  wishTick(state, t, rules, events);
   aging(state, t, rules, events);
 }
 
@@ -134,6 +139,7 @@ function hatch(state: PetState, t: number, rules: GameRules): void {
   state.nextPoopAt = t + gameHours(rules, rules.poopIntervalHours);
   state.nextTantrumAt =
     t + gameHours(rules, rules.tantrumIntervalHours * modOf(state, rules, 'tantrumInterval'));
+  state.nextWishAt = t + gameHours(rules, WISH.firstAfterHatchHours);
 }
 
 function decay(state: PetState, dtH: number, rules: GameRules, night: boolean): void {

@@ -8,6 +8,7 @@ import { applyHeirloom, type Heirloom } from './heirloom.js';
 import { gainXp, resolveWalkEvent, walkSeed } from './rpg.js';
 import { gameDay, walkEnergyCost, weatherAt } from './weather.js';
 import { WORK } from './work.js';
+import { grantWish } from './wishes.js';
 import { hashSeed, modOf, rollTraits } from './traits.js';
 import { DEFAULT_ZONE, WALK_ZONES, zoneOpenTo, type WalkZoneId } from './zones.js';
 import { type PetEvent, type PetState, type Species, type TrickId, TRICKS } from './types.js';
@@ -156,6 +157,9 @@ export function applyAction(
     requireHome();
     if (state.asleep) throw new GameError('asleep');
   };
+
+  /** Set by an action that had no effect (a caress on cooldown): it grants no wish. */
+  let idle = false;
 
   switch (action.type) {
     case 'feed': {
@@ -310,6 +314,8 @@ export function applyAction(
           state.bond = clamp(state.bond + modOf(state, rules, 'caressBond'));
           gainXp(state, 'charm', 1, at, events);
         }
+      } else {
+        idle = true;
       }
       break;
     }
@@ -412,6 +418,12 @@ export function applyAction(
       const exhaustive: never = action;
       throw new Error(`Unknown action ${JSON.stringify(exhaustive)}`);
     }
+  }
+
+  // The owner's own actions may make a wish come true (not a visitor's: it is the owner's bond).
+  if (!idle && !action.type.startsWith('visitor')) {
+    const item = 'item' in action && action.item !== null ? action.item : undefined;
+    grantWish(state, { type: action.type, item }, at, rules, events);
   }
 
   return { state, events };
