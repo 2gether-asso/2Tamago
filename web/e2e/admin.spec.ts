@@ -18,6 +18,9 @@ test('only admins see the admin screen and can save game settings', async ({ pag
   await page.goto('/login');
   await signIn(page, 'Root');
   await page.getByRole('link', { name: /Admin/ }).click();
+  // The overview opens first; the settings have their own tab.
+  await expect(page.getByRole('heading', { name: 'Équilibre du jeu' })).toBeVisible();
+  await page.getByRole('link', { name: 'Réglages' }).click();
   const editor = page.getByLabel('Modifications (JSON)');
   await editor.fill('{ "caressCooldownSeconds": 3 }');
   await page.getByRole('button', { name: 'Enregistrer' }).click();
